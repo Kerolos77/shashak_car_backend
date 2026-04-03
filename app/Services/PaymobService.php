@@ -409,7 +409,7 @@ class PaymobService
             $order->update([
                 'driver_id' => $pendingOffer->driver_id,
                 'offer_rate' => $pendingOffer->user_counter_offer ?? $pendingOffer->offer_rate,
-                'status' => \App\Models\Order::STATUS_ASSIGNED,
+                'status' => \App\Models\Order::STATUS_DRIVER_ON_A_WAY,
                 'is_accept' => now(),
                 'assigned_at' => now(),
             ]);

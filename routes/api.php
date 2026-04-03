@@ -104,7 +104,8 @@ Route::group(['prefix' => 'v1', 'as' => 'api.', 'middleware' => ['auth:sanctum']
         Route::get('/accept/{order}', [OrderApiController::class, 'acceptorder']);
         Route::get('/offer/{order}/{offer}', [OrderApiController::class, 'offerorder']);
         Route::get('/arrived/{order}', [OrderApiController::class, 'arrivedOrder']);
-
+        Route::get('/start-moving/{order}', [OrderApiController::class, 'startMoving']);
+        
         // Test Realtime Updates (Inside Auth for production)
         Route::get('/test-status/{order}/{status}', [OrderApiController::class, 'updateTestStatus']);
         Route::post('/test-realtime-update', [OrderApiController::class, 'testRealtimeUpdate']);

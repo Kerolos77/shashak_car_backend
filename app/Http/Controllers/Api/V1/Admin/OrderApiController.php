@@ -42,7 +42,7 @@ class OrderApiController extends Controller
         if ($request->in_city) {
             $order = Order::where('user_id', $driverID)
                 ->where('inter_city', '=', 1)
-                ->whereIn('status', [Order::STATUS_ON_TRIP, Order::STATUS_PENDING, Order::STATUS_NEGOTIATING, Order::STATUS_ASSIGNED, Order::STATUS_ARRIVED])->first();
+                ->whereIn('status', [Order::STATUS_ON_TRIP, Order::STATUS_PENDING, Order::STATUS_NEGOTIATING, Order::STATUS_ASSIGNED, Order::STATUS_DRIVER_ON_A_WAY, Order::STATUS_ARRIVED])->first();
         }
         return Resp(new OrderResource($order), 'success');
     }
@@ -276,6 +276,7 @@ class OrderApiController extends Controller
             Order::STATUS_PENDING,
             Order::STATUS_NEGOTIATING,
             Order::STATUS_ASSIGNED,
+            Order::STATUS_DRIVER_ON_A_WAY,
             Order::STATUS_ARRIVED,
             Order::STATUS_ON_TRIP,
             Order::STATUS_COMPLETED,
@@ -300,6 +301,7 @@ class OrderApiController extends Controller
             Order::STATUS_PENDING,
             Order::STATUS_NEGOTIATING,
             Order::STATUS_ASSIGNED,
+            Order::STATUS_DRIVER_ON_A_WAY,
             Order::STATUS_ARRIVED,
             Order::STATUS_ON_TRIP,
             Order::STATUS_COMPLETED,
@@ -554,6 +556,7 @@ class OrderApiController extends Controller
             Order::STATUS_PENDING,
             Order::STATUS_NEGOTIATING,
             Order::STATUS_ASSIGNED,
+            Order::STATUS_DRIVER_ON_A_WAY,
             Order::STATUS_ARRIVED,
             Order::STATUS_ON_TRIP,
             Order::STATUS_COMPLETED,
@@ -609,7 +612,7 @@ class OrderApiController extends Controller
         $order->update([
             'is_accept' => Carbon::now(),
             'assigned_at' => Carbon::now(),
-            'status' => Order::STATUS_ASSIGNED,
+            'status' => Order::STATUS_DRIVER_ON_A_WAY,
             'driver_id' => $request->driver_id
         ]);
         $data = ['status' => 'accept'];
@@ -862,7 +865,7 @@ class OrderApiController extends Controller
 
         // 4. Final Assignment
         $order->update([
-            'status' => Order::STATUS_ASSIGNED,
+            'status' => Order::STATUS_DRIVER_ON_A_WAY,
             'is_accept' => now(),
             'assigned_at' => now(),
         ]);
@@ -1004,7 +1007,7 @@ class OrderApiController extends Controller
 
         // 3. Final Assignment
         $order->update([
-            'status' => Order::STATUS_ASSIGNED,
+            'status' => Order::STATUS_DRIVER_ON_A_WAY,
             'is_accept' => now(),
             'assigned_at' => now(),
         ]);
@@ -1133,7 +1136,7 @@ class OrderApiController extends Controller
 
         // 3. On Success: Finalize the Order Assignment
         $order->update([
-            'status' => Order::STATUS_ASSIGNED,
+            'status' => Order::STATUS_DRIVER_ON_A_WAY,
             'assigned_at' => now(),
             'is_accept' => now(),
         ]);

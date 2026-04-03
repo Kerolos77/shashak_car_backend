@@ -132,7 +132,7 @@ class Order extends Model
     }
     public function isAssigned()
     {
-        return $this->status === self::STATUS_ASSIGNED;
+        return in_array($this->status, [self::STATUS_ASSIGNED, self::STATUS_DRIVER_ON_A_WAY]);
     }
     public function isDriverOnAWay()
     {
