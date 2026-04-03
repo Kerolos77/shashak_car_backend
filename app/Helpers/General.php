@@ -56,7 +56,7 @@ function Resp($data = null, $msg = null, $status = 200, $statusval = true)
     if ($status == 422) {
         return response()->json(['errors' => $data, 'msg' => $msg, 'status' => $status, 'statusval' => $statusval = false], $status);
     } elseif ($status != 200 && $status != 201) {
-        return response()->json(['msg' => $msg, 'status' => $status, 'statusval' => $statusval = false], $status);
+        return response()->json(['data' => $data, 'msg' => $msg, 'status' => $status, 'statusval' => $statusval = false], $status);
     } else {
         return response()->json(['data' => $data, 'msg' => $msg, 'status' => $status, 'statusval' => $statusval], $status);
     }

@@ -385,12 +385,14 @@ class OrderApiController extends Controller
         $user = Auth::user();
 
         // 1. Check if user already has an active trip
-        $activeTrip = Order::where('user_id', $user->id)
+        $activeTrips = Order::where('user_id', $user->id)
             ->whereNotIn('status', [Order::STATUS_COMPLETED, Order::STATUS_CANCELED])
-            ->exists();
+            ->get();
 
-        if ($activeTrip) {
-            return Resp(null, 'You already have an active trip. Please complete or cancel it before starting a new one.', 400, false);
+        if ($activeTrips->isNotEmpty()) {
+            return Resp([
+                'active_order_ids' => $activeTrips->pluck('id')
+            ], 'You already have an active trip. Please complete or cancel it before starting a new one.', 400, false);
         }
 
         $service = Service::find($request->service_id);
