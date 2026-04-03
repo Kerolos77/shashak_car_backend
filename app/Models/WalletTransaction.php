@@ -12,6 +12,17 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class WalletTransaction extends Model
 {
     use HasFactory, HasAdvancedFilter, SoftDeletes;
+
+    const TYPE_VOUCHER = 'voucher';
+    const TYPE_BONUS = 'bonus';
+    const TYPE_ORDER = 'order';
+    const TYPE_REFUND = 'refund';
+    const TYPE_COMPENSATION = 'compensation';
+    const TYPE_DEPOSIT = 'deposit';
+    const TYPE_WITHDRAW = 'withdraw';
+    const TYPE_TRANSFER_IN = 'transfer_in';
+    const TYPE_TRANSFER_OUT = 'transfer_out';
+
     protected $table = "wallet_transactions";
     protected $guarded = ['id'];
     public function getCreatedAtAttribute($value)
