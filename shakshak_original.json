@@ -1,0 +1,2167 @@
+{
+	"info": {
+		"_postman_id": "d7a67d6a-d3ac-48c4-bcb8-c1a7f3327275",
+		"name": "shakshak",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29037990",
+		"_collection_link": "https://orange-spaceship-288916.postman.co/workspace/Team-Workspace~edf1d13e-2d7b-4e1a-8454-6936992796f2/collection/29037990-d7a67d6a-d3ac-48c4-bcb8-c1a7f3327275?action=share&source=collection_link&creator=29037990"
+	},
+	"item": [
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "sign-up",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "sayed",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "elgoharysayed410@gmail.com",
+									"type": "text"
+								},
+								{
+									"key": "phone",
+									"value": "01225536606",
+									"type": "text"
+								},
+								{
+									"key": "fcm_token",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "country_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "city_id",
+									"value": "1",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/auth/signup",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"auth",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "verify_otp",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "code",
+									"value": "111111",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/auth/verify_otp?code=111111",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"auth",
+								"verify_otp"
+							],
+							"query": [
+								{
+									"key": "code",
+									"value": "111111"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "send_otp",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "phone",
+									"value": "+201225536602",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/auth/send_otp",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"auth",
+								"send_otp"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "country",
+			"item": [
+				{
+					"name": "country",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "phone",
+									"value": "01099076093",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/user/country",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"user",
+								"country"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "city",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "phone",
+									"value": "01099076093",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/user/city/2",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"user",
+								"city",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "chat",
+			"item": [
+				{
+					"name": "send-chat",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "trip_id",
+									"value": "1",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "message",
+									"value": "hi",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/send/chat?trip_id=552&message=adfkn",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"send",
+								"chat"
+							],
+							"query": [
+								{
+									"key": "trip_id",
+									"value": "552"
+								},
+								{
+									"key": "message",
+									"value": "adfkn"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "wallet",
+			"item": [
+				{
+					"name": "charge_wallet",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenUser}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/user/charge_wallet?value=110.0",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"user",
+								"charge_wallet"
+							],
+							"query": [
+								{
+									"key": "value",
+									"value": "110.0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "transactions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenDriver}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/user/transactions",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"user",
+								"transactions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "withdraw_request",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenUser}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/user/withdraw_request?value=110.0",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"user",
+								"withdraw_request"
+							],
+							"query": [
+								{
+									"key": "value",
+									"value": "110.0"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "brands and models",
+			"item": [
+				{
+					"name": "brands",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "187|Es4deaaWcW2voTEUxlh4IEQ6yf4AMFrD3kaMq4Iw8636839b",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/car/brands",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"car",
+								"brands"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "models",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "187|Es4deaaWcW2voTEUxlh4IEQ6yf4AMFrD3kaMq4Iw8636839b",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/car/models",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"car",
+								"models"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "drivers",
+			"item": [
+				{
+					"name": "registration",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenDriver}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "lang",
+								"value": "ar",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "criminal_record_image",
+									"type": "file",
+									"src": "postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f"
+								},
+								{
+									"key": "front_identity_image",
+									"type": "file",
+									"src": "postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f"
+								},
+								{
+									"key": "driver_image_with_id",
+									"type": "file",
+									"src": "postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f"
+								},
+								{
+									"key": "front_license_image",
+									"type": "file",
+									"src": "postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f"
+								},
+								{
+									"key": "back_license_image",
+									"type": "file",
+									"src": "postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f"
+								},
+								{
+									"key": "driver_with_license_image",
+									"type": "file",
+									"src": "postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f"
+								},
+								{
+									"key": "car_front_license_image",
+									"type": "file",
+									"src": "postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f"
+								},
+								{
+									"key": "car_back_license_image",
+									"type": "file",
+									"src": "postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f"
+								},
+								{
+									"key": "car_driver_with_license_image",
+									"type": "file",
+									"src": "postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f"
+								},
+								{
+									"key": "birth_date",
+									"value": "1990-01-01",
+									"type": "text"
+								},
+								{
+									"key": "id_number",
+									"value": "2343",
+									"type": "text"
+								},
+								{
+									"key": "service_id",
+									"value": "4",
+									"type": "text"
+								},
+								{
+									"key": "car_brand_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "car_model_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "color",
+									"value": "red",
+									"type": "text"
+								},
+								{
+									"key": "release_year",
+									"value": "2018",
+									"type": "text"
+								},
+								{
+									"key": "criminal_expiry_date",
+									"value": "2025-12-31",
+									"type": "text"
+								},
+								{
+									"key": "expiry_date",
+									"value": "2025-12-31",
+									"type": "text"
+								},
+								{
+									"key": "car_expiry_date",
+									"value": "2025-12-31",
+									"type": "text"
+								},
+								{
+									"key": "back_identity_image",
+									"type": "file",
+									"src": "postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f"
+								},
+								{
+									"key": "license_expiry_date",
+									"value": "2025-12-31",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/driver/registration",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"driver",
+								"registration"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/update-service",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "187|Es4deaaWcW2voTEUxlh4IEQ6yf4AMFrD3kaMq4Iw8636839b",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "lang",
+								"value": "ar",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "criminal_record_image",
+									"type": "file",
+									"src": "postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f"
+								},
+								{
+									"key": "front_identity_image",
+									"type": "file",
+									"src": "postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f"
+								},
+								{
+									"key": "driver_image_with_id",
+									"type": "file",
+									"src": "postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f"
+								},
+								{
+									"key": "front_license_image",
+									"type": "file",
+									"src": "postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f"
+								},
+								{
+									"key": "back_license_image",
+									"type": "file",
+									"src": "postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f"
+								},
+								{
+									"key": "driver_with_license_image",
+									"type": "file",
+									"src": "postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f"
+								},
+								{
+									"key": "car_front_license_image",
+									"type": "file",
+									"src": "postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f"
+								},
+								{
+									"key": "car_back_license_image",
+									"type": "file",
+									"src": "postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f"
+								},
+								{
+									"key": "car_driver_with_license_image",
+									"type": "file",
+									"src": "postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f"
+								},
+								{
+									"key": "birth_date",
+									"value": "1990-01-01",
+									"type": "text"
+								},
+								{
+									"key": "id_number",
+									"value": "2343",
+									"type": "text"
+								},
+								{
+									"key": "service_id",
+									"value": "4",
+									"type": "text"
+								},
+								{
+									"key": "car_brand_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "car_model_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "color",
+									"value": "red",
+									"type": "text"
+								},
+								{
+									"key": "release_year",
+									"value": "2018",
+									"type": "text"
+								},
+								{
+									"key": "criminal_expiry_date",
+									"value": "2025-12-31",
+									"type": "text"
+								},
+								{
+									"key": "expiry_date",
+									"value": "2025-12-31",
+									"type": "text"
+								},
+								{
+									"key": "car_expiry_date",
+									"value": "2025-12-31",
+									"type": "text"
+								},
+								{
+									"key": "back_identity_image",
+									"type": "file",
+									"src": "/C:/Users/SH/Music/10931491.png"
+								},
+								{
+									"key": "license_expiry_date",
+									"value": "2025-12-31",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/driver/update-service?service_id=4",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"driver",
+								"update-service"
+							],
+							"query": [
+								{
+									"key": "service_id",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "user",
+			"item": [
+				{
+					"name": "toggle_online",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "187|Es4deaaWcW2voTEUxlh4IEQ6yf4AMFrD3kaMq4Iw8636839b",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "lang",
+								"value": "ar",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/user/toggle_online/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"user",
+								"toggle_online",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenDriver}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/user/profile",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"user",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "profile/update",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenUser}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "faiegg",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "m@m.com",
+									"type": "text"
+								},
+								{
+									"key": "country_id",
+									"value": "8",
+									"type": "text"
+								},
+								{
+									"key": "city_id",
+									"value": "82",
+									"type": "text"
+								},
+								{
+									"key": "image",
+									"type": "file",
+									"src": "postman-cloud:///1f07790f-da6d-4310-b1bd-6c99aaae94dd"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/user/profile/update",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"user",
+								"profile",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get-docs",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "187|Es4deaaWcW2voTEUxlh4IEQ6yf4AMFrD3kaMq4Iw8636839b",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/user/get-docs",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"user",
+								"get-docs"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "services",
+			"item": [
+				{
+					"name": "incity",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "188|XExUMewnNcUAjnnPIdw0Tu3pL1wBcPiZzx5H0UUQ5c08b10c",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/services/incity",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"services",
+								"incity"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "outcity",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "250|NtI7PvStt8ahJHlS37NAp2kr4owhwChTkrdR7wny229e606c",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/services/outcity",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"services",
+								"outcity"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "all",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "250|NtI7PvStt8ahJHlS37NAp2kr4owhwChTkrdR7wny229e606c",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/services/all",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"services",
+								"all"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "orders",
+			"item": [
+				{
+					"name": "new-order",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenUser}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "service_id",
+									"value": "4",
+									"type": "text"
+								},
+								{
+									"key": "distance",
+									"value": "14",
+									"type": "text"
+								},
+								{
+									"key": "destination_address",
+									"value": "Airport Terminal 1",
+									"type": "text"
+								},
+								{
+									"key": "destination_lat",
+									"value": "30.091141",
+									"type": "text"
+								},
+								{
+									"key": "destination_long",
+									"value": "31.376596",
+									"type": "text"
+								},
+								{
+									"key": "source_address",
+									"value": "Royal Hotel",
+									"type": "text"
+								},
+								{
+									"key": "source_lat",
+									"value": "30.1390716",
+									"type": "text"
+								},
+								{
+									"key": "source_long",
+									"value": "31.3237531",
+									"type": "text"
+								},
+								{
+									"key": "offer_rate",
+									"value": "120",
+									"type": "text"
+								},
+								{
+									"key": "inter_city",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "payment_type",
+									"value": "cash",
+									"type": "text"
+								},
+								{
+									"key": "when_date",
+									"value": "2023-12-25 08:00:00",
+									"type": "text"
+								},
+								{
+									"key": "number_of_passenger",
+									"value": "2",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/order/new",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"order",
+								"new"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "old-for-driver",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenDriver}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "service_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "distance",
+									"value": "14",
+									"type": "text"
+								},
+								{
+									"key": "destination_address",
+									"value": "Airport Terminal 1",
+									"type": "text"
+								},
+								{
+									"key": "destination_lat",
+									"value": "24.9534",
+									"type": "text"
+								},
+								{
+									"key": "destination_long",
+									"value": "24.9534",
+									"type": "text"
+								},
+								{
+									"key": "source_address",
+									"value": "Royal Hotel",
+									"type": "text"
+								},
+								{
+									"key": "source_lat",
+									"value": "24.7136",
+									"type": "text"
+								},
+								{
+									"key": "source_long",
+									"value": "46.6753",
+									"type": "text"
+								},
+								{
+									"key": "offer_rate",
+									"value": "120",
+									"type": "text"
+								},
+								{
+									"key": "inter_city",
+									"value": "true",
+									"type": "text"
+								},
+								{
+									"key": "payment_type",
+									"value": "card",
+									"type": "text"
+								},
+								{
+									"key": "when_date",
+									"value": "2023-12-25 08:00:00",
+									"type": "text"
+								},
+								{
+									"key": "number_of_passenger",
+									"value": "2",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/order/old-for-driver",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"order",
+								"old-for-driver"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "old-for-user",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenDriver}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "service_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "distance",
+									"value": "14",
+									"type": "text"
+								},
+								{
+									"key": "destination_address",
+									"value": "Airport Terminal 1",
+									"type": "text"
+								},
+								{
+									"key": "destination_lat",
+									"value": "24.9534",
+									"type": "text"
+								},
+								{
+									"key": "destination_long",
+									"value": "24.9534",
+									"type": "text"
+								},
+								{
+									"key": "source_address",
+									"value": "Royal Hotel",
+									"type": "text"
+								},
+								{
+									"key": "source_lat",
+									"value": "24.7136",
+									"type": "text"
+								},
+								{
+									"key": "source_long",
+									"value": "46.6753",
+									"type": "text"
+								},
+								{
+									"key": "offer_rate",
+									"value": "120",
+									"type": "text"
+								},
+								{
+									"key": "inter_city",
+									"value": "true",
+									"type": "text"
+								},
+								{
+									"key": "payment_type",
+									"value": "card",
+									"type": "text"
+								},
+								{
+									"key": "when_date",
+									"value": "2023-12-25 08:00:00",
+									"type": "text"
+								},
+								{
+									"key": "number_of_passenger",
+									"value": "2",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/order/old-for-user?in_city=0",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"order",
+								"old-for-user"
+							],
+							"query": [
+								{
+									"key": "in_city",
+									"value": "0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get-out-city-offers",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "187|Es4deaaWcW2voTEUxlh4IEQ6yf4AMFrD3kaMq4Iw8636839b",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/order/get-out-city-offers/710",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"order",
+								"get-out-city-offers",
+								"710"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get-driver-active-ride",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenDriver}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/order/get-driver-active-ride",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"order",
+								"get-driver-active-ride"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get-out-city-offers",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenUser}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/order/get-out-city-offers/710",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"order",
+								"get-out-city-offers",
+								"710"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "add-out-city-offer",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "187|Es4deaaWcW2voTEUxlh4IEQ6yf4AMFrD3kaMq4Iw8636839b",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/order/add-out-city-offer/707/2",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"order",
+								"add-out-city-offer",
+								"707",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "current-orders-driver",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenDriver}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/order/current-orders-driver",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"order",
+								"current-orders-driver"
+							],
+							"query": [
+								{
+									"key": "driver_id",
+									"value": "1",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "accept",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenDriver}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/order/accept/710?driver_id=47",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"order",
+								"accept",
+								"710"
+							],
+							"query": [
+								{
+									"key": "driver_id",
+									"value": "47"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "offer",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenDriver}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/order/offer/741/150",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"order",
+								"offer",
+								"741",
+								"150"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "start",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "187|Es4deaaWcW2voTEUxlh4IEQ6yf4AMFrD3kaMq4Iw8636839b",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/order/start/707",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"order",
+								"start",
+								"707"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "end",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "187|Es4deaaWcW2voTEUxlh4IEQ6yf4AMFrD3kaMq4Iw8636839b",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/order/end/707",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"order",
+								"end",
+								"707"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "cancel",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenUser}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/order/cancel/709",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"order",
+								"cancel",
+								"709"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getprice",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "187|Es4deaaWcW2voTEUxlh4IEQ6yf4AMFrD3kaMq4Iw8636839b",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "service_id",
+									"value": "4",
+									"type": "text"
+								},
+								{
+									"key": "destination",
+									"value": "Cairo, Egypt",
+									"type": "text"
+								},
+								{
+									"key": "origin",
+									"value": "Cairo, Egypt",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/order/getprice",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"order",
+								"getprice"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "my-orders",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenUser}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "service_id",
+									"value": "4",
+									"type": "text"
+								},
+								{
+									"key": "destination",
+									"value": "Cairo, Egypt",
+									"type": "text"
+								},
+								{
+									"key": "origin",
+									"value": "Cairo, Egypt",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/order/my",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"order",
+								"my"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "payments",
+			"item": [
+				{
+					"name": "get",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenUser}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "service_id",
+									"value": "4",
+									"type": "text"
+								},
+								{
+									"key": "destination",
+									"value": "Cairo, Egypt",
+									"type": "text"
+								},
+								{
+									"key": "origin",
+									"value": "Cairo, Egypt",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/payments/get",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"payments",
+								"get"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "change",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenUser}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "service_id",
+									"value": "4",
+									"type": "text"
+								},
+								{
+									"key": "destination",
+									"value": "Cairo, Egypt",
+									"type": "text"
+								},
+								{
+									"key": "origin",
+									"value": "Cairo, Egypt",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/payments/change/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"payments",
+								"change",
+								"1"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "1",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "settings",
+			"item": [
+				{
+					"name": "faqs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/faqs",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"faqs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "contact-us",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/contact-us",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"contact-us"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "pages",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/pages?id=3&locale=ar",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"pages"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "3",
+									"description": "1 =>privacy   2=>about 3=>terms"
+								},
+								{
+									"key": "locale",
+									"value": "ar",
+									"description": "en"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "writeus",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenUser}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "email",
+									"value": "sayed@gmail.com",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "wegwge",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/write_us?email=sayed@gsv.com&description=wjdn",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"write_us"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "sayed@gsv.com"
+								},
+								{
+									"key": "description",
+									"value": "wjdn"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "reviews",
+			"item": [
+				{
+					"name": "review_driver",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenDriver}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "lang",
+								"value": "ar",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"rating\": 5,          // من 1 لـ 5\r\n  \"comment\": \"سواق ممتاز والخدمة كانت رائعة\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://shakshak.net/api/v1/review/order/706",
+							"protocol": "https",
+							"host": [
+								"shakshak",
+								"net"
+							],
+							"path": [
+								"api",
+								"v1",
+								"review",
+								"order",
+								"706"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_review_driver",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenDriver}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "lang",
+								"value": "ar",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"rating\": 5,          // من 1 لـ 5\r\n  \"comment\": \"سواق ممتاز والخدمة كانت رائعة\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://shakshak.net/api/v1/review/driver/10",
+							"protocol": "https",
+							"host": [
+								"shakshak",
+								"net"
+							],
+							"path": [
+								"api",
+								"v1",
+								"review",
+								"driver",
+								"10"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_user_reviews",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://shakshak.net/api/v1/review/user/1",
+							"protocol": "https",
+							"host": [
+								"shakshak",
+								"net"
+							],
+							"path": [
+								"api",
+								"v1",
+								"review",
+								"user",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "settings",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{tokenUser}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/settings",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"settings"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "setting-value-percentage",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{tokenUser}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/settings/percentage-increase",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"settings",
+						"percentage-increase"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "captions",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "187|Es4deaaWcW2voTEUxlh4IEQ6yf4AMFrD3kaMq4Iw8636839b",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "lang",
+						"value": "ar",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{url}}/captions",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"captions"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "url",
+			"value": "http://127.0.0.1:8000/api/v1",
+			"disabled": true
+		},
+		{
+			"key": "url",
+			"value": "http://shakshak.net/api/v1"
+		},
+		{
+			"key": "tokenDriver",
+			"value": "202|T3V78WjSbmTXhuUHKM6lAuA91VF4u3vAM8r8dkxpc2e41459"
+		},
+		{
+			"key": "tokenUser",
+			"value": "201|W5q64IxwFFNF3mrLOFijo90OZpOLvTtZauYdG4X2f9b7f783"
+		}
+	]
+}

@@ -1,0 +1,56 @@
+name: Deploy to DigitalOcean
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # خطوة إضافية: حذف الملفات غير المرغوب فيها قبل النسخ (بديل exclude)
+      - name: Remove unwanted files
+        run: |
+          rm -f all_data.sql
+          rm -rf tests/
+
+      - name: Copy files to Droplet
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "."
+          target: "/var/www/html"
+          # تم حذف exclude لأنها غير مدعومة، والملفات المحذوفة أعلاه لن تُنسخ
+
+      - name: Execute Remote Commands (Migrate & Optimize)
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /var/www/html
+            
+            # تثبيت المكتبات
+            export COMPOSER_ALLOW_SUPERUSER=1
+            composer install --no-dev --optimize-autoloader
+            
+            # تهيئة قاعدة البيانات والكاش
+            php artisan migrate --force
+            php artisan optimize:clear
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            
+            # إصلاح الصلاحيات
+            sudo chown -R www-data:www-data /var/www/html
+            sudo chmod -R 775 /var/www/html/storage
+            sudo chmod -R 775 /var/www/html/bootstrap/cache
+            
+          
