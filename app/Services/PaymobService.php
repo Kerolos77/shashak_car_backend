@@ -413,6 +413,12 @@ class PaymobService
                 'is_accept' => now(),
                 'assigned_at' => now(),
             ]);
+
+            // Notify Driver
+            if ($order->driver) {
+                $order->driver->sendPushNotification("الرحلة جاهزة للتحرك!", "تم تأكيد دفع العميل بنجاح، يمكنك الآن التوجه لموقع العميل.", ['order_id' => $order->id, 'type' => 'trip_ready']);
+            }
+
             \App\Events\TripStatusUpdated::dispatch($order->fresh());
         }
     }

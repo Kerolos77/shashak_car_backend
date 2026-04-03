@@ -168,9 +168,24 @@ class OrderApiController extends Controller
             $card = $targetCardId ? $cardQuery->where('id', $targetCardId)->first() : $cardQuery->where('is_default', true)->first();
 
             if (!$card) {
-                $order->update(['status' => Order::STATUS_PAYMENT_FAILED]);
-                TripStatusUpdated::dispatch($order->fresh());
-                return ['success' => false, 'message' => 'No valid saved card found for payment.', 'status' => 400];
+                // No saved card: Create payment intention for redirection
+                try {
+                    $result = app(PaymobService::class)->createPaymentIntention($user, (float) $cardDeduction, true, [], $order->id);
+                    $order->update(['status' => Order::STATUS_PAYMENT_REQUIRED]);
+                    TripStatusUpdated::dispatch($order->fresh());
+                    
+                    return [
+                        'success' => false, 
+                        'message' => 'Payment required', 
+                        'status' => 200, 
+                        'is_payment_required' => true,
+                        'url' => $result['checkout_url']
+                    ];
+                } catch (\Exception $e) {
+                    $order->update(['status' => Order::STATUS_PAYMENT_FAILED]);
+                    TripStatusUpdated::dispatch($order->fresh());
+                    return ['success' => false, 'message' => 'Failed to create payment: ' . $e->getMessage(), 'status' => 500];
+                }
             }
 
             try {
@@ -844,8 +859,8 @@ class OrderApiController extends Controller
         $paymentCheck = $this->handlePaymentGate($order, $finalRate, null);
         
         if ($paymentCheck['success'] !== true) {
-            // Already handled in handlePaymentGate (set to payment_failed)
-            return Resp(null, $paymentCheck['message'], $paymentCheck['status'], false);
+            $data = isset($paymentCheck['url']) ? ['url' => $paymentCheck['url']] : null;
+            return Resp($data, $paymentCheck['message'], $paymentCheck['status'], false);
         }
         // ─── END PAYMENT GATE ──────────────────────────────────────────
 
@@ -878,14 +893,18 @@ class OrderApiController extends Controller
 
         // Broadcasts
         \App\Events\OfferStatusChanged::dispatch($offer, 'accepted', 'driver', $driverID);
-        OfferUpdated::dispatch($offer->fresh(), 'driver', $driverID);
-        TripStatusUpdated::dispatch($order->fresh());
+        OfferUpdated::dispatch($offer, 'driver', $driverID);
+
+        // Notify Driver they can move now (Since payment is confirmed)
+        $driver->sendPushNotification("الرحلة جاهزة!", "تم تأكيد الدفع، يمكنك التحرك الآن للموقع.", ['order_id' => $order->id, 'type' => 'trip_ready']);
 
         if ($order->user) {
             $order->user->sendPushNotification("تم قبول طلبك", "وافق السائق على السعر الذي حددته وهو في طريقه إليك.", ['order_id' => $order->id, 'type' => 'offer_accepted']);
         }
 
-        return Resp($offer->load(['order', 'driver']), 'Order accepted at user price successfully');
+        TripStatusUpdated::dispatch($order->fresh());
+
+        return Resp(new OrderResource($order->fresh()), 'Order accepted and driver on the way');
     }
 
     public function startMoving(Request $request, Order $order)
@@ -998,8 +1017,8 @@ class OrderApiController extends Controller
         $paymentCheck = $this->handlePaymentGate($order, (float)$finalRate, $offer->id);
         
         if ($paymentCheck['success'] !== true) {
-            // Already handled in handlePaymentGate (set to payment_failed)
-            return Resp(null, $paymentCheck['message'], $paymentCheck['status'], false);
+            $data = isset($paymentCheck['url']) ? ['url' => $paymentCheck['url']] : null;
+            return Resp($data, $paymentCheck['message'], $paymentCheck['status'], false);
         }
         // ─── END PAYMENT GATE ──────────────────────────────────────────
 
@@ -1026,13 +1045,14 @@ class OrderApiController extends Controller
         \App\Events\OfferStatusChanged::dispatch($offer->fresh(), 'accepted', $actorType, $userID);
         OfferUpdated::dispatch($offer->fresh(), $actorType, $userID);
 
-        if ($actorType === 'user' && $offer->driver) {
-            $offer->driver->sendPushNotification("تم قبول عرضك!", "وافق العميل على عرض السعر الخاص بك، يرجى التوجه لموقع العميل.", ['order_id' => $offer->order_id, 'type' => 'offer_accepted']);
+        // Notify Driver they can move now (Only if payment is confirmed successfully)
+        if ($offer->driver) {
+            $offer->driver->sendPushNotification("تم دفع الرحلة وتأكيدها!", "العميل دفع مبلغ الرحلة، يمكنك الآن التوجه لموقع العميل.", ['order_id' => $offer->order_id, 'type' => 'trip_ready']);
         }
 
         TripStatusUpdated::dispatch($offer->order->fresh());
 
-        return Resp($offer->fresh()->load(['order', 'driver']), 'Offer accepted successfully');
+        return Resp(new OrderResource($offer->order->fresh()), 'Offer accepted successfully');
     }
 
     /**
@@ -1131,7 +1151,8 @@ class OrderApiController extends Controller
         $paymentCheck = $this->handlePaymentGate($order, (float)$finalRate);
 
         if ($paymentCheck['success'] !== true) {
-            return Resp(null, $paymentCheck['message'], $paymentCheck['status'], false);
+            $data = isset($paymentCheck['url']) ? ['url' => $paymentCheck['url']] : null;
+            return Resp($data, $paymentCheck['message'], $paymentCheck['status'], false);
         }
 
         // 3. On Success: Finalize the Order Assignment
@@ -1149,9 +1170,9 @@ class OrderApiController extends Controller
         TripStatusUpdated::dispatch($order->fresh());
 
         if ($order->driver) {
-            $order->driver->sendPushNotification("تم دفع الرحلة!", "قام العميل بإتمام عملية الدفع، يرجى التوجه إليه.", ['order_id' => $order->id, 'type' => 'trip_update']);
+            $order->driver->sendPushNotification("الرحلة جاهزة!", "تم تأكيد الدفع بنجاح، يمكنك الآن التوجه لموقع العميل.", ['order_id' => $order->id, 'type' => 'trip_ready']);
         }
 
-        return Resp(new OrderResource($order->fresh()), 'Payment resolved and trip assigned successfully');
+        return Resp(new OrderResource($order->fresh()), 'Payment resolved and driver on the way');
     }
 }
