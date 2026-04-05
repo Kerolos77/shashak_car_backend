@@ -38,7 +38,11 @@ class OrderApiController extends Controller
             ->latest()
             ->first();
             
-        return Resp($order ? new OrderResource($order) : null, 'success');
+        if ($order) {
+            return Resp(new OrderResource($order), 'success');
+        }
+
+        return Resp(null, 'success');
     }
     public function get_user_active_ride(Request $request)
     {
@@ -48,7 +52,11 @@ class OrderApiController extends Controller
             ->latest()
             ->first();
 
-        return Resp($order ? new OrderResource($order) : null, 'success');
+        if ($order) {
+            return Resp(new OrderResource($order), 'success');
+        }
+
+        return Resp(null, 'success');
     }
 
     public function show(Order $order)
