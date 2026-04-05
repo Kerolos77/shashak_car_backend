@@ -32,18 +32,22 @@ class OrderApiController extends Controller
 {
     public function get_driver_active_ride(Request $request)
     {
-        $driverID = $this->getUserIDByToken(request()->bearerToken());
-        $order = Order::where('driver_id', $driverID)->whereIn('status', [Order::STATUS_ON_TRIP])->first();
+        $driverId = Auth::id();
+        $order = Order::where('driver_id', $driverId)
+            ->whereNotIn('status', [Order::STATUS_COMPLETED, Order::STATUS_CANCELED])
+            ->latest()
+            ->first();
+            
         return Resp(new OrderResource($order), 'success');
     }
     public function get_user_active_ride(Request $request)
     {
-        $driverID = $this->getUserIDByToken(request()->bearerToken());
-        if ($request->in_city) {
-            $order = Order::where('user_id', $driverID)
-                ->where('inter_city', '=', 1)
-                ->whereIn('status', [Order::STATUS_ON_TRIP, Order::STATUS_PENDING, Order::STATUS_NEGOTIATING, Order::STATUS_ASSIGNED, Order::STATUS_DRIVER_ON_A_WAY, Order::STATUS_ARRIVED])->first();
-        }
+        $userId = Auth::id();
+        $order = Order::where('user_id', $userId)
+            ->whereNotIn('status', [Order::STATUS_COMPLETED, Order::STATUS_CANCELED])
+            ->latest()
+            ->first();
+
         return Resp(new OrderResource($order), 'success');
     }
 
