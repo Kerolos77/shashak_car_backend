@@ -49,7 +49,14 @@ class OrderApiController extends Controller
 
     public function show(Order $order)
     {
-        return Resp(new OrderResource($order), 'success');
+        $userId = Auth::id();
+
+        // Authorization check: Only the user who created the order or the currently assigned driver can view it.
+        if ($order->user_id != $userId && $order->driver_id != $userId) {
+            return Resp(null, 'Unauthorized: You are not a participant in this trip.', 403, false);
+        }
+
+        return Resp(new OrderResource($order->load(['driver', 'user', 'service', 'offers', 'reviews'])), 'success');
     }
 
     /**
