@@ -90,7 +90,7 @@ class PaymentsApiController extends Controller
         $user           = User::find($userID);
         
         if ($user->wallet_amount < $request->value) {
-            return Resp(null, 'Insufficient wallet balance', 400, false);
+            return Resp(null, 'Insufficient wallet balance', 200, false);
         }
 
         // Create withdraw request as Pending (Will be approved by Admin later)

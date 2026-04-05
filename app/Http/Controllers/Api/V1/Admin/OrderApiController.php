@@ -416,7 +416,7 @@ class OrderApiController extends Controller
         if ($activeTrips->isNotEmpty()) {
             return Resp([
                 'active_order_ids' => $activeTrips->pluck('id')
-            ], 'You already have an active trip. Please complete or cancel it before starting a new one.', 400, false);
+            ], 'You already have an active trip. Please complete or cancel it before starting a new one.', 200, false);
         }
 
         $service = Service::find($request->service_id);
@@ -500,7 +500,7 @@ class OrderApiController extends Controller
         if ($request->payment_type == 'wallet') {
             $user = User::find(Auth::user()->id);
             if ($user->wallet_amount < $request->offer_rate) {
-                return Resp(null, 'Insufficient wallet balance', 400, false);
+                return Resp(null, 'Insufficient wallet balance', 200, false);
             }
         }
 
@@ -754,7 +754,7 @@ class OrderApiController extends Controller
 
         // 1. Check if driver is available (Soft-Lock)
         if (!$driver->isAvailableDriver()) {
-            return Resp(null, 'You are currently in another active trip or pending payment.', 400, false);
+            return Resp(null, 'You are currently in another active trip or pending payment.', 200, false);
         }
 
         $order = Order::with('user')->find($request->order_id);
@@ -839,7 +839,7 @@ class OrderApiController extends Controller
 
         // 1. Check if driver is available (Soft-Lock)
         if (!$driver->isAvailableDriver()) {
-            return Resp(null, 'You are currently in another active trip or pending payment.', 400, false);
+            return Resp(null, 'You are currently in another active trip or pending payment.', 200, false);
         }
 
         $order = Order::with('user')->find($request->order_id);
@@ -849,7 +849,7 @@ class OrderApiController extends Controller
         }
 
         if ($order->status !== 'searching') {
-            return Resp(null, 'Order is no longer available', 400, false);
+            return Resp(null, 'Order is no longer available', 200, false);
         }
 
         // 1. Transition to user_accept_offer
@@ -922,7 +922,7 @@ class OrderApiController extends Controller
         }
 
         if (!$order->isAssigned()) {
-            return Resp(null, 'Trip must be in assigned state to start moving.', 400, false);
+            return Resp(null, 'Trip must be in assigned state to start moving.', 200, false);
         }
 
         $order->update(['status' => Order::STATUS_DRIVER_ON_A_WAY]);
@@ -961,7 +961,7 @@ class OrderApiController extends Controller
 
         // Only allow counter-offer on pending offers
         if (!$originalOffer->isPending()) {
-            return Resp(null, 'Can only counter pending offers', 400, false);
+            return Resp(null, 'Can only counter pending offers', 200, false);
         }
 
         // Update the offer with user's counter
@@ -1002,7 +1002,7 @@ class OrderApiController extends Controller
         }
 
         if (!$offer->isPending()) {
-            return Resp(null, 'Offer is no longer pending', 400, false);
+            return Resp(null, 'Offer is no longer pending', 200, false);
         }
 
         // Accept the offer — pass actorType so status = user_accepted | driver_accepted
@@ -1080,7 +1080,7 @@ class OrderApiController extends Controller
         }
 
         if (!$offer->isPending()) {
-            return Resp(null, 'Offer is no longer pending', 400, false);
+            return Resp(null, 'Offer is no longer pending', 200, false);
         }
 
         // Deny the offer — pass actorType so status = user_denied | driver_canceled

@@ -59,7 +59,7 @@ class ReviewApiController extends Controller
 
             // التحقق من أن الطلب مكتمل
             if ($order->status != 'completed') {
-                return Resp(null, 'لا يمكن التقييم إلا بعد اكتمال الطلب', 400, false);
+                return Resp(null, 'لا يمكن التقييم إلا بعد اكتمال الطلب', 200, false);
             }
 
             // التحقق من أن المستخدم الحالي هو صاحب الطلب أو السواق
@@ -77,7 +77,7 @@ class ReviewApiController extends Controller
                 ->first();
 
             if ($existingReview) {
-                return Resp(null, 'لقد قمت بالتقييم على هذا الطلب مسبقاً', 400, false);
+                return Resp(null, 'لقد قمت بالتقييم على هذا الطلب مسبقاً', 200, false);
             }
 
             // إنشاء التقييم
