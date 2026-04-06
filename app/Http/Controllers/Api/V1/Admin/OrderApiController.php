@@ -822,6 +822,7 @@ class OrderApiController extends Controller
         $order->car_brand = $driver->profile->driver_cars->brand->title ?? '';
         $order->car_model = $driver->profile->driver_cars->model->title ?? '';
         TripStatusUpdated::dispatch($order);
+        TripOffers::dispatch($order);
 
         if ($order->user) {
             $order->user->sendPushNotification("عرض جديد من السائق", "قدم السائق عرضاً جديداً بسعر {$request->offer_rate}. راجع العرض الآن.", ['order_id' => $order->id, 'type' => 'new_offer']);
