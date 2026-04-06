@@ -38,7 +38,7 @@ class OfferStatusChanged implements ShouldBroadcast
     {
         // Broadcast to the order channel so both user and driver can listen
         return [
-            new Channel('trip-' . $this->offer->order_id)
+            new Channel('trip-offers-' . $this->offer->order_id)
         ];
     }
 
