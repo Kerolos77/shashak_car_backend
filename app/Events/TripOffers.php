@@ -38,6 +38,10 @@ class TripOffers implements ShouldBroadcast
             'driver.profile.driver_cars.model', 
             'driver.profile.car_licenses'
         ]);
+
+        if ($freshTrip) {
+            $freshTrip->offerdriver = $this->trip->offerdriver;
+        }
         
         return (new OrderWithDriverResource($freshTrip ?? $this->trip))->toArray(request());
     }
