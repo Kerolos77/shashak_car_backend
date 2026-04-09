@@ -255,6 +255,7 @@ class OrderApiController extends Controller
         $order->car_number = $driver->profile->car_licenses->car_number ?? '';
         $order->car_brand = $driver->profile->driver_cars->brand->title ?? '';
         $order->car_model = $driver->profile->driver_cars->model->title ?? '';
+        unset($order->offerdriver);
         $order->save();
 
         $order->offerdriver = $offer_rate;
@@ -682,14 +683,15 @@ class OrderApiController extends Controller
         // $order->update(['is_accept' => Carbon::now(), 'is_accept' => Carbon::now()]);
         $user = User::with(['profile', 'profile.driver_cars', 'profile.driver_cars.brand', 'profile.driver_cars.model'])->find(Auth::user()->id);
 
-        $order->driver_id = $user->id;
-        $order->driver_name = $user->full_name;
-        $order->driver_phone = $user->phone_number ?? '';
-        $order->car_color = $user->profile->driver_cars->color ?? '';
-        $order->car_number = $user->profile->car_licenses->car_number ?? '';
-        $order->car_brand = $user->profile->driver_cars->brand->title ?? '';
-        $order->car_model = $user->profile->driver_cars->model->title ?? '';
-        $order->save();
+        $order->update([
+            'driver_id' => $user->id,
+            'driver_name' => $user->full_name,
+            'driver_phone' => $user->phone_number ?? '',
+            'car_color' => $user->profile->driver_cars->color ?? '',
+            'car_number' => $user->profile->car_licenses->car_number ?? '',
+            'car_brand' => $user->profile->driver_cars->brand->title ?? '',
+            'car_model' => $user->profile->driver_cars->model->title ?? '',
+        ]);
 
         $order->offerdriver = $offer;
 
@@ -848,6 +850,7 @@ class OrderApiController extends Controller
         $order->car_number = $driver->profile->car_licenses->car_number ?? '';
         $order->car_brand = $driver->profile->driver_cars->brand->title ?? '';
         $order->car_model = $driver->profile->driver_cars->model->title ?? '';
+        unset($order->offerdriver);
         $order->save();
 
         $order->offerdriver = $request->offer_rate;
