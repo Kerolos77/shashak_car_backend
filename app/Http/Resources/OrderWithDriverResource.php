@@ -48,10 +48,12 @@ class OrderWithDriverResource extends JsonResource
         $data['driver_name']         = $this->driver_name ?: ($this->driver->full_name ?? '');
         $data['driver_phone']        = $this->driver_phone ?: ($this->driver->phone_number ?? '');
         $data['driver_image']        = ($this->driver && $this->driver->imageurl) ? $this->driver->imageurl : '';
-        $data['car_color']           = $this->car_color ?? '';
-        $data['car_number']          = $this->car_number ?? '';
-        $data['car_brand']           = $this->car_brand ?? '';
-        $data['car_model']           = $this->car_model ?? '';
+        
+        // Smart fallbacks for car details from driver profile relations
+        $data['car_color']           = $this->car_color ?: ($this->driver->profile->driver_cars->color ?? '');
+        $data['car_number']          = $this->car_number ?: ($this->driver->profile->car_licenses->car_number ?? '');
+        $data['car_brand']           = $this->car_brand ?: ( $this->driver->profile->driver_cars->brand->title ?? '');
+        $data['car_model']           = $this->car_model ?: ($this->driver->profile->driver_cars->model->title ?? '');
         return $data;
     }
 }

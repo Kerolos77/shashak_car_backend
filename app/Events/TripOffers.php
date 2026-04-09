@@ -30,7 +30,14 @@ class TripOffers implements ShouldBroadcast
     public function broadcastWith()
     {
         // Reload trip with all necessary relations to ensure data is fresh (especially if queued)
-        $freshTrip = $this->trip->fresh(['user', 'service', 'driver', 'offers', 'offers.driver']);
+        $freshTrip = $this->trip->fresh([
+            'offers', 
+            'user', 
+            'service', 
+            'driver.profile.driver_cars.brand', 
+            'driver.profile.driver_cars.model', 
+            'driver.profile.car_licenses'
+        ]);
         
         return (new OrderWithDriverResource($freshTrip ?? $this->trip))->toArray(request());
     }
