@@ -248,7 +248,6 @@ class OrderApiController extends Controller
         ]);
 
 
-        $order->offerdriver = $offer_rate;
         $order->driver_id = $driver->id;
         $order->driver_name = $driver->full_name;
         $order->driver_phone = $driver->phone_number ?? '';
@@ -257,6 +256,8 @@ class OrderApiController extends Controller
         $order->car_brand = $driver->profile->driver_cars->brand->title ?? '';
         $order->car_model = $driver->profile->driver_cars->model->title ?? '';
         $order->save();
+
+        $order->offerdriver = $offer_rate;
 
         TripOffers::dispatch($order);
 
@@ -681,7 +682,6 @@ class OrderApiController extends Controller
         // $order->update(['is_accept' => Carbon::now(), 'is_accept' => Carbon::now()]);
         $user = User::with(['profile', 'profile.driver_cars', 'profile.driver_cars.brand', 'profile.driver_cars.model'])->find(Auth::user()->id);
 
-        $order->offerdriver = $offer;
         $order->driver_id = $user->id;
         $order->driver_name = $user->full_name;
         $order->driver_phone = $user->phone_number ?? '';
@@ -690,6 +690,8 @@ class OrderApiController extends Controller
         $order->car_brand = $user->profile->driver_cars->brand->title ?? '';
         $order->car_model = $user->profile->driver_cars->model->title ?? '';
         $order->save();
+
+        $order->offerdriver = $offer;
 
         TripStatusUpdated::dispatch($order);
         return Resp(new OrderWithDriverResource($order), 'success');
@@ -839,7 +841,6 @@ class OrderApiController extends Controller
         OfferUpdated::dispatch($offer->fresh(), 'driver', $driverID);
 
         // Also broadcast to the order channel for existing listeners
-        $order->offerdriver = $request->offer_rate;
         $order->driver_id = $driver->id;
         $order->driver_name = $driver->full_name;
         $order->driver_phone = $driver->phone_number ?? '';
@@ -848,6 +849,8 @@ class OrderApiController extends Controller
         $order->car_brand = $driver->profile->driver_cars->brand->title ?? '';
         $order->car_model = $driver->profile->driver_cars->model->title ?? '';
         $order->save();
+
+        $order->offerdriver = $request->offer_rate;
 
         TripStatusUpdated::dispatch($order);
         TripOffers::dispatch($order);
