@@ -29,9 +29,9 @@ class OrderWithDriverResource extends JsonResource
             'destination_long'    => $this->destination_long ?? '',
             'destination_address' => $this->destination_address ?? '',
             'source_lat'          => $this->source_lat ?? '',
-            'source_long'         => $this->destination_long ?? '',
+            'source_long'         => $this->source_long ?? '',
             'source_address'      => $this->source_address ?? '',
-            'amount'              => $this->offer_rate ?? '',
+            'amount'              => (string) ($this->offer_rate ?? ''),
             'final_rate'          => $this->final_rate ?? '',
             'is_offer'            => $this->service->offer_rate ?? '',
             'distance'            => $this->distance ?? '',
@@ -45,9 +45,9 @@ class OrderWithDriverResource extends JsonResource
             'offers'              => (isset($this->offers) && count($this->offers) > 0 ? new OutCityOffersCollection($offers) : []),
         ];
         $data['driver_id']           = $this->driver_id ?? '';
-        $data['driver_name']         = $this->driver_name ?? '';
-        $data['driver_phone']        = $this->driver_phone ?? '';
-        $data['driver_image']        = $this->user->profile_pic ?? '';
+        $data['driver_name']         = $this->driver_name ?: ($this->driver->full_name ?? '');
+        $data['driver_phone']        = $this->driver_phone ?: ($this->driver->phone_number ?? '');
+        $data['driver_image']        = ($this->driver && $this->driver->imageurl) ? $this->driver->imageurl : '';
         $data['car_color']           = $this->car_color ?? '';
         $data['car_number']          = $this->car_number ?? '';
         $data['car_brand']           = $this->car_brand ?? '';

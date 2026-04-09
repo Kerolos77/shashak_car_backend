@@ -17,24 +17,22 @@ class TripOffers implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
     public $trip;
-    public function __construct( $trip)
+    public function __construct(Order $trip)
     {
-        $trip = $trip->toArray();
         $this->trip = $trip;
-
-
     }
     public function broadcastOn(): array
     {
         return [
-            new Channel('trip-offers-'.$this->trip['id'])
+            new Channel('trip-offers-'.$this->trip->id)
         ];
     }
     public function broadcastWith()
     {
-
-        return (new OrderWithDriverResource((object )$this->trip))->toArray(request());
-        // return (new OrderWithDriverResource($this->trip))->toArray(request());
+        // Reload trip with all necessary relations to ensure data is fresh (especially if queued)
+        $freshTrip = $this->trip->fresh(['user', 'service', 'driver', 'offers', 'offers.driver']);
+        
+        return (new OrderWithDriverResource($freshTrip ?? $this->trip))->toArray(request());
     }
     public function broadcastAs()
     {

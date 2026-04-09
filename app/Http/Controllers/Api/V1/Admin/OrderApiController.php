@@ -226,7 +226,16 @@ class OrderApiController extends Controller
     {
         $driverID = $this->getUserIDByToken(request()->bearerToken());
         $driver = User::with(['profile', 'profile.driver_cars', 'profile.driver_cars.brand', 'profile.driver_cars.model'])->find($driverID);
-        $order = Order::find($order_id);
+        $order = Order::with(['user', 'service', 'driver', 'offers'])->find($order_id);
+
+        if (!$order) {
+            return Resp(null, 'Order not found', 404, false);
+        }
+
+        if (!$order->canAcceptOffers()) {
+            return Resp(null, 'Order is no longer accepting offers.', 400, false);
+        }
+
         $offer = OrderOffer::create([
             'order_id' => $order_id,
             'driver_id' => $driverID,
@@ -247,6 +256,7 @@ class OrderApiController extends Controller
         $order->car_number = $driver->profile->car_licenses->car_number ?? '';
         $order->car_brand = $driver->profile->driver_cars->brand->title ?? '';
         $order->car_model = $driver->profile->driver_cars->model->title ?? '';
+        $order->save();
 
         TripOffers::dispatch($order);
 
@@ -352,6 +362,13 @@ class OrderApiController extends Controller
     }
     public function cancelorder(Request $request, Order $order)
     {
+        if (!$order->canBeCanceled()) {
+            $msg = $order->status === Order::STATUS_COMPLETED 
+                ? 'Cannot cancel a completed order.' 
+                : 'Cannot cancel a trip after it has started.';
+            return Resp(null, $msg, 400, false);
+        }
+
         // 1. Refund Escrow funds if any (for non-cash trips canceled before completion)
         if ($order->hasEscrowFunds()) {
             $user = User::find($order->user_id);
@@ -562,8 +579,8 @@ class OrderApiController extends Controller
 
     public function arrivedOrder(Request $request, Order $order)
     {
-        if (!$order->isAssigned()) {
-            return Resp(null, 'Order must be assigned to mark as arrived', 400, false);
+        if (!$order->canBeArrived()) {
+            return Resp(null, 'Order must be in "driver_on_a_way" state to mark as arrived.', 400, false);
         }
 
         $order->update([
@@ -625,6 +642,10 @@ class OrderApiController extends Controller
 
     public function startorder(Request $request, Order $order)
     {
+        if (!$order->canBeStarted()) {
+            return Resp(null, 'Trip cannot be started until driver has arrived.', 400, false);
+        }
+
         $order->update([
             'accepted_driver' => Carbon::now(),
             'on_trip_at' => Carbon::now(),
@@ -668,6 +689,7 @@ class OrderApiController extends Controller
         $order->car_number = $user->profile->car_licenses->car_number ?? '';
         $order->car_brand = $user->profile->driver_cars->brand->title ?? '';
         $order->car_model = $user->profile->driver_cars->model->title ?? '';
+        $order->save();
 
         TripStatusUpdated::dispatch($order);
         return Resp(new OrderWithDriverResource($order), 'success');
@@ -675,6 +697,10 @@ class OrderApiController extends Controller
 
     public function endorder(Request $request, Order $order)
     {
+        if (!$order->canBeEnded()) {
+            return Resp(null, 'Only started trips can be completed.', 400, false);
+        }
+
         $order->update([
             'is_end' => Carbon::now(),
             'completed_at' => Carbon::now(),
@@ -769,7 +795,7 @@ class OrderApiController extends Controller
             return Resp(null, 'You are currently in another active trip or pending payment.', 400, false);
         }
 
-        $order = Order::with('user')->find($request->order_id);
+        $order = Order::with(['user', 'service', 'driver', 'offers'])->find($request->order_id);
 
         if (!$order) {
             return Resp(null, 'Order not found', 404, false);
@@ -821,6 +847,8 @@ class OrderApiController extends Controller
         $order->car_number = $driver->profile->car_licenses->car_number ?? '';
         $order->car_brand = $driver->profile->driver_cars->brand->title ?? '';
         $order->car_model = $driver->profile->driver_cars->model->title ?? '';
+        $order->save();
+
         TripStatusUpdated::dispatch($order);
         TripOffers::dispatch($order);
 
@@ -861,8 +889,8 @@ class OrderApiController extends Controller
             return Resp(null, 'Order not found', 404, false);
         }
 
-        if ($order->status !== 'searching') {
-            return Resp(null, 'Order is no longer available', 400, false);
+        if (!$order->canBeAssigned()) {
+            return Resp(null, 'Order is no longer available for assignment.', 400, false);
         }
 
         // 1. Transition to user_accept_offer
@@ -1012,6 +1040,10 @@ class OrderApiController extends Controller
 
         if (!$isOrderOwner && !$isDriver) {
             return Resp(null, 'Unauthorized', 403, false);
+        }
+
+        if (!$offer->order->canBeAssigned()) {
+            return Resp(null, 'Order is no longer available for assignment.', 400, false);
         }
 
         if (!$offer->isPending()) {

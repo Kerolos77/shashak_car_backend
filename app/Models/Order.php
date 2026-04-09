@@ -176,6 +176,42 @@ class Order extends Model
         return $this->status === self::STATUS_PAYMENT_REQUIRED;
     }
 
+    // --- State Machine Validations ---
+
+    public function canAcceptOffers(): bool
+    {
+        // Allowed only if searching, pending or already negotiating, and not assigned yet
+        return in_array($this->status, [self::STATUS_PENDING, self::STATUS_SEARCHING, self::STATUS_NEGOTIATING])
+            && $this->driver_id === null;
+    }
+
+    public function canBeAssigned(): bool
+    {
+        // Can be assigned only if not already assigned or in a later stage
+        return in_array($this->status, [self::STATUS_PENDING, self::STATUS_SEARCHING, self::STATUS_NEGOTIATING]);
+    }
+
+    public function canBeArrived(): bool
+    {
+        return $this->status === self::STATUS_DRIVER_ON_A_WAY;
+    }
+
+    public function canBeStarted(): bool
+    {
+        return $this->status === self::STATUS_ARRIVED;
+    }
+
+    public function canBeEnded(): bool
+    {
+        return $this->status === self::STATUS_ON_TRIP;
+    }
+
+    public function canBeCanceled(): bool
+    {
+        // Cannot cancel if already completed or if trip has already started (as per user request)
+        return !in_array($this->status, [self::STATUS_COMPLETED, self::STATUS_ON_TRIP]);
+    }
+
     // Scopes
     public function scopePending($query)
     {
