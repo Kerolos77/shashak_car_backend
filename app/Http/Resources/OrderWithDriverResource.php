@@ -46,14 +46,24 @@ class OrderWithDriverResource extends JsonResource
         ];
         $data['driver_id']           = $this->driver_id ?? '';
         $data['driver_name']         = $this->driver_name ?: ($this->driver?->full_name ?: ($this->driver?->name ?? ''));
-        $data['driver_phone']        = $this->driver_phone ?: ($this->driver->phone_number ?? '');
+        $data['driver_phone']        = $this->driver_phone ?: ($this->driver?->phone_number ?? '');
         $data['driver_image']        = ($this->driver && $this->driver->imageurl) ? $this->driver->imageurl : '';
         
+        // Nested driver object to match Flutter's NewRideUser.fromJson expectations
+        $data['driver'] = [
+            'id'    => (int) ($this->driver_id ?? 0),
+            'name'  => $data['driver_name'],
+            'image' => $data['driver_image'],
+            'phone' => $data['driver_phone'],
+            'is_driver' => true,
+        ];
+
         // Smart fallbacks for car details from driver profile relations
-        $data['car_color']           = $this->car_color ?: ($this->driver->profile->driver_cars->color ?? '');
-        $data['car_number']          = $this->car_number ?: ($this->driver->profile->car_licenses->car_number ?? '');
-        $data['car_brand']           = $this->car_brand ?: ( $this->driver->profile->driver_cars->brand->title ?? '');
-        $data['car_model']           = $this->car_model ?: ($this->driver->profile->driver_cars->model->title ?? '');
+        $data['car_color']           = $this->car_color ?: ($this->driver?->profile?->driver_cars?->color ?? '');
+        $data['car_number']          = $this->car_number ?: ($this->driver?->profile?->car_licenses?->car_number ?? '');
+        $data['car_brand']           = $this->car_brand ?: ($this->driver?->profile?->driver_cars?->brand?->title ?? '');
+        $data['car_model']           = $this->car_model ?: ($this->driver?->profile?->driver_cars?->model?->title ?? '');
+        
         return $data;
     }
 }
