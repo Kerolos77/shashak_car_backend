@@ -45,7 +45,7 @@ class OrderWithDriverResource extends JsonResource
             'offers'              => (isset($this->offers) && count($this->offers) > 0 ? new OutCityOffersCollection($offers) : []),
         ];
         $data['driver_id']           = $this->driver_id ?? '';
-        $data['driver_name']         = $this->driver_name ?: ($this->driver->full_name ?? ($this->driver->name ?? ''));
+        $data['driver_name']         = $this->driver_name ?: ($this->driver?->full_name ?: ($this->driver?->name ?? ''));
         $data['driver_phone']        = $this->driver_phone ?: ($this->driver->phone_number ?? '');
         $data['driver_image']        = ($this->driver && $this->driver->imageurl) ? $this->driver->imageurl : '';
         

@@ -31,7 +31,9 @@ class TripOffers implements ShouldBroadcast
     {
         // Reload trip with all necessary relations to ensure data is fresh (especially if queued)
         $freshTrip = $this->trip->fresh([
-            'offers', 
+            'offers.driver.profile.driver_cars.brand', 
+            'offers.driver.profile.driver_cars.model', 
+            'offers.driver.profile.car_licenses',
             'user', 
             'service', 
             'driver.profile.driver_cars.brand', 
