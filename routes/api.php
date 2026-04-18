@@ -77,6 +77,14 @@ Route::group(['prefix' => 'v1', 'as' => 'api.', 'middleware' => ['auth:sanctum']
         Route::get('profile', [AuthenticationController::class, 'profile']);
         Route::post('profile/update', [AuthenticationController::class, 'profile_update']);
         Route::get('get-docs', [AuthenticationController::class, 'get_docs']);
+
+        // Favorite Locations
+        Route::prefix('favorite-locations')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Api\V1\UserFavoriteLocationController::class, 'index']);
+            Route::post('/', [\App\Http\Controllers\Api\V1\UserFavoriteLocationController::class, 'store']);
+            Route::match(['PUT', 'POST'], '/{id}', [\App\Http\Controllers\Api\V1\UserFavoriteLocationController::class, 'update']);
+            Route::delete('/{id}', [\App\Http\Controllers\Api\V1\UserFavoriteLocationController::class, 'destroy']);
+        });
     });
     Route::prefix('services')->group(function () {
         Route::get('incity', [ServiceApiController::class, 'incity']);
@@ -124,6 +132,7 @@ Route::group(['prefix' => 'v1', 'as' => 'api.', 'middleware' => ['auth:sanctum']
         Route::post('/offer/{offer}/deny', [OrderApiController::class, 'denyOffer']);
         Route::get('/{order}/offers', [OrderApiController::class, 'getOrderOffers']);
         Route::post('/{order}/resolve-payment', [OrderApiController::class, 'resolvePayment']);
+        Route::get('/suggested-places', [OrderApiController::class, 'getSuggestedPlaces']);
     });
     Route::prefix('payments')->group(function () {
         Route::get('/get', [PaymentsApiController::class, 'get_payments']);

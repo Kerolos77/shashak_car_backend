@@ -1209,4 +1209,142 @@ class OrderApiController extends Controller
 
         return Resp(new OrderResource($order->fresh()), 'Payment resolved and driver on the way');
     }
+
+    /**
+     * Get smart suggested destinations for the current user based on time of day and history.
+     */
+    public function getSuggestedPlaces(Request $request)
+    {
+        $user = Auth::user();
+        $now = Carbon::now();
+        $hour = $now->hour;
+
+        // 1. Identify current time slot
+        $slot = 'morning';
+        if ($hour >= 6 && $hour <= 10) {
+            $slot = 'morning';
+        } elseif ($hour >= 11 && $hour <= 15) {
+            $slot = 'afternoon';
+        } elseif ($hour >= 16 && $hour <= 20) {
+            $slot = 'evening';
+        } else {
+            $slot = 'night';
+        }
+
+        // 2. Fetch User's Favorite Locations
+        $favorites = \App\Models\UserFavoriteLocation::where('user_id', $user->id)->get();
+
+        // 3. Analyze Historical Orders
+        // We look at completed orders and group by destination
+        $slotRange = $this->getSlotRange($slot);
+        
+        $query = Order::where('user_id', $user->id)
+            ->where('status', Order::STATUS_COMPLETED);
+
+        if ($slot === 'night') {
+            $query->where(function($q) {
+                $q->whereRaw('HOUR(created_at) >= 21')->orWhereRaw('HOUR(created_at) <= 5');
+            });
+        } else {
+            $query->whereRaw('HOUR(created_at) BETWEEN ? AND ?', $slotRange);
+        }
+
+        $historicalSuggestions = $query->select('destination_address', 'destination_lat', 'destination_long')
+            ->selectRaw('COUNT(*) as frequency')
+            ->groupBy('destination_address', 'destination_lat', 'destination_long')
+            ->orderByDesc('frequency')
+            ->limit(3)
+            ->get();
+
+        // 4. Map and Prioritize
+        $suggestions = [];
+
+        // Priority 1: Favorites that match the current routine
+        $homeSlot = ($slot === 'evening' || $slot === 'night');
+        $workSlot = ($slot === 'morning');
+
+        foreach ($favorites as $fav) {
+            $isRelevant = false;
+            $reason = "Saved Place";
+            
+            // Check for Home/Work labels (case insensitive)
+            if ($workSlot && (stripos($fav->label, 'work') !== false || stripos($fav->label, 'شغل') !== false)) {
+                $isRelevant = true;
+                $reason = "Suggested based on your morning routine";
+            } elseif ($homeSlot && (stripos($fav->label, 'home') !== false || stripos($fav->label, 'بيت') !== false || stripos($fav->label, 'منزل') !== false)) {
+                $isRelevant = true;
+                $reason = "Suggested based on your evening routine";
+            } elseif ($fav->is_default) {
+                $isRelevant = true;
+                $reason = "Your default preferred location";
+            }
+
+            $suggestions[] = [
+                'id' => $fav->id,
+                'label' => $fav->label,
+                'address' => $fav->address,
+                'latitude' => $fav->latitude,
+                'longitude' => $fav->longitude,
+                'type' => 'favorite',
+                'is_routine_match' => $isRelevant,
+                'suggestion_reason' => $reason
+            ];
+        }
+
+        // Priority 2: Frequent historical destinations (not already in favorites)
+        foreach ($historicalSuggestions as $hist) {
+            if (!$hist->destination_address) continue;
+
+            // Check if this address is already covered by a favorite
+            $exists = collect($suggestions)->contains(function ($s) use ($hist) {
+                return $s['address'] === $hist->destination_address;
+            });
+
+            if (!$exists) {
+                $suggestions[] = [
+                    'id' => null,
+                    'label' => $this->getLabelFromAddress($hist->destination_address),
+                    'address' => $hist->destination_address,
+                    'latitude' => $hist->destination_lat,
+                    'longitude' => $hist->destination_long,
+                    'type' => 'history',
+                    'is_routine_match' => true,
+                    'suggestion_reason' => "You frequently visit here at this time"
+                ];
+            }
+        }
+
+        // Sort: routine matches first, then favorites, then history
+        usort($suggestions, function ($a, $b) {
+            // First by routine match
+            if ($a['is_routine_match'] !== $b['is_routine_match']) {
+                return $b['is_routine_match'] <=> $a['is_routine_match'];
+            }
+            // Then by type (favorite > history)
+            if ($a['type'] !== $b['type']) {
+                return $a['type'] === 'favorite' ? -1 : 1;
+            }
+            return 0;
+        });
+
+        return Resp(array_values($suggestions), 'success');
+    }
+
+    private function getSlotRange($slot)
+    {
+        switch ($slot) {
+            case 'morning': return [6, 10];
+            case 'afternoon': return [11, 15];
+            case 'evening': return [16, 20];
+            case 'night': return [21, 5];
+            default: return [0, 23];
+        }
+    }
+
+    private function getLabelFromAddress($address)
+    {
+        $parts = explode(',', $address);
+        $label = trim($parts[0] ?? $address);
+        return $label ?: 'Unknown Location';
+    }
 }
