@@ -24,18 +24,20 @@ class UserFavoriteLocationController extends Controller
      */
     public function store(Request $request)
     {
-        // $request->all() works for both JSON and Form-Data in Laravel
         $data = $request->all();
+        if (empty($data) && $request->getContent()) {
+            $data = json_decode($request->getContent(), true) ?? [];
+        }
 
         // Ensure required fields
-        if (!$request->filled(['label', 'address', 'latitude', 'longitude'])) {
+        if (!isset($data['label']) || !isset($data['address']) || !isset($data['latitude']) || !isset($data['longitude'])) {
             return Resp(null, 'Missing required fields (label, address, latitude, longitude)', 400, false);
         }
 
         // Handle is_default boolean
         $isDefault = false;
-        if ($request->has('is_default')) {
-            $val = $request->input('is_default');
+        if (isset($data['is_default'])) {
+            $val = $data['is_default'];
             $isDefault = ($val === 'true' || $val === '1' || $val === true || $val === 1);
         }
 
@@ -45,10 +47,10 @@ class UserFavoriteLocationController extends Controller
 
         $location = UserFavoriteLocation::create([
             'user_id' => Auth::id(),
-            'label' => $request->input('label'),
-            'address' => $request->input('address'),
-            'latitude' => $request->input('latitude'),
-            'longitude' => $request->input('longitude'),
+            'label' => $data['label'],
+            'address' => $data['address'],
+            'latitude' => $data['latitude'],
+            'longitude' => $data['longitude'],
             'is_default' => $isDefault,
         ]);
 
@@ -67,10 +69,13 @@ class UserFavoriteLocationController extends Controller
         }
 
         $data = $request->all();
+        if (empty($data) && $request->getContent()) {
+            $data = json_decode($request->getContent(), true) ?? [];
+        }
 
         // Handle is_default boolean specifically
-        if ($request->has('is_default')) {
-            $val = $request->input('is_default');
+        if (isset($data['is_default'])) {
+            $val = $data['is_default'];
             $data['is_default'] = ($val === 'true' || $val === '1' || $val === true || $val === 1);
             
             if ($data['is_default']) {
@@ -78,13 +83,15 @@ class UserFavoriteLocationController extends Controller
             }
         }
 
-        // Whitelist allowed fields from the request
+        // Manually update fields to ensure they are picked up correctly
         $allowedFields = ['label', 'address', 'latitude', 'longitude', 'is_default'];
-        $updateData = array_intersect_key($data, array_flip($allowedFields));
-
-        if (!empty($updateData)) {
-            $location->update($updateData);
+        foreach ($allowedFields as $field) {
+            if (isset($data[$field])) {
+                $location->{$field} = $data[$field];
+            }
         }
+
+        $location->save();
 
         return Resp($location->fresh(), 'Favorite location updated successfully');
     }
