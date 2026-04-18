@@ -106,6 +106,11 @@ class User extends Authenticatable implements HasLocalePreference
         return $this->whereHas('roles', fn ($q) => $q->where('title', 'Admin'));
     }
 
+    public function scopeDrivers($query)
+    {
+        return $query->whereHas('roles', fn ($q) => $q->where('title', 'Driver'));
+    }
+
     public function scopeAvailableDrivers($query)
     {
         return $query->whereHas('roles', fn ($q) => $q->where('title', 'Driver'))
