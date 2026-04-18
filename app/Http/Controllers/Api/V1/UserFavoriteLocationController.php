@@ -24,34 +24,31 @@ class UserFavoriteLocationController extends Controller
      */
     public function store(Request $request)
     {
-        $label = $request->input('label');
-        $address = $request->input('address');
-        $latitude = $request->input('latitude');
-        $longitude = $request->input('longitude');
-        $isDefault = $request->input('is_default');
+        // $request->all() works for both JSON and Form-Data in Laravel
+        $data = $request->all();
 
-        if (!$label || !$address || !$latitude || !$longitude) {
+        // Ensure required fields
+        if (!$request->filled(['label', 'address', 'latitude', 'longitude'])) {
             return Resp(null, 'Missing required fields (label, address, latitude, longitude)', 400, false);
         }
 
-        // Handle string-based booleans
-        if ($isDefault === 'true' || $isDefault === '1' || $isDefault === 1 || $isDefault === true) {
-            $isDefault = true;
-        } else {
-            $isDefault = false;
+        // Handle is_default boolean
+        $isDefault = false;
+        if ($request->has('is_default')) {
+            $val = $request->input('is_default');
+            $isDefault = ($val === 'true' || $val === '1' || $val === true || $val === 1);
         }
 
-        // If is_default is true, unset other defaults for this user
         if ($isDefault) {
             UserFavoriteLocation::where('user_id', Auth::id())->update(['is_default' => false]);
         }
 
         $location = UserFavoriteLocation::create([
             'user_id' => Auth::id(),
-            'label' => $label,
-            'address' => $address,
-            'latitude' => $latitude,
-            'longitude' => $longitude,
+            'label' => $request->input('label'),
+            'address' => $request->input('address'),
+            'latitude' => $request->input('latitude'),
+            'longitude' => $request->input('longitude'),
             'is_default' => $isDefault,
         ]);
 
@@ -69,32 +66,21 @@ class UserFavoriteLocationController extends Controller
             return Resp(null, 'Favorite location not found', 404, false);
         }
 
-        // Explicitly extract fields to handle various request types
-        $label = $request->input('label');
-        $address = $request->input('address');
-        $latitude = $request->input('latitude');
-        $longitude = $request->input('longitude');
-        $isDefault = $request->input('is_default');
+        $data = $request->all();
 
-        // Handle string-based booleans from mobile apps
-        if ($isDefault === 'true' || $isDefault === '1' || $isDefault === 1 || $isDefault === true) {
-            $isDefault = true;
-        } elseif ($isDefault === 'false' || $isDefault === '0' || $isDefault === 0 || $isDefault === false) {
-            $isDefault = false;
-        } else {
-            $isDefault = null; // No change
+        // Handle is_default boolean specifically
+        if ($request->has('is_default')) {
+            $val = $request->input('is_default');
+            $data['is_default'] = ($val === 'true' || $val === '1' || $val === true || $val === 1);
+            
+            if ($data['is_default']) {
+                UserFavoriteLocation::where('user_id', Auth::id())->update(['is_default' => false]);
+            }
         }
 
-        if ($isDefault === true) {
-            UserFavoriteLocation::where('user_id', Auth::id())->update(['is_default' => false]);
-        }
-
-        $updateData = [];
-        if (!is_null($label)) $updateData['label'] = $label;
-        if (!is_null($address)) $updateData['address'] = $address;
-        if (!is_null($latitude)) $updateData['latitude'] = $latitude;
-        if (!is_null($longitude)) $updateData['longitude'] = $longitude;
-        if (!is_null($isDefault)) $updateData['is_default'] = $isDefault;
+        // Whitelist allowed fields from the request
+        $allowedFields = ['label', 'address', 'latitude', 'longitude', 'is_default'];
+        $updateData = array_intersect_key($data, array_flip($allowedFields));
 
         if (!empty($updateData)) {
             $location->update($updateData);
