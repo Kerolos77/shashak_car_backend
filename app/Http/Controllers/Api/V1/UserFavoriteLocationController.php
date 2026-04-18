@@ -24,30 +24,35 @@ class UserFavoriteLocationController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'label' => 'required|string|max:255',
-            'address' => 'required|string',
-            'latitude' => 'required|string',
-            'longitude' => 'required|string',
-            'is_default' => 'boolean',
-        ]);
+        $label = $request->input('label');
+        $address = $request->input('address');
+        $latitude = $request->input('latitude');
+        $longitude = $request->input('longitude');
+        $isDefault = $request->input('is_default');
 
-        if ($validator->fails()) {
-            return Resp(null, $validator->errors()->first(), 400, false);
+        if (!$label || !$address || !$latitude || !$longitude) {
+            return Resp(null, 'Missing required fields (label, address, latitude, longitude)', 400, false);
+        }
+
+        // Handle string-based booleans
+        if ($isDefault === 'true' || $isDefault === '1' || $isDefault === 1 || $isDefault === true) {
+            $isDefault = true;
+        } else {
+            $isDefault = false;
         }
 
         // If is_default is true, unset other defaults for this user
-        if ($request->is_default) {
+        if ($isDefault) {
             UserFavoriteLocation::where('user_id', Auth::id())->update(['is_default' => false]);
         }
 
         $location = UserFavoriteLocation::create([
             'user_id' => Auth::id(),
-            'label' => $request->label,
-            'address' => $request->address,
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
-            'is_default' => $request->is_default ?? false,
+            'label' => $label,
+            'address' => $address,
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            'is_default' => $isDefault,
         ]);
 
         return Resp($location, 'Favorite location saved successfully');
@@ -64,26 +69,36 @@ class UserFavoriteLocationController extends Controller
             return Resp(null, 'Favorite location not found', 404, false);
         }
 
-        $validator = Validator::make($request->all(), [
-            'label' => 'sometimes|string|max:255',
-            'address' => 'sometimes|string',
-            'latitude' => 'sometimes|string',
-            'longitude' => 'sometimes|string',
-            'is_default' => 'boolean',
-        ]);
+        // Explicitly extract fields to handle various request types
+        $label = $request->input('label');
+        $address = $request->input('address');
+        $latitude = $request->input('latitude');
+        $longitude = $request->input('longitude');
+        $isDefault = $request->input('is_default');
 
-        if ($validator->fails()) {
-            return Resp(null, $validator->errors()->first(), 400, false);
+        // Handle string-based booleans from mobile apps
+        if ($isDefault === 'true' || $isDefault === '1' || $isDefault === 1 || $isDefault === true) {
+            $isDefault = true;
+        } elseif ($isDefault === 'false' || $isDefault === '0' || $isDefault === 0 || $isDefault === false) {
+            $isDefault = false;
+        } else {
+            $isDefault = null; // No change
         }
 
-        if ($request->has('is_default') && $request->is_default) {
+        if ($isDefault === true) {
             UserFavoriteLocation::where('user_id', Auth::id())->update(['is_default' => false]);
         }
 
-        // We use $request->all() filtered by what we want to update to ensure compatibility with different request types
-        $data = $request->only(['label', 'address', 'latitude', 'longitude', 'is_default']);
-        $location->fill($data);
-        $location->save();
+        $updateData = [];
+        if (!is_null($label)) $updateData['label'] = $label;
+        if (!is_null($address)) $updateData['address'] = $address;
+        if (!is_null($latitude)) $updateData['latitude'] = $latitude;
+        if (!is_null($longitude)) $updateData['longitude'] = $longitude;
+        if (!is_null($isDefault)) $updateData['is_default'] = $isDefault;
+
+        if (!empty($updateData)) {
+            $location->update($updateData);
+        }
 
         return Resp($location->fresh(), 'Favorite location updated successfully');
     }
