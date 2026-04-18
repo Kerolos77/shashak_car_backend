@@ -80,9 +80,12 @@ class UserFavoriteLocationController extends Controller
             UserFavoriteLocation::where('user_id', Auth::id())->update(['is_default' => false]);
         }
 
-        $location->update($request->only(['label', 'address', 'latitude', 'longitude', 'is_default']));
+        // We use $request->all() filtered by what we want to update to ensure compatibility with different request types
+        $data = $request->only(['label', 'address', 'latitude', 'longitude', 'is_default']);
+        $location->fill($data);
+        $location->save();
 
-        return Resp($location, 'Favorite location updated successfully');
+        return Resp($location->fresh(), 'Favorite location updated successfully');
     }
 
     /**

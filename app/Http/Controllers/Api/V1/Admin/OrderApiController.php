@@ -1302,7 +1302,7 @@ class OrderApiController extends Controller
 
             if (!$exists) {
                 $suggestions[] = [
-                    'id' => null,
+                    'id' => 'history_' . count($suggestions),
                     'label' => $this->getLabelFromAddress($hist->destination_address),
                     'address' => $hist->destination_address,
                     'latitude' => $hist->destination_lat,
