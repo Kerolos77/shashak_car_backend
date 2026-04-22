@@ -147,6 +147,11 @@ class OrderApiController extends Controller
         $order->update(['status' => Order::STATUS_PAYMENT_PENDING]);
         TripStatusUpdated::dispatch($order->fresh());
 
+        // TESTING PURPOSES ONLY - FORCE FAILURE
+        $order->update(['status' => Order::STATUS_PAYMENT_FAILED]);
+        TripStatusUpdated::dispatch($order->fresh());
+        return ['success' => false, 'message' => 'TESTING: Payment failed automatically.', 'status' => 400];
+
         if (!$order->needsPayment()) {
             $this->finalizePaidOrder($order, $finalRate, 0, 0, $finalRate);
             return ['success' => true];
