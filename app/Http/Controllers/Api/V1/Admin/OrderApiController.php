@@ -883,19 +883,8 @@ class OrderApiController extends Controller
             'driver_name' => $driver->full_name,
             'driver_phone' => $driver->phone_number ?? '',
         ]);
-        TripStatusUpdated::dispatch($order->fresh());
 
-        // 2. ─── PAYMENT GATE ─────────────────────────────────────────────
-        $finalRate = $order->offer_rate; // driver accepts user's original price
-        $paymentCheck = $this->handlePaymentGate($order, $finalRate, null);
-        
-        if ($paymentCheck['success'] !== true) {
-            $data = isset($paymentCheck['url']) ? ['url' => $paymentCheck['url']] : null;
-            return Resp($data, $paymentCheck['message'], $paymentCheck['status'], false);
-        }
-        // ─── END PAYMENT GATE ──────────────────────────────────────────
-
-        // 3. Create an accepted offer record
+        // 2. Create an accepted offer record
         $offer = OrderOffer::create([
             'order_id' => $request->order_id,
             'driver_id' => $driverID,
@@ -909,7 +898,7 @@ class OrderApiController extends Controller
             'offer_rate' => $order->offer_rate,
         ]);
 
-        // 4. Final Assignment
+        // 3. Final Assignment State
         $order->update([
             'status' => Order::STATUS_DRIVER_ON_A_WAY,
             'is_accept' => now(),
@@ -925,6 +914,16 @@ class OrderApiController extends Controller
         // Broadcasts
         \App\Events\OfferStatusChanged::dispatch($offer, 'accepted', 'driver', $driverID);
         OfferUpdated::dispatch($offer, 'driver', $driverID);
+
+        // 4. ─── PAYMENT GATE ─────────────────────────────────────────────
+        $finalRate = $order->offer_rate; // driver accepts user's original price
+        $paymentCheck = $this->handlePaymentGate($order, $finalRate, null);
+        
+        if ($paymentCheck['success'] !== true) {
+            $data = isset($paymentCheck['url']) ? ['url' => $paymentCheck['url']] : null;
+            return Resp($data, $paymentCheck['message'], $paymentCheck['status'], false);
+        }
+        // ─── END PAYMENT GATE ──────────────────────────────────────────
 
         // Notify Driver they can move now (Since payment is confirmed)
         $driver->sendPushNotification("الرحلة جاهزة!", "تم تأكيد الدفع، يمكنك التحرك الآن للموقع.", ['order_id' => $order->id, 'type' => 'trip_ready']);
@@ -1046,20 +1045,10 @@ class OrderApiController extends Controller
             'driver_name' => $offer->driver->full_name,
             'driver_phone' => $offer->driver->phone_number ?? '',
         ]);
-        TripStatusUpdated::dispatch($order->fresh());
-
-        // 2. ─── PAYMENT GATE ─────────────────────────────────────────────
-        $paymentCheck = $this->handlePaymentGate($order, (float)$finalRate, $offer->id);
-        
-        if ($paymentCheck['success'] !== true) {
-            $data = isset($paymentCheck['url']) ? ['url' => $paymentCheck['url']] : null;
-            return Resp($data, $paymentCheck['message'], $paymentCheck['status'], false);
-        }
-        // ─── END PAYMENT GATE ──────────────────────────────────────────
 
         $offer->accept($actorType);
 
-        // 3. Final Assignment
+        // 2. Final Assignment State
         $order->update([
             'status' => Order::STATUS_DRIVER_ON_A_WAY,
             'is_accept' => now(),
@@ -1079,6 +1068,15 @@ class OrderApiController extends Controller
         // Broadcast
         \App\Events\OfferStatusChanged::dispatch($offer->fresh(), 'accepted', $actorType, $userID);
         OfferUpdated::dispatch($offer->fresh(), $actorType, $userID);
+
+        // 3. ─── PAYMENT GATE ─────────────────────────────────────────────
+        $paymentCheck = $this->handlePaymentGate($order, (float)$finalRate, $offer->id);
+        
+        if ($paymentCheck['success'] !== true) {
+            $data = isset($paymentCheck['url']) ? ['url' => $paymentCheck['url']] : null;
+            return Resp($data, $paymentCheck['message'], $paymentCheck['status'], false);
+        }
+        // ─── END PAYMENT GATE ──────────────────────────────────────────
 
         // Notify Driver they can move now (Only if payment is confirmed successfully)
         if ($offer->driver) {
