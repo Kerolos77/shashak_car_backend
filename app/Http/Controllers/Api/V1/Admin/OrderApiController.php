@@ -920,8 +920,14 @@ class OrderApiController extends Controller
         $paymentCheck = $this->handlePaymentGate($order, $finalRate, null);
         
         if ($paymentCheck['success'] !== true) {
-            $data = isset($paymentCheck['url']) ? ['url' => $paymentCheck['url']] : null;
-            return Resp($data, $paymentCheck['message'], $paymentCheck['status'], false);
+            if (isset($paymentCheck['url'])) {
+                // Requires redirection (e.g., 3D secure)
+                return Resp(['url' => $paymentCheck['url']], $paymentCheck['message'], $paymentCheck['status'], false);
+            }
+            // Payment failed (e.g., declined card). Return SUCCESS so app navigates to tracking map.
+            // The map will handle the 'payment_failed' state.
+            TripStatusUpdated::dispatch($order->fresh());
+            return Resp(new OrderResource($order->fresh()), 'Offer accepted, but payment failed: ' . $paymentCheck['message'], 200, true);
         }
         // ─── END PAYMENT GATE ──────────────────────────────────────────
 
@@ -1073,8 +1079,13 @@ class OrderApiController extends Controller
         $paymentCheck = $this->handlePaymentGate($order, (float)$finalRate, $offer->id);
         
         if ($paymentCheck['success'] !== true) {
-            $data = isset($paymentCheck['url']) ? ['url' => $paymentCheck['url']] : null;
-            return Resp($data, $paymentCheck['message'], $paymentCheck['status'], false);
+            if (isset($paymentCheck['url'])) {
+                // Requires redirection (e.g., 3D secure)
+                return Resp(['url' => $paymentCheck['url']], $paymentCheck['message'], $paymentCheck['status'], false);
+            }
+            // Payment failed (e.g., declined card). Return SUCCESS so app navigates to tracking map.
+            TripStatusUpdated::dispatch($offer->order->fresh());
+            return Resp(new OrderResource($offer->order->fresh()), 'Offer accepted, but payment failed: ' . $paymentCheck['message'], 200, true);
         }
         // ─── END PAYMENT GATE ──────────────────────────────────────────
 
