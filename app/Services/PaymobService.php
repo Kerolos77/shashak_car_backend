@@ -230,7 +230,7 @@ class PaymobService
         // ── success flag ──────────────────────────────────────────────────
         $success = $obj['success'] ?? $obj['transaction']['success'] ?? false;
         if (config('paymob.mode') === 'test') {
-            $success = true;    // bypass Paymob sandbox failures during dev
+            $success = false;    // TESTING PURPOSES ONLY: Force webhook failure
         }
         if ($isTokenWebhook) {
             $success = true;    // TOKEN type always means card was verified
@@ -390,13 +390,22 @@ class PaymobService
     private function linkOrderAndAssignDriver(array $ctx): void
     {
         Log::info('[Webhook] [4] linkOrderAndAssignDriver started', ['ourOrderId' => $ctx['ourOrderId'], 'success' => $ctx['success']]);
-        if (!$ctx['success'] || !$ctx['ourOrderId']) {
+        if (!$ctx['ourOrderId']) {
             return;
         }
 
         $order = \App\Models\Order::find($ctx['ourOrderId']);
 
         if (!$order || $order->payment_status === \App\Models\Order::PAYMENT_PAID) {
+            return;
+        }
+
+        if (!$ctx['success']) {
+            $order->update([
+                'payment_status' => \App\Models\Order::PAYMENT_FAILED,
+                'status' => \App\Models\Order::STATUS_PAYMENT_FAILED,
+            ]);
+            \App\Events\TripStatusUpdated::dispatch($order->fresh());
             return;
         }
 
@@ -603,7 +612,7 @@ class PaymobService
             }
 
             $paymentData = $response->json();
-            $success = $paymentData['success'] ?? false;
+            $success = false; // TESTING PURPOSES ONLY
 
             // Record transaction
             PaymentTransaction::create([
@@ -616,6 +625,10 @@ class PaymobService
                 'userID' => $user->id,
                 'note' => 'Payment with saved card',
             ]);
+
+            if (!$success) {
+                throw new Exception('Payment declined by the payment gateway.');
+            }
 
             // Credit wallet if payment succeeded
             if ($success) {
