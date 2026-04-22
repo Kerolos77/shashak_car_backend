@@ -885,17 +885,7 @@ class OrderApiController extends Controller
         ]);
         TripStatusUpdated::dispatch($order->fresh());
 
-        // 2. ─── PAYMENT GATE ─────────────────────────────────────────────
-        $finalRate = $order->offer_rate; // driver accepts user's original price
-        $paymentCheck = $this->handlePaymentGate($order, $finalRate, null);
-        
-        if ($paymentCheck['success'] !== true) {
-            $data = isset($paymentCheck['url']) ? ['url' => $paymentCheck['url']] : null;
-            return Resp($data, $paymentCheck['message'], $paymentCheck['status'], false);
-        }
-        // ─── END PAYMENT GATE ──────────────────────────────────────────
-
-        // 3. Create an accepted offer record
+        // 2. Accept the offer
         $offer = OrderOffer::create([
             'order_id' => $request->order_id,
             'driver_id' => $driverID,
@@ -909,18 +899,32 @@ class OrderApiController extends Controller
             'offer_rate' => $order->offer_rate,
         ]);
 
-        // 4. Final Assignment
-        $order->update([
-            'status' => Order::STATUS_DRIVER_ON_A_WAY,
-            'is_accept' => now(),
-            'assigned_at' => now(),
-        ]);
-
         // Deny all other pending offers
         OrderOffer::where('order_id', $order->id)
             ->where('id', '!=', $offer->id)
             ->pending()
             ->update(['status' => OrderOffer::STATUS_DENIED]);
+
+        // Broadcasts
+        \App\Events\OfferStatusChanged::dispatch($offer, 'accepted', 'driver', $driverID);
+        OfferUpdated::dispatch($offer, 'driver', $driverID);
+
+        // 3. ─── PAYMENT GATE ─────────────────────────────────────────────
+        $finalRate = $order->offer_rate; // driver accepts user's original price
+        $paymentCheck = $this->handlePaymentGate($order, $finalRate, null);
+        
+        if ($paymentCheck['success'] !== true) {
+            $data = isset($paymentCheck['url']) ? ['url' => $paymentCheck['url']] : null;
+            return Resp($data, $paymentCheck['message'], $paymentCheck['status'], false);
+        }
+        // ─── END PAYMENT GATE ──────────────────────────────────────────
+
+        // 4. Final Assignment (Payment successful synchronously)
+        $order->update([
+            'status' => Order::STATUS_DRIVER_ON_A_WAY,
+            'is_accept' => now(),
+            'assigned_at' => now(),
+        ]);
 
         // Broadcasts
         \App\Events\OfferStatusChanged::dispatch($offer, 'accepted', 'driver', $driverID);
@@ -1048,23 +1052,8 @@ class OrderApiController extends Controller
         ]);
         TripStatusUpdated::dispatch($order->fresh());
 
-        // 2. ─── PAYMENT GATE ─────────────────────────────────────────────
-        $paymentCheck = $this->handlePaymentGate($order, (float)$finalRate, $offer->id);
-        
-        if ($paymentCheck['success'] !== true) {
-            $data = isset($paymentCheck['url']) ? ['url' => $paymentCheck['url']] : null;
-            return Resp($data, $paymentCheck['message'], $paymentCheck['status'], false);
-        }
-        // ─── END PAYMENT GATE ──────────────────────────────────────────
-
+        // 2. Accept the offer
         $offer->accept($actorType);
-
-        // 3. Final Assignment
-        $order->update([
-            'status' => Order::STATUS_DRIVER_ON_A_WAY,
-            'is_accept' => now(),
-            'assigned_at' => now(),
-        ]);
 
         // Deny all other pending offers
         $rejectedStatus = $actorType === 'user'
@@ -1079,6 +1068,23 @@ class OrderApiController extends Controller
         // Broadcast
         \App\Events\OfferStatusChanged::dispatch($offer->fresh(), 'accepted', $actorType, $userID);
         OfferUpdated::dispatch($offer->fresh(), $actorType, $userID);
+
+        // 3. ─── PAYMENT GATE ─────────────────────────────────────────────
+        $paymentCheck = $this->handlePaymentGate($order, (float)$finalRate, $offer->id);
+        
+        if ($paymentCheck['success'] !== true) {
+            // Return failure OR redirect URL, but offer is already accepted
+            $data = isset($paymentCheck['url']) ? ['url' => $paymentCheck['url']] : null;
+            return Resp($data, $paymentCheck['message'], $paymentCheck['status'], false);
+        }
+        // ─── END PAYMENT GATE ──────────────────────────────────────────
+
+        // 4. Final Assignment (Payment successful synchronously)
+        $order->update([
+            'status' => Order::STATUS_DRIVER_ON_A_WAY,
+            'is_accept' => now(),
+            'assigned_at' => now(),
+        ]);
 
         // Notify Driver they can move now (Only if payment is confirmed successfully)
         if ($offer->driver) {
