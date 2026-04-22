@@ -198,12 +198,12 @@ $user->country_id = $this->request->country_id;
 if ($this->request->has('city_id')) {
 $user->city_id = $this->request->city_id;
 }
-if ($this->request->has('image')) {
+if ($this->request->hasFile('image')) {
 if ($user->profile_pic != null) {
 $this->deletefile($user->profile_pic, $user->id, 'users');
 }
 
-$dataX = $this->saveImageAndThumbnail($this->request->image, false, $user->id, 'users');
+$dataX = $this->saveImageAndThumbnail($this->request->file('image'), false, $user->id, 'users');
 
 $user->profile_pic =  $dataX['image'];
 }
