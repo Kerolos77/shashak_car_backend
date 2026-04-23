@@ -124,7 +124,7 @@ public function signup()
 DB::beginTransaction();
 try {
 $data = [
-'full_name'         => $this->request->name,
+'name'              => $this->request->name,
 'email'             => $this->request->email ?? null,
 'phone_number'      => $this->request->phone,
 'fcm_token'         => $this->request->fcm_token,
@@ -140,7 +140,7 @@ $dataX = $this->saveImageAndThumbnail($this->request->image, false, $user->id, '
 $user->profile_pic =  $dataX['image'];
 $user->save();
 }
-$user->token = $user->createToken($user->full_name . '-AuthToken')->plainTextToken;
+$user->token = $user->createToken($user->name . '-AuthToken')->plainTextToken;
 if ($user != null) {
 DB::commit();
 return Resp(new UserResource($user), __('messages.success_signup'), 200, true);
@@ -187,7 +187,7 @@ public function profile_update()
 $id = Auth::user()->id;
 $user =  User::find($id);
 if ($this->request->has('name')) {
-$user->full_name = $this->request->name;
+$user->name = $this->request->name;
 }
 if ($this->request->has('email')) {
 $user->email = $this->request->email;

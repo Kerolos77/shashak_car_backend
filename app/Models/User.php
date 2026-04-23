@@ -74,6 +74,17 @@ class User extends Authenticatable implements HasLocalePreference
         'wallet_amount',
         'gender',
     ];
+
+    public function getFullNameAttribute()
+    {
+        return $this->name;
+    }
+
+    public function setFullNameAttribute($value)
+    {
+        $this->attributes['name'] = $value;
+    }
+
     public function getImageurlAttribute()
     {
         if ($this->profile_pic == null) {
