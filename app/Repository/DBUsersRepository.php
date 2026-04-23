@@ -128,8 +128,8 @@ $data = [
 'email'             => $this->request->email ?? null,
 'phone_number'      => $this->request->phone,
 'fcm_token'         => $this->request->fcm_token,
-'country_id'        => $this->request->country_id,
-'city_id'           => $this->request->city_id,
+// 'country_id'        => $this->request->country_id,
+// 'city_id'           => $this->request->city_id,
 'wallet_amount'     => 0,
 
 ];
@@ -192,12 +192,14 @@ $user->name = $this->request->name;
 if ($this->request->has('email')) {
 $user->email = $this->request->email;
 }
+/*
 if ($this->request->has('country_id')) {
 $user->country_id = $this->request->country_id;
 }
 if ($this->request->has('city_id')) {
 $user->city_id = $this->request->city_id;
 }
+*/
 if ($this->request->hasFile('image')) {
 if ($user->profile_pic != null) {
 $this->deletefile($user->profile_pic, $user->id, 'users');
