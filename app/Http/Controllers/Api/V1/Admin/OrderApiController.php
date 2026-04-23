@@ -333,9 +333,11 @@ class OrderApiController extends Controller
     {
         $userID = $this->getUserIDByToken(request()->bearerToken());
 
-        $orders = Order::where('inter_city', $request->in_city)
-            ->where('user_id', $userID)
-            ->get();
+        $ordersQuery = Order::where('user_id', $userID);
+        if ($request->has('in_city') && $request->in_city !== null) {
+            $ordersQuery->where('inter_city', $request->in_city);
+        }
+        $orders = $ordersQuery->get();
         $statusArray = array_fill_keys([
             Order::STATUS_PENDING,
             Order::STATUS_NEGOTIATING,

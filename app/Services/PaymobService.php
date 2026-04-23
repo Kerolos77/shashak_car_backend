@@ -612,7 +612,7 @@ class PaymobService
             }
 
             $paymentData = $response->json();
-            $success = false; // TESTING PURPOSES ONLY
+            $success = $paymentData['success'] ?? false;
 
             // Record transaction
             PaymentTransaction::create([
