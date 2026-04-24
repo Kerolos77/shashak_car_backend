@@ -44,6 +44,33 @@ class DemandMapController extends Controller
             ->having('distance', '<=', $radius)
             ->get();
 
+        // --- START DUMMY DATA FOR TESTING ---
+        // If there are not enough orders, generate some fake ones around the driver
+        $ordersCollection = collect($orders);
+        if ($ordersCollection->count() < 5) {
+            for ($i = 0; $i < 80; $i++) {
+                // Generate random point within 3.5km radius
+                $radiusInDegrees = 3.5 / 111.32;
+                $u = mt_rand() / mt_getrandmax();
+                $v = mt_rand() / mt_getrandmax();
+                $w = $radiusInDegrees * sqrt($u);
+                $t = 2 * pi() * $v;
+                
+                $x = $w * cos($t);
+                $y = $w * sin($t);
+                
+                $newLat = $lat0 + $y;
+                $newLng = $lng0 + ($x / cos(deg2rad($lat0)));
+                
+                $ordersCollection->push((object)[
+                    'source_lat' => $newLat,
+                    'source_long' => $newLng
+                ]);
+            }
+        }
+        $orders = $ordersCollection;
+        // --- END DUMMY DATA ---
+
         $hexagons = [];
 
         foreach ($orders as $order) {
