@@ -196,6 +196,7 @@ Route::prefix('v1/paymob')->group(function () {
 Route::prefix('v1/location')->middleware('auth:sanctum')->group(function () {
     Route::post('/update', [\App\Http\Controllers\Api\V1\LocationTrackingController::class, 'updateLocation']);
     Route::get('/nearby', [\App\Http\Controllers\Api\V1\LocationTrackingController::class, 'getNearbyDrivers']); // New endpoint
+    Route::get('/demand-map', [\App\Http\Controllers\Api\V1\DemandMapController::class, 'getDemandMap']);
     Route::get('/{user_id}', [\App\Http\Controllers\Api\V1\LocationTrackingController::class, 'getLocation']);
 });
 
