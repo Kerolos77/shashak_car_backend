@@ -285,6 +285,14 @@ class User extends Authenticatable implements HasLocalePreference
 
     public function sendPushNotification($title, $body, $data = [])
     {
+        if (isset($data['order_id']) && !isset($data['order_data'])) {
+            $order = \App\Models\Order::with(['driver', 'user', 'service', 'offers', 'reviews'])->find($data['order_id']);
+            if ($order) {
+                $orderData = (new \App\Http\Resources\OrderResource($order))->resolve();
+                $data['order_data'] = json_encode($orderData);
+            }
+        }
+
         // Save to Database
         \Illuminate\Support\Facades\Notification::send($this, new \App\Notifications\PushNotification(
             $title,
@@ -295,13 +303,18 @@ class User extends Authenticatable implements HasLocalePreference
         // Push to Firebase if token exists
         if ($this->fcm_token) {
             try {
+                $fcmData = [];
+                foreach ($data as $key => $value) {
+                    $fcmData[(string)$key] = is_string($value) ? $value : json_encode($value);
+                }
+
                 $messaging = app('firebase.messaging');
                 $message = \Kreait\Firebase\Messaging\CloudMessage::withTarget('token', $this->fcm_token)
                     ->withNotification([
                         'title' => $title,
                         'body' => $body,
                     ])
-                    ->withData($data);
+                    ->withData($fcmData);
 
                 $messaging->send($message);
             } catch (\Exception $e) {

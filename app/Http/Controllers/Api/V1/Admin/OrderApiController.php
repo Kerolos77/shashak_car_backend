@@ -553,13 +553,18 @@ class OrderApiController extends Controller
             $tokens = $drivers->pluck('fcm_token')->filter()->toArray();
             if (!empty($tokens)) {
                 try {
+                    $orderData = (new \App\Http\Resources\OrderResource($order))->resolve();
                     $messaging = app('firebase.messaging');
                     $message = \Kreait\Firebase\Messaging\CloudMessage::new()
                         ->withNotification([
                             'title' => "رحلة جديدة متاحة",
                             'body' => "يوجد عميل يطلب رحلة جديدة، افتح التطبيق وقدم عرضك!",
                         ])
-                        ->withData(['order_id' => (string) $order->id, 'type' => 'new_order']);
+                        ->withData([
+                            'order_id' => (string) $order->id, 
+                            'type' => 'new_order',
+                            'order_data' => json_encode($orderData)
+                        ]);
                     
                     // Firebase default limit for multicast is 500 tokens per request
                     foreach (array_chunk($tokens, 500) as $chunk) {
