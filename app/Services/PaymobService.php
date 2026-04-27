@@ -414,7 +414,13 @@ class PaymobService
         $pendingOffer = $order->offers()->where('status', 'driver_accepted')->latest()->first()
             ?? $order->offers()->where('status', 'user_accepted')->latest()->first();
 
-        if ($pendingOffer && $order->status === \App\Models\Order::STATUS_NEGOTIATING) {
+        if ($pendingOffer && in_array($order->status, [
+            \App\Models\Order::STATUS_NEGOTIATING,
+            \App\Models\Order::STATUS_USER_ACCEPT_OFFER,
+            \App\Models\Order::STATUS_PAYMENT_PENDING,
+            \App\Models\Order::STATUS_PAYMENT_REQUIRED,
+            \App\Models\Order::STATUS_PAYMENT_FAILED
+        ])) {
             $order->update([
                 'driver_id' => $pendingOffer->driver_id,
                 'offer_rate' => $pendingOffer->user_counter_offer ?? $pendingOffer->offer_rate,

@@ -945,6 +945,7 @@ class OrderApiController extends Controller
             $order->user->sendPushNotification("تم قبول طلبك", "وافق السائق على السعر الذي حددته وهو في طريقه إليك.", ['order_id' => $order->id, 'type' => 'offer_accepted']);
         }
 
+        $order->update(['status' => Order::STATUS_DRIVER_ON_A_WAY]);
         TripStatusUpdated::dispatch($order->fresh());
 
         return Resp(new OrderResource($order->fresh()), 'Order accepted and driver on the way');
@@ -1101,6 +1102,7 @@ class OrderApiController extends Controller
             $offer->driver->sendPushNotification("تم دفع الرحلة وتأكيدها!", "العميل دفع مبلغ الرحلة، يمكنك الآن التوجه لموقع العميل.", ['order_id' => $offer->order_id, 'type' => 'trip_ready']);
         }
 
+        $offer->order->update(['status' => Order::STATUS_DRIVER_ON_A_WAY]);
         TripStatusUpdated::dispatch($offer->order->fresh());
 
         return Resp(new OrderResource($offer->order->fresh()), 'Offer accepted successfully');
