@@ -71,6 +71,11 @@ Route::group(['prefix' => 'v1', 'as' => 'api.', 'middleware' => ['auth:sanctum']
     Route::post('driver/registration', [DriverApiController::class, 'driver_registration']);
     Route::post('driver/update-service', [DriverApiController::class, 'change_service']);
 
+    Route::prefix('driver')->group(function () {
+        Route::get('earnings/summary', [\App\Http\Controllers\Api\V1\Admin\DriverEarningsApiController::class, 'summary']);
+        Route::get('earnings/history', [\App\Http\Controllers\Api\V1\Admin\DriverEarningsApiController::class, 'history']);
+    });
+
     Route::prefix('user')->group(function () {
         // Route::get('charge_wallet', [AuthenticationController::class, 'charge_wallet']);
         Route::get('toggle_online/{online?}', [AuthenticationController::class, 'toggle_online']);
