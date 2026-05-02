@@ -35,10 +35,12 @@ class TripStatusUpdated implements ShouldBroadcast
             new Channel('trip-' . $this->order->id),
         ];
 
-        // Also broadcast on the general 'drivers' channel so
-        // drivers listening there receive new-order notifications.
+        // Broadcast to each eligible driver's specific channel
         if ($this->order->status === Order::STATUS_PENDING) {
-            $channels[] = new Channel('drivers');
+            $eligibleDriverIds = \App\Services\EligibleDriverService::getEligibleDriverIds($this->order);
+            foreach ($eligibleDriverIds as $driverId) {
+                $channels[] = new Channel('driver-' . $driverId);
+            }
         }
 
         return $channels;

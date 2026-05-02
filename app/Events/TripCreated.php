@@ -33,13 +33,10 @@ class TripCreated implements ShouldBroadcast
     {
         $channels = [];
         
-        // Broadcast to each eligible driver's private channel
+        // Broadcast to each eligible driver's specific channel
         foreach ($this->eligibleDriverIds as $driverId) {
-            $channels[] = new PrivateChannel('driver.' . $driverId);
+            $channels[] = new Channel('driver-' . $driverId);
         }
-        
-        // Also broadcast to the general drivers channel for backwards compatibility
-        $channels[] = new Channel('drivers');
         
         return $channels;
     }
