@@ -74,6 +74,11 @@ Route::group(['prefix' => 'v1', 'as' => 'api.', 'middleware' => ['auth:sanctum']
     Route::prefix('driver')->group(function () {
         Route::get('earnings/summary', [\App\Http\Controllers\Api\V1\Admin\DriverEarningsApiController::class, 'summary']);
         Route::get('earnings/history', [\App\Http\Controllers\Api\V1\Admin\DriverEarningsApiController::class, 'history']);
+
+        // Driver Gamification Store & Destination
+        Route::post('set-destination', [\App\Http\Controllers\Api\V1\Admin\DriverApiController::class, 'setDestination']);
+        Route::get('packages', [\App\Http\Controllers\Api\V1\Admin\DriverPackageController::class, 'index']);
+        Route::post('packages/buy', [\App\Http\Controllers\Api\V1\Admin\DriverPackageController::class, 'buy']);
     });
 
     Route::prefix('user')->group(function () {
@@ -137,6 +142,7 @@ Route::group(['prefix' => 'v1', 'as' => 'api.', 'middleware' => ['auth:sanctum']
         Route::post('/offer/{offer}/deny', [OrderApiController::class, 'denyOffer']);
         Route::get('/{order}/offers', [OrderApiController::class, 'getOrderOffers']);
         Route::post('/{order}/resolve-payment', [OrderApiController::class, 'resolvePayment']);
+        Route::post('/reject', [OrderApiController::class, 'rejectOrder']); // Driver reject order
         Route::get('/suggested-places', [OrderApiController::class, 'getSuggestedPlaces']);
     });
     Route::prefix('payments')->group(function () {

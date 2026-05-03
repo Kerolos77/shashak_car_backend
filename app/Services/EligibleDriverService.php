@@ -40,9 +40,6 @@ class EligibleDriverService
         $driversQuery = User::drivers()
             ->where('is_active', 1)
             ->where('is_online', 1)
-            ->whereHas('profile', function ($query) use ($serviceId) {
-                $query->where('service_id', $serviceId);
-            })
             ->with(['profile.driver_cars.model', 'profile.driver_cars']);
 
         // Apply female-only filter if required
@@ -50,10 +47,34 @@ class EligibleDriverService
             $driversQuery->where('gender', 'female');
         }
 
+        // Apply Shadow Ban / Cash restriction filter
+        if ($order->payment_type === 'cash') {
+            $driversQuery->where(function($query) {
+                $query->where('cash_restriction_seconds_remaining', '<=', 0)
+                      ->orWhereNull('cash_restriction_seconds_remaining');
+            });
+        }
+
         $drivers = $driversQuery->get();
 
-        // Filter drivers based on car model and year requirements
-        $eligibleDrivers = $drivers->filter(function ($driver) use ($allowedModels) {
+        // Filter drivers based on car model, year requirements, and destination
+        $eligibleDrivers = $drivers->filter(function ($driver) use ($allowedModels, $order) {
+            // Destination Filter Logic
+            if ($driver->profile && $driver->profile->is_heading_destination) {
+                $destLat = $driver->profile->destination_lat;
+                $destLong = $driver->profile->destination_long;
+
+                if ($destLat && $destLong) {
+                    $orderDestLat = $order->destination_lat;
+                    $orderDestLong = $order->destination_long;
+
+                    // Haversine distance
+                    $distance = self::calculateDistance($destLat, $destLong, $orderDestLat, $orderDestLong);
+                    if ($distance > 5) { // 5km tolerance
+                        return false; 
+                    }
+                }
+            }
             // If no models defined for service, all drivers with matching service are eligible
             if (empty($allowedModels)) {
                 return true;
@@ -95,5 +116,18 @@ class EligibleDriverService
     public static function getEligibleDriverIds(Order $order): array
     {
         return self::getEligibleDrivers($order)->pluck('id')->toArray();
+    }
+
+    private static function calculateDistance($lat1, $lon1, $lat2, $lon2) {
+        if (($lat1 == $lat2) && ($lon1 == $lon2)) {
+            return 0;
+        } else {
+            $theta = $lon1 - $lon2;
+            $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
+            $dist = acos($dist);
+            $dist = rad2deg($dist);
+            $miles = $dist * 60 * 1.1515;
+            return ($miles * 1.609344); // return KM
+        }
     }
 }

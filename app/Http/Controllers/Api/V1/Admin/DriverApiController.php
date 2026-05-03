@@ -170,4 +170,36 @@ public function driver_registration_async(Request $request)
             return false;
         }
     }
+
+    public function setDestination(Request $request)
+    {
+        $request->validate([
+            'is_heading_destination' => 'required|boolean',
+            'destination_lat' => 'required_if:is_heading_destination,true|numeric',
+            'destination_long' => 'required_if:is_heading_destination,true|numeric',
+            'destination_address' => 'nullable|string',
+        ]);
+
+        $driverID = $this->getUserIDByToken(request()->bearerToken());
+        
+        $profile = DriverProfile::where('user_id', $driverID)->first();
+        if (!$profile) {
+            return $this->apiResponseHandler(404, false, 'Driver profile not found');
+        }
+
+        $profile->is_heading_destination = $request->is_heading_destination;
+        if ($request->is_heading_destination) {
+            $profile->destination_lat = $request->destination_lat;
+            $profile->destination_long = $request->destination_long;
+            $profile->destination_address = $request->destination_address;
+        }
+        $profile->save();
+
+        return $this->apiResponseHandler(200, true, 'Destination updated successfully', [
+            'is_heading_destination' => $profile->is_heading_destination,
+            'destination_lat' => $profile->destination_lat,
+            'destination_long' => $profile->destination_long,
+            'destination_address' => $profile->destination_address,
+        ]);
+    }
 }

@@ -82,10 +82,23 @@ class OrderApiController extends Controller
         $commissionPercentage = $setting->commission_percentage ?? 0;
 
         if ($commissionPercentage > 0) {
-            $commissionAmount = ($order->offer_rate * $commissionPercentage) / 100;
             $driver = User::find($order->driver_id);
 
             if ($driver) {
+                // Check for active package discount
+                $activePurchase = \Illuminate\Support\Facades\DB::table('driver_purchases')
+                    ->join('driver_packages', 'driver_purchases.package_id', '=', 'driver_packages.id')
+                    ->where('driver_purchases.driver_id', $driver->id)
+                    ->where('driver_purchases.expires_at', '>', now())
+                    ->select('driver_packages.discount_percentage')
+                    ->orderBy('driver_packages.discount_percentage', 'desc')
+                    ->first();
+                
+                if ($activePurchase && $activePurchase->discount_percentage > 0) {
+                    $commissionPercentage = max(0, $commissionPercentage - $activePurchase->discount_percentage);
+                }
+
+                $commissionAmount = ($order->offer_rate * $commissionPercentage) / 100;
                 // Deduct from driver wallet
                 $driver->update([
                     'wallet_amount' => $driver->wallet_amount - $commissionAmount
@@ -739,6 +752,18 @@ class OrderApiController extends Controller
             $order->update(['is_escrow' => false]);
         } 
 
+        // Gamification: Reward points for non-cash trips & Reset Penalties
+        if (in_array($order->payment_type, ['card', 'saved_card', 'wallet_card', 'wallet', 'wallet_cash'])) {
+            $settings = Setting::first();
+            $driver->points += ($settings->points_per_visa_trip ?? 10);
+            
+            // Reset consecutive rejections & restriction because they completed a visa trip
+            $driver->consecutive_visa_rejections = 0;
+            $driver->cash_restriction_seconds_remaining = 0;
+            
+            $driver->save();
+        }
+
         TripStatusUpdated::dispatch($order);
 
         return Resp(new OrderResource($order), 'Trip completed successfully');
@@ -1227,6 +1252,52 @@ class OrderApiController extends Controller
         }
 
         return Resp(new OrderResource($order->fresh()), 'Payment resolved and driver on the way');
+    }
+
+    /**
+     * Driver rejects an order request
+     * POST /api/v1/order/reject
+     */
+    public function rejectOrder(Request $request)
+    {
+        $request->validate([
+            'order_id' => 'required|exists:orders,id',
+        ]);
+
+        $driverID = $this->getUserIDByToken(request()->bearerToken());
+        $driver = User::find($driverID);
+        $order = Order::find($request->order_id);
+
+        if (!$driver || !$order) {
+            return Resp(null, 'Not found', 404, false);
+        }
+
+        // 1. Log the rejection
+        \Illuminate\Support\Facades\DB::table('driver_trip_requests')->insert([
+            'driver_id' => $driverID,
+            'order_id' => $order->id,
+            'status' => 'rejected',
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        // 2. Visa rejection penalty logic
+        if (in_array($order->payment_type, ['card', 'saved_card', 'wallet_card'])) {
+            $driver->consecutive_visa_rejections += 1;
+            
+            $settings = Setting::first();
+            $limit = $settings->visa_rejection_limit ?? 3;
+            
+            if ($driver->consecutive_visa_rejections >= $limit) {
+                // Apply shadow ban
+                $duration = $settings->visa_restriction_duration_minutes ?? 120;
+                $driver->cash_restriction_seconds_remaining = $duration * 60;
+                $driver->consecutive_visa_rejections = 0; // Reset after banning
+            }
+            $driver->save();
+        }
+
+        return Resp(null, 'Order rejected successfully');
     }
 
     /**
