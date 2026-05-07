@@ -96,6 +96,10 @@ Route::group(['prefix' => 'v1', 'as' => 'api.', 'middleware' => ['auth:sanctum']
             Route::match(['PUT', 'POST'], '/{id}', [\App\Http\Controllers\Api\V1\UserFavoriteLocationController::class, 'update']);
             Route::delete('/{id}', [\App\Http\Controllers\Api\V1\UserFavoriteLocationController::class, 'destroy']);
         });
+
+        // User Shop Packages
+        Route::get('packages', [\App\Http\Controllers\Api\V1\Admin\UserPackageController::class, 'index']);
+        Route::post('packages/buy', [\App\Http\Controllers\Api\V1\Admin\UserPackageController::class, 'buy']);
     });
     Route::prefix('services')->group(function () {
         Route::get('incity', [ServiceApiController::class, 'incity']);

@@ -241,6 +241,16 @@
                             <span class="menu-title">{{ trans('cruds.gamification.title') }}</span>
                         </a>
                     </div>
+
+                    <!-- Shop Packages -->
+                    <div class="menu-item {{ request()->is('admin/packages*') ? 'here show' : '' }}">
+                        <a class="menu-link" href="{{ route('admin.packages.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-outline ki-shop fs-2"></i>
+                            </span>
+                            <span class="menu-title">{{ trans('cruds.package.title') }}</span>
+                        </a>
+                    </div>
                     
                     <!-- Countries -->
                     <div class="menu-item {{ request()->is('admin/countries*') ? 'here show' : '' }}">

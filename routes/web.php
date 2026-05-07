@@ -169,6 +169,9 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth:admi
     Route::get('gamification', [App\Http\Controllers\Admin\GamificationController::class, 'index'])->name('gamification.index');
     Route::post('gamification', [App\Http\Controllers\Admin\GamificationController::class, 'update'])->name('gamification.update');
 
+    // Packages (Shop) Route
+    Route::resource('packages', App\Http\Controllers\Admin\PackageController::class);
+
 });
 
 Route::group(['prefix' => 'profile', 'as' => 'profile.', 'middleware' => ['auth']], function () {

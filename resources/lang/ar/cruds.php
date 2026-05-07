@@ -917,4 +917,22 @@ return [
     ]
 ],
 
+'package' => [
+    'title'          => 'الباقات (المتجر)',
+    'title_singular' => 'باقة',
+    'fields'         => [
+        'id'                 => 'المعرف',
+        'name'               => 'اسم الباقة',
+        'user_type'          => 'موجهة لـ',
+        'description'        => 'الوصف',
+        'duration_hours'     => 'المدة (بالساعات)',
+        'discount_percentage'=> 'نسبة الخصم',
+        'price_points'       => 'السعر (نقاط)',
+        'price_cash'         => 'السعر (كاش)',
+        'is_active'          => 'حالة التفعيل',
+        'driver'             => 'سائق',
+        'user'               => 'عميل',
+    ]
+],
+
 ];

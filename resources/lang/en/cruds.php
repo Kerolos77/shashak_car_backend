@@ -959,4 +959,21 @@ return [
             'points_cancel_penalty_driver'   => 'Cancellation Penalty (Driver)',
         ]
     ],
+    'package' => [
+        'title'          => 'Shop Packages',
+        'title_singular' => 'Package',
+        'fields'         => [
+            'id'                 => 'ID',
+            'name'               => 'Package Name',
+            'user_type'          => 'Target User',
+            'description'        => 'Description',
+            'duration_hours'     => 'Duration (Hours)',
+            'discount_percentage'=> 'Discount %',
+            'price_points'       => 'Price (Points)',
+            'price_cash'         => 'Price (Cash)',
+            'is_active'          => 'Status',
+            'driver'             => 'Driver',
+            'user'               => 'User',
+        ]
+    ],
 ];
