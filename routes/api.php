@@ -217,6 +217,9 @@ Route::prefix('v1/wallet')->middleware('auth:sanctum')->group(function () {
     Route::post('/transfer', [\App\Http\Controllers\Api\V1\WalletTransferController::class, 'transferToUser']);
     Route::get('/info', [\App\Http\Controllers\Api\V1\WalletTransferController::class, 'getWalletInfo']);
 });
+
+Route::get('v1/user/points/history', [\App\Http\Controllers\Api\V1\PointTransactionController::class, 'history'])->middleware('auth:sanctum');
+
 Route::get('test-db', function () {
     return response()->json([
         'raw_attributes' => \App\Models\Setting::first()->getAttributes()

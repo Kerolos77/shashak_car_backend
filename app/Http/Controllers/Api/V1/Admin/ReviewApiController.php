@@ -100,6 +100,12 @@ class ReviewApiController extends Controller
                     $driver = User::find($toUserId);
                     if ($driver) {
                         $driver->increment('points', $settings->points_driver_five_star);
+                        \App\Models\PointTransaction::create([
+                            'user_id' => $driver->id,
+                            'amount' => $settings->points_driver_five_star,
+                            'description' => '5-Star Rating Bonus (Order #' . $order->id . ')',
+                            'order_id' => $order->id
+                        ]);
                     }
                 }
             }
