@@ -24,6 +24,7 @@ use App\Http\Requests\StoreOrderRequest;
 use App\Http\Requests\UpdateOrderRequest;
 use App\Http\Resources\OrderWithDriverResource;
 use App\Models\Income;
+use App\Models\PointTransaction;
 use App\Models\Setting;
 use Laravel\Sanctum\PersonalAccessToken;
 use Illuminate\Support\Facades\Log;
@@ -440,12 +441,24 @@ class OrderApiController extends Controller
                 $penalty = $settings->points_user_cancel_penalty ?? 0;
                 if ($penalty > 0) {
                     $canceler->decrement('points', $penalty);
+                    PointTransaction::create([
+                        'user_id' => $canceler->id,
+                        'amount' => -$penalty,
+                        'description' => 'Cancellation Penalty (Order #' . $order->id . ')',
+                        'order_id' => $order->id
+                    ]);
                 }
             } elseif ($canceler->id == $order->driver_id) {
                 // Driver canceled
                 $penalty = $settings->points_driver_cancel_penalty ?? 0;
                 if ($penalty > 0) {
                     $canceler->decrement('points', $penalty);
+                    PointTransaction::create([
+                        'user_id' => $canceler->id,
+                        'amount' => -$penalty,
+                        'description' => 'Cancellation Penalty (Order #' . $order->id . ')',
+                        'order_id' => $order->id
+                    ]);
                 }
             }
         }
@@ -791,6 +804,12 @@ class OrderApiController extends Controller
             
             if ($driverPoints > 0) {
                 $driver->increment('points', $driverPoints);
+                PointTransaction::create([
+                    'user_id' => $driver->id,
+                    'amount' => $driverPoints,
+                    'description' => 'Trip Completion Reward (Order #' . $order->id . ')',
+                    'order_id' => $order->id
+                ]);
             } else {
                 $driver->save(); // Save resets/restrictions even if no points
             }
@@ -804,6 +823,12 @@ class OrderApiController extends Controller
                 }
                 if ($userPoints > 0) {
                     $user->increment('points', $userPoints);
+                    PointTransaction::create([
+                        'user_id' => $user->id,
+                        'amount' => $userPoints,
+                        'description' => 'Trip Completion Reward (Order #' . $order->id . ')',
+                        'order_id' => $order->id
+                    ]);
                 }
             }
         }

@@ -248,6 +248,11 @@ class User extends Authenticatable implements HasLocalePreference
         return $this->hasMany(SavedCard::class);
     }
 
+    public function pointTransactions()
+    {
+        return $this->hasMany(PointTransaction::class);
+    }
+
     public function getReferralBonusVal(User $referee)
     {
         // Matching based on note pattern used in AuthenticationController (after fix)
