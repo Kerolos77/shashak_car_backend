@@ -944,9 +944,19 @@ return [
         'currency'       => 'EGP',
         'invited_by'     => 'Invited By',
         'referral_code'  => 'Referral Code',
-        'fields'         => [
-            'referral_by'          => 'Invited By',
-            'referral_code'        => 'Referral Code',
         ],
-    ]
+    ],
+    'gamification' => [
+        'title'          => 'Gamification System',
+        'title_singular' => 'Point Settings',
+        'fields'         => [
+            'points_per_trip_user'           => 'Points per Trip (User)',
+            'points_per_trip_driver'         => 'Points per Trip (Driver)',
+            'points_visa_bonus_user'         => 'Visa Bonus (User)',
+            'points_visa_bonus_driver'       => 'Visa Bonus (Driver)',
+            'points_five_star_bonus_driver'  => '5-Star Bonus (Driver)',
+            'points_cancel_penalty_user'     => 'Cancellation Penalty (User)',
+            'points_cancel_penalty_driver'   => 'Cancellation Penalty (Driver)',
+        ]
+    ],
 ];

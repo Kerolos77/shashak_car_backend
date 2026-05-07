@@ -901,6 +901,20 @@ return [
         'referral_by'          => 'تمت دعوته بواسطة',
         'referral_code'        => 'كود الدعوة',
     ],
-]
+],
+
+'gamification' => [
+    'title'          => 'نظام النقاط والمكافآت',
+    'title_singular' => 'إعدادات النقاط',
+    'fields'         => [
+        'points_per_trip_user'           => 'نقاط الرحلة (للعميل)',
+        'points_per_trip_driver'         => 'نقاط الرحلة (للسائق)',
+        'points_visa_bonus_user'         => 'بونص الفيزا (للعميل)',
+        'points_visa_bonus_driver'       => 'بونص الفيزا (للسائق)',
+        'points_five_star_bonus_driver'  => 'بونص الـ 5 نجوم (للسائق)',
+        'points_cancel_penalty_user'     => 'خصم الإلغاء (للعميل)',
+        'points_cancel_penalty_driver'   => 'خصم الإلغاء (للسائق)',
+    ]
+],
 
 ];

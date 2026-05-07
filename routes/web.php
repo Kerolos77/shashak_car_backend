@@ -165,6 +165,10 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth:admi
     // Notifications Route
     Route::get('notifications/send', \App\Http\Livewire\Admin\SendNotification::class)->name('notifications.send');
 
+    // Gamification Route
+    Route::get('gamification', [App\Http\Controllers\Admin\GamificationController::class, 'index'])->name('gamification.index');
+    Route::post('gamification', [App\Http\Controllers\Admin\GamificationController::class, 'update'])->name('gamification.update');
+
 });
 
 Route::group(['prefix' => 'profile', 'as' => 'profile.', 'middleware' => ['auth']], function () {
