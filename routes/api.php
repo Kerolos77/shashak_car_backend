@@ -67,6 +67,7 @@ Route::group(['prefix' => 'v1', 'as' => 'api.', 'middleware' => ['auth:sanctum']
     Route::get('contact-us', [App\Http\Controllers\Api\V1\Admin\SettingController::class, 'contactUs']);
     Route::get('pages', [App\Http\Controllers\Api\V1\Admin\SettingController::class, 'pages']);
     Route::match(['GET', 'POST'], 'write_us', [App\Http\Controllers\Api\V1\Admin\SettingController::class, 'write_us']);
+    Route::post('settings/gamification', [App\Http\Controllers\Api\V1\Admin\SettingController::class, 'updateGamificationSettings']);
 
     Route::post('driver/registration', [DriverApiController::class, 'driver_registration']);
     Route::post('driver/update-service', [DriverApiController::class, 'change_service']);

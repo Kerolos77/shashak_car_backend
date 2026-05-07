@@ -431,6 +431,25 @@ class OrderApiController extends Controller
             'canceled_by' => Auth::user() ? Auth::user()->id : null
         ]);
 
+        // Gamification: Deduct points for cancellation
+        $settings = Setting::first();
+        if ($settings && Auth::check()) {
+            $canceler = Auth::user();
+            if ($canceler->id == $order->user_id) {
+                // User canceled
+                $penalty = $settings->points_user_cancel_penalty ?? 0;
+                if ($penalty > 0) {
+                    $canceler->decrement('points', $penalty);
+                }
+            } elseif ($canceler->id == $order->driver_id) {
+                // Driver canceled
+                $penalty = $settings->points_driver_cancel_penalty ?? 0;
+                if ($penalty > 0) {
+                    $canceler->decrement('points', $penalty);
+                }
+            }
+        }
+
         if ($order->driver_id) {
             $driver = User::find($order->driver_id);
             if ($driver) {
@@ -752,16 +771,41 @@ class OrderApiController extends Controller
             $order->update(['is_escrow' => false]);
         } 
 
-        // Gamification: Reward points for non-cash trips & Reset Penalties
-        if (in_array($order->payment_type, ['card', 'saved_card', 'wallet_card', 'wallet', 'wallet_cash'])) {
-            $settings = Setting::first();
-            $driver->points += ($settings->points_per_visa_trip ?? 10);
+        // Gamification: Reward points for both driver and user
+        $settings = Setting::first();
+        if ($settings) {
+            // Reward Driver
+            $driverPoints = $settings->points_driver_per_trip ?? 0;
+            if (in_array($order->payment_type, ['card', 'saved_card', 'wallet_card', 'wallet', 'wallet_cash'])) {
+                $driverPoints += ($settings->points_driver_visa_bonus ?? 0);
+                
+                // Legacy support for points_per_visa_trip if set
+                if ($driverPoints == 0) {
+                    $driverPoints = $settings->points_per_visa_trip ?? 10;
+                }
+
+                // Reset consecutive rejections & restriction because they completed a visa trip
+                $driver->consecutive_visa_rejections = 0;
+                $driver->cash_restriction_seconds_remaining = 0;
+            }
             
-            // Reset consecutive rejections & restriction because they completed a visa trip
-            $driver->consecutive_visa_rejections = 0;
-            $driver->cash_restriction_seconds_remaining = 0;
-            
-            $driver->save();
+            if ($driverPoints > 0) {
+                $driver->increment('points', $driverPoints);
+            } else {
+                $driver->save(); // Save resets/restrictions even if no points
+            }
+
+            // Reward User
+            $user = User::find($order->user_id);
+            if ($user) {
+                $userPoints = $settings->points_user_per_trip ?? 0;
+                if (in_array($order->payment_type, ['card', 'saved_card', 'wallet_card', 'wallet', 'wallet_cash'])) {
+                    $userPoints += ($settings->points_user_visa_bonus ?? 0);
+                }
+                if ($userPoints > 0) {
+                    $user->increment('points', $userPoints);
+                }
+            }
         }
 
         TripStatusUpdated::dispatch($order);

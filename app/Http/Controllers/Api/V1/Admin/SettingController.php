@@ -214,4 +214,52 @@ class SettingController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    /**
+     * Update gamification settings
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateGamificationSettings(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'points_driver_per_trip' => 'required|integer|min:0',
+                'points_driver_visa_bonus' => 'required|integer|min:0',
+                'points_driver_five_star' => 'required|integer|min:0',
+                'points_driver_cancel_penalty' => 'required|integer|min:0',
+                'points_user_per_trip' => 'required|integer|min:0',
+                'points_user_visa_bonus' => 'required|integer|min:0',
+                'points_user_cancel_penalty' => 'required|integer|min:0',
+            ]);
+
+            $setting = Setting::first();
+            if (!$setting) {
+                $setting = new Setting();
+            }
+
+            $setting->fill($validated);
+            $setting->save();
+
+            return response()->json([
+                'success' => true,
+                'data' => $setting,
+                'message' => 'Gamification settings updated successfully'
+            ], Response::HTTP_OK);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update settings',
+                'error' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
 }

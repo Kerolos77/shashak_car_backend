@@ -93,6 +93,17 @@ class ReviewApiController extends Controller
             // تحديث إحصائيات التقييم للمستخدم المُقيَّم
             $this->updateUserRatingStats($toUserId);
 
+            // Gamification: Reward driver points for 5-star rating
+            if ($reviewer === 'user' && $validated['rating'] == 5) {
+                $settings = \App\Models\Setting::first();
+                if ($settings && ($settings->points_driver_five_star ?? 0) > 0) {
+                    $driver = User::find($toUserId);
+                    if ($driver) {
+                        $driver->increment('points', $settings->points_driver_five_star);
+                    }
+                }
+            }
+
             return Resp(new ReviewResource($review), 'تم إضافة التقييم بنجاح', 201, true);
 
         } catch (\Exception $e) {

@@ -28,6 +28,8 @@ class UserResource extends JsonResource
             'is_driver'     => $this->profile != null  ?1:0 ,
             'is_online'     => $this->is_online  ,
             'service_id'    => $this->profile != null ? $this->profile->service_id : 0 ,
+            'reward_points' => $this->points ?? 0,
+            'cash_restriction_seconds_remaining' => $this->cash_restriction_seconds_remaining ?? 0,
 
         ];
 
