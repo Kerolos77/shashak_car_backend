@@ -384,6 +384,57 @@
                                     placeholder="{{ __('cruds.setting.fields.commission_percentage') }}">
                             </div>
                         </div>
+                        <!-- Gamification Settings Section -->
+                        <div class="col-12">
+                            <hr class="my-4">
+                            <h4 class="mb-4 text-primary"><i class="ti ti-trophy me-2"></i>{{ __('cruds.setting.fields.gamification_settings') ?? 'نظام النقاط والمكافآت' }}</h4>
+                            <div class="row">
+                                <div class="col-lg-3">
+                                    <div class="mb-3">
+                                        <label class="form-label">{{ __('cruds.setting.fields.points_per_trip_user') ?? 'نقاط الرحلة (للعميل)' }}</label>
+                                        <input type="number" value="{{ $row->points_per_trip_user ?? 0 }}" name="points_per_trip_user" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-lg-3">
+                                    <div class="mb-3">
+                                        <label class="form-label">{{ __('cruds.setting.fields.points_per_trip_driver') ?? 'نقاط الرحلة (للسائق)' }}</label>
+                                        <input type="number" value="{{ $row->points_per_trip_driver ?? 0 }}" name="points_per_trip_driver" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-lg-3">
+                                    <div class="mb-3">
+                                        <label class="form-label">{{ __('cruds.setting.fields.points_visa_bonus_user') ?? 'بونص الفيزا (للعميل)' }}</label>
+                                        <input type="number" value="{{ $row->points_visa_bonus_user ?? 0 }}" name="points_visa_bonus_user" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-lg-3">
+                                    <div class="mb-3">
+                                        <label class="form-label">{{ __('cruds.setting.fields.points_visa_bonus_driver') ?? 'بونص الفيزا (للسائق)' }}</label>
+                                        <input type="number" value="{{ $row->points_visa_bonus_driver ?? 0 }}" name="points_visa_bonus_driver" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">{{ __('cruds.setting.fields.points_five_star_bonus_driver') ?? 'بونص الـ 5 نجوم (للسائق)' }}</label>
+                                        <input type="number" value="{{ $row->points_five_star_bonus_driver ?? 0 }}" name="points_five_star_bonus_driver" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="mb-3">
+                                        <label class="form-label text-danger">{{ __('cruds.setting.fields.points_cancel_penalty_user') ?? 'خصم الإلغاء (للعميل)' }}</label>
+                                        <input type="number" value="{{ $row->points_cancel_penalty_user ?? 0 }}" name="points_cancel_penalty_user" class="form-control border-danger">
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="mb-3">
+                                        <label class="form-label text-danger">{{ __('cruds.setting.fields.points_cancel_penalty_driver') ?? 'خصم الإلغاء (للسائق)' }}</label>
+                                        <input type="number" value="{{ $row->points_cancel_penalty_driver ?? 0 }}" name="points_cancel_penalty_driver" class="form-control border-danger">
+                                    </div>
+                                </div>
+                            </div>
+                            <hr class="my-4">
+                        </div>
+
                         <button type="submit" class="btn btn-primary waves-effect waves-light">{{ __('global.save') }}</button>
 
                     </div>
