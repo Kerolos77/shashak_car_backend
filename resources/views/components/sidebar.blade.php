@@ -231,6 +231,16 @@
                         </a>
                     </div>
                     @endcan
+
+                    <!-- Gamification -->
+                    <div class="menu-item {{ request()->is('admin/gamification*') ? 'here show' : '' }}">
+                        <a class="menu-link" href="{{ route('admin.gamification.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-outline ki-medal-star fs-2"></i>
+                            </span>
+                            <span class="menu-title">{{ trans('cruds.gamification.title') }}</span>
+                        </a>
+                    </div>
                     
                     <!-- Countries -->
                     <div class="menu-item {{ request()->is('admin/countries*') ? 'here show' : '' }}">

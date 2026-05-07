@@ -294,20 +294,6 @@
                 </div>
                 @endcan
 
-                <!-- Gamification -->
-                <div class="menu-item">
-                    <a class="menu-link {{ request()->is('admin/gamification*') ? 'active' : '' }}" href="{{ route('admin.gamification.index') }}">
-                        <span class="menu-icon">
-                            <i class="ki-duotone ki-medal-star fs-2">
-                                <span class="path1"></span>
-                                <span class="path2"></span>
-                                <span class="path3"></span>
-                                <span class="path4"></span>
-                            </i>
-                        </span>
-                        <span class="menu-title">{{ trans('cruds.gamification.title') }}</span>
-                    </a>
-                </div>
 
                 <!-- Countries -->
                 <div class="menu-item">
