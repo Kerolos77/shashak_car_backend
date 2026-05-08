@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Package;
 use Illuminate\Http\Request;
 use App\Helpers\FileUploader;
+use Illuminate\Support\Facades\Log;
 
 class PackageController extends BaseController
 {
@@ -15,7 +16,11 @@ class PackageController extends BaseController
 
     public function store(Request $request)
     {
-        $data = $request->validate([
+        Log::info('Package Store Request', [
+            'has_file' => $request->hasFile('photo'),
+            'all' => $request->all()
+        ]);
+        $request->validate([
             'name' => 'required|string|max:255',
             'user_type' => 'required|in:driver,user',
             'description' => 'nullable|string',
@@ -27,14 +32,13 @@ class PackageController extends BaseController
             'photo' => 'nullable|image|max:2048',
         ]);
 
-        if (!$request->has('is_active')) {
-            $data['is_active'] = 1;
-        }
+        $data = $request->except('photo');
+        $data['is_active'] = $request->has('is_active') ? 1 : 1; // Default to 1 if not provided in create
 
         $package = $this->model->create($data);
 
         if ($request->hasFile('photo')) {
-            FileUploader::upload($package, $request->photo, 'package_photo', 'single_image');
+            FileUploader::upload($package, $request->file('photo'), 'package_photo', 'single_image');
         }
 
         return redirect()->route('admin.packages.index')->with('success', trans('global.create_success') ?? 'Created successfully');
@@ -44,7 +48,13 @@ class PackageController extends BaseController
     {
         $row = $this->model->findOrFail($id);
         
-        $data = $request->validate([
+        Log::info('Package Update Request', [
+            'id' => $id,
+            'has_file' => $request->hasFile('photo'),
+            'all' => $request->all()
+        ]);
+        
+        $request->validate([
             'name' => 'required|string|max:255',
             'user_type' => 'required|in:driver,user',
             'description' => 'nullable|string',
@@ -56,15 +66,14 @@ class PackageController extends BaseController
             'photo' => 'nullable|image|max:2048',
         ]);
 
-        if (!$request->has('is_active')) {
-            $data['is_active'] = 0;
-        }
+        $data = $request->except('photo');
+        $data['is_active'] = $request->has('is_active') ? 1 : 0;
 
         $row->update($data);
 
         if ($request->hasFile('photo')) {
             $row->clearMediaCollection('package_photo');
-            FileUploader::upload($row, $request->photo, 'package_photo', 'single_image');
+            FileUploader::upload($row, $request->file('photo'), 'package_photo', 'single_image');
         }
 
         return redirect()->route('admin.packages.index')->with('success', trans('global.update_success') ?? 'Updated successfully');
