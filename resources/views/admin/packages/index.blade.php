@@ -41,6 +41,7 @@
                     <thead>
                         <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
                             <th class="text-center">#</th>
+                            <th class="text-center">{{ trans('global.image') ?? 'الصورة' }}</th>
                             <th class="text-center">{{ trans('cruds.package.fields.name') }}</th>
                             <th class="text-center">{{ trans('cruds.package.fields.user_type') }}</th>
                             <th class="text-center">{{ trans('cruds.package.fields.price_points') }}</th>
@@ -54,6 +55,11 @@
                         @forelse ($rows ?? [] as $item)
                             <tr>
                                 <td class="text-center">{{ $item->id }}</td>
+                                <td class="text-center">
+                                    <div class="symbol symbol-50px">
+                                        <img src="{{ $item->photo }}" alt="{{ $item->name }}" class="rounded">
+                                    </div>
+                                </td>
                                 <td class="text-center">{{ $item->name }}</td>
                                 <td class="text-center">
                                     <span class="badge {{ $item->user_type == 'driver' ? 'badge-light-primary' : 'badge-light-info' }}">

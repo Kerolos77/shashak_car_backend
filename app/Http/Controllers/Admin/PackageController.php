@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Package;
 use Illuminate\Http\Request;
+use App\Helpers\FileUploader;
 
 class PackageController extends BaseController
 {
@@ -23,13 +24,18 @@ class PackageController extends BaseController
             'price_points' => 'required|integer|min:0',
             'price_cash' => 'required|numeric|min:0',
             'is_active' => 'boolean',
+            'photo' => 'nullable|image|max:2048',
         ]);
 
         if (!$request->has('is_active')) {
             $data['is_active'] = 1;
         }
 
-        $this->model->create($data);
+        $package = $this->model->create($data);
+
+        if ($request->hasFile('photo')) {
+            FileUploader::upload($package, $request->photo, 'package_photo', 'single_image');
+        }
 
         return redirect()->route('admin.packages.index')->with('success', trans('global.create_success') ?? 'Created successfully');
     }
@@ -47,6 +53,7 @@ class PackageController extends BaseController
             'price_points' => 'required|integer|min:0',
             'price_cash' => 'required|numeric|min:0',
             'is_active' => 'boolean',
+            'photo' => 'nullable|image|max:2048',
         ]);
 
         if (!$request->has('is_active')) {
@@ -54,6 +61,11 @@ class PackageController extends BaseController
         }
 
         $row->update($data);
+
+        if ($request->hasFile('photo')) {
+            $row->clearMediaCollection('package_photo');
+            FileUploader::upload($row, $request->photo, 'package_photo', 'single_image');
+        }
 
         return redirect()->route('admin.packages.index')->with('success', trans('global.update_success') ?? 'Updated successfully');
     }

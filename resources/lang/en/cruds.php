@@ -972,6 +972,7 @@ return [
             'price_points'       => 'Price (Points)',
             'price_cash'         => 'Price (Cash)',
             'is_active'          => 'Status',
+            'photo'              => 'Photo',
             'driver'             => 'Driver',
             'user'               => 'User',
         ]

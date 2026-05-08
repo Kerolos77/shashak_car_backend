@@ -930,6 +930,7 @@ return [
         'price_points'       => 'السعر (نقاط)',
         'price_cash'         => 'السعر (كاش)',
         'is_active'          => 'حالة التفعيل',
+        'photo'              => 'الصورة',
         'driver'             => 'سائق',
         'user'               => 'عميل',
     ]
