@@ -24,7 +24,7 @@ class PackageController extends BaseController
             'price_points' => 'required|integer|min:0',
             'price_cash' => 'required|numeric|min:0',
             'is_active' => 'boolean',
-            'photo' => 'nullable|image|max:2048',
+            'photo' => 'nullable|image|max:5120',
         ]);
 
         $data = $request->except('photo');
@@ -55,7 +55,7 @@ class PackageController extends BaseController
             'price_points' => 'required|integer|min:0',
             'price_cash' => 'required|numeric|min:0',
             'is_active' => 'boolean',
-            'photo' => 'nullable|image|max:2048',
+            'photo' => 'nullable|image|max:5120',
         ]);
 
         $data = $request->except('photo');
