@@ -36,9 +36,8 @@ class Package extends Model implements HasMedia
 
     public function getPhotoAttribute()
     {
-        $file = $this->getMedia('package_photo')->last();
-        if ($file) {
-            return $file->getUrl();
+        if ($this->image_url) {
+            return asset('storage/' . $this->image_url);
         }
         return asset('assets/media/svg/files/blank-image.svg');
     }
