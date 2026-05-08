@@ -248,6 +248,22 @@ class User extends Authenticatable implements HasLocalePreference
         return $this->hasMany(SavedCard::class);
     }
 
+    public function purchases()
+    {
+        return $this->hasMany(\App\Models\Purchase::class, 'driver_id');
+    }
+
+    public function getActivePackageAttribute()
+    {
+        $purchase = $this->purchases()
+            ->with('package')
+            ->where('expires_at', '>', now())
+            ->latest()
+            ->first();
+            
+        return $purchase ? $purchase->package : null;
+    }
+
     public function pointTransactions()
     {
         return $this->hasMany(PointTransaction::class);
