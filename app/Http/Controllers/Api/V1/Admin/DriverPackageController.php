@@ -33,7 +33,10 @@ class DriverPackageController extends Controller
         ]);
 
         $driver = $request->user();
-        $package = DB::table('driver_packages')->where('id', $request->package_id)->first();
+        $package = DB::table('driver_packages')
+            ->where('id', $request->package_id)
+            ->where('user_type', 'driver')
+            ->first();
 
         if (!$package || !$package->is_active) {
             return response()->json(['success' => false, 'message' => 'Package not available.'], 400);
