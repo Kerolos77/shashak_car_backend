@@ -69,6 +69,10 @@ Route::group(['prefix' => 'v1', 'as' => 'api.', 'middleware' => ['auth:sanctum']
     Route::match(['GET', 'POST'], 'write_us', [App\Http\Controllers\Api\V1\Admin\SettingController::class, 'write_us']);
     Route::post('settings/gamification', [App\Http\Controllers\Api\V1\Admin\SettingController::class, 'updateGamificationSettings']);
 
+    // Unified Packages (Both for Driver and User)
+    Route::get('packages', [\App\Http\Controllers\Api\V1\PackageApiController::class, 'index']);
+    Route::post('packages/buy', [\App\Http\Controllers\Api\V1\PackageApiController::class, 'buy']);
+
     Route::post('driver/registration', [DriverApiController::class, 'driver_registration']);
     Route::post('driver/update-service', [DriverApiController::class, 'change_service']);
 
@@ -78,8 +82,8 @@ Route::group(['prefix' => 'v1', 'as' => 'api.', 'middleware' => ['auth:sanctum']
 
         // Driver Gamification Store & Destination
         Route::post('set-destination', [\App\Http\Controllers\Api\V1\Admin\DriverApiController::class, 'setDestination']);
-        Route::get('packages', [\App\Http\Controllers\Api\V1\Admin\DriverPackageController::class, 'index']);
-        Route::post('packages/buy', [\App\Http\Controllers\Api\V1\Admin\DriverPackageController::class, 'buy']);
+        Route::get('packages', [\App\Http\Controllers\Api\V1\PackageApiController::class, 'index']);
+        Route::post('packages/buy', [\App\Http\Controllers\Api\V1\PackageApiController::class, 'buy']);
     });
 
     Route::prefix('user')->group(function () {
@@ -98,8 +102,8 @@ Route::group(['prefix' => 'v1', 'as' => 'api.', 'middleware' => ['auth:sanctum']
         });
 
         // User Shop Packages
-        Route::get('packages', [\App\Http\Controllers\Api\V1\Admin\UserPackageController::class, 'index']);
-        Route::post('packages/buy', [\App\Http\Controllers\Api\V1\Admin\UserPackageController::class, 'buy']);
+        Route::get('packages', [\App\Http\Controllers\Api\V1\PackageApiController::class, 'index']);
+        Route::post('packages/buy', [\App\Http\Controllers\Api\V1\PackageApiController::class, 'buy']);
     });
     Route::prefix('services')->group(function () {
         Route::get('incity', [ServiceApiController::class, 'incity']);
