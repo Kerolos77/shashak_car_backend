@@ -14,7 +14,11 @@ class PackageApiController extends Controller
         $user = $request->user();
         
         // Determine user type (driver or user)
-        $userType = $user->roles()->where('title', 'Driver')->exists() ? 'driver' : 'user';
+        $isDriver = $user->roles()->where('title', 'Driver')->exists() || 
+                    $user->roles()->where('title', 'driver')->exists() ||
+                    $user->profile()->exists();
+
+        $userType = $isDriver ? 'driver' : 'user';
 
         $packages = Package::where('is_active', true)
             ->where('user_type', $userType)
@@ -41,7 +45,11 @@ class PackageApiController extends Controller
         $user = $request->user();
         
         // Determine user type
-        $userType = $user->roles()->where('title', 'Driver')->exists() ? 'driver' : 'user';
+        $isDriver = $user->roles()->where('title', 'Driver')->exists() || 
+                    $user->roles()->where('title', 'driver')->exists() ||
+                    $user->profile()->exists();
+
+        $userType = $isDriver ? 'driver' : 'user';
 
         $package = Package::where('id', $request->package_id)
             ->where('user_type', $userType)
