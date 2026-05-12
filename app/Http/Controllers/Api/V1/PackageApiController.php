@@ -28,7 +28,7 @@ class PackageApiController extends Controller
             'success' => true,
             'data' => [
                 'points' => $user->points,
-                'wallet' => $user->wallet,
+                'wallet' => $user->wallet_amount,
                 'user_type' => $userType,
                 'packages' => $packages
             ]
@@ -65,10 +65,10 @@ class PackageApiController extends Controller
             }
             $user->points -= $package->price_points;
         } else {
-            if ($user->wallet < $package->price_cash) {
+            if ($user->wallet_amount < $package->price_cash) {
                 return response()->json(['success' => false, 'message' => 'Not enough balance in wallet.'], 400);
             }
-            $user->wallet -= $package->price_cash;
+            $user->wallet_amount -= $package->price_cash;
         }
 
         $user->save();
@@ -83,7 +83,7 @@ class PackageApiController extends Controller
             'success' => true, 
             'message' => 'Package purchased successfully.', 
             'points' => $user->points, 
-            'wallet' => $user->wallet
+            'wallet' => $user->wallet_amount
         ]);
     }
 }
