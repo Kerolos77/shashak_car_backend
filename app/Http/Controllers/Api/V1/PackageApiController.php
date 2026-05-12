@@ -30,6 +30,7 @@ class PackageApiController extends Controller
                 'points' => $user->points,
                 'wallet' => $user->wallet_amount,
                 'user_type' => $userType,
+                'active_package' => $user->active_package,
                 'packages' => $packages
             ]
         ]);
