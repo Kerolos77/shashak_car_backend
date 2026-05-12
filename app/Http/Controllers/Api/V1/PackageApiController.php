@@ -59,6 +59,11 @@ class PackageApiController extends Controller
             return response()->json(['success' => false, 'message' => 'Package not available for your user type.'], 400);
         }
 
+        // Check if user already has an active package
+        if ($user->active_package) {
+            return response()->json(['success' => false, 'message' => 'You already have an active package. Cannot subscribe to a new one.'], 400);
+        }
+
         if ($request->payment_method === 'points') {
             if ($user->points < $package->price_points) {
                 return response()->json(['success' => false, 'message' => 'Not enough points.'], 400);
