@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\V1\Admin\PaymentsApiController;
 use App\Http\Controllers\Api\V1\Admin\AuthenticationController;
 use App\Http\Controllers\Api\V1\Admin\DriverApiController;
 use App\Http\Controllers\Api\V1\Admin\ReviewApiController;
+use App\Http\Controllers\Api\V1\PackageApiController;
 
 
 Route::post('test', [AuthenticationController::class, 'test']);
