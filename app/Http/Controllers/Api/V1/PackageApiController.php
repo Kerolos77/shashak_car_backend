@@ -92,4 +92,43 @@ class PackageApiController extends Controller
             'wallet' => $user->wallet_amount
         ]);
     }
+
+    public function status(Request $request)
+    {
+        $user = $request->user();
+        
+        $purchase = Purchase::where('driver_id', $user->id)
+            ->with('package')
+            ->where('expires_at', '>', now())
+            ->latest()
+            ->first();
+
+        if (!$purchase) {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'is_subscribed' => false,
+                    'points' => $user->points,
+                    'wallet' => $user->wallet_amount,
+                    'message' => 'No active subscription found.'
+                ]
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'is_subscribed' => true,
+                'points' => $user->points,
+                'wallet' => $user->wallet_amount,
+                'subscription' => [
+                    'purchase_id' => $purchase->id,
+                    'expires_at' => $purchase->expires_at,
+                    'days_remaining' => now()->diffInDays($purchase->expires_at),
+                    'hours_remaining' => now()->diffInHours($purchase->expires_at),
+                    'package' => $purchase->package
+                ]
+            ]
+        ]);
+    }
 }

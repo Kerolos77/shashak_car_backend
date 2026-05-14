@@ -73,6 +73,7 @@ Route::group(['prefix' => 'v1', 'as' => 'api.', 'middleware' => ['auth:sanctum']
     // Unified Packages (Both for Driver and User)
     Route::get('packages', [\App\Http\Controllers\Api\V1\PackageApiController::class, 'index']);
     Route::post('packages/buy', [\App\Http\Controllers\Api\V1\PackageApiController::class, 'buy']);
+    Route::get('packages/status', [\App\Http\Controllers\Api\V1\PackageApiController::class, 'status']);
 
     Route::post('driver/registration', [DriverApiController::class, 'driver_registration']);
     Route::post('driver/update-service', [DriverApiController::class, 'change_service']);
