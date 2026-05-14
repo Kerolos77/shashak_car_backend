@@ -82,7 +82,7 @@ class PackageApiController extends Controller
         Purchase::create([
             'driver_id' => $user->id,
             'package_id' => $package->id,
-            'expires_at' => now()->addHours($package->duration_hours),
+            'expires_at' => now()->addHours($package->duration_hours > 0 ? $package->duration_hours : 24),
         ]);
 
         return response()->json([

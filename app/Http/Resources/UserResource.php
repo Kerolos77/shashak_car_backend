@@ -30,11 +30,11 @@ class UserResource extends JsonResource
             'service_id'    => $this->profile != null ? $this->profile->service_id : 0 ,
             'reward_points' => $this->points ?? 0,
             'cash_restriction_seconds_remaining' => $this->cash_restriction_seconds_remaining ?? 0,
-            'active_package' => $this->active_package ? [
-                'id' => $this->active_package->id,
-                'name' => $this->active_package->name,
-                'image' => $this->active_package->photo,
-                'expires_at' => $this->purchases()->where('package_id', $this->active_package->id)->where('expires_at', '>', now())->latest()->value('expires_at'),
+            'active_package' => $this->active_purchase ? [
+                'id' => $this->active_purchase->package->id,
+                'name' => $this->active_purchase->package->name,
+                'image' => $this->active_purchase->package->photo,
+                'expires_at' => $this->active_purchase->expires_at->toDateTimeString(),
             ] : null,
 
         ];

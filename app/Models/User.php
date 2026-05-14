@@ -14,6 +14,7 @@ use Laravel\Sanctum\PersonalAccessToken;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use App\Models\Purchase;
 use Illuminate\Contracts\Translation\HasLocalePreference;
 
 class User extends Authenticatable implements HasLocalePreference
@@ -253,15 +254,18 @@ class User extends Authenticatable implements HasLocalePreference
         return $this->hasMany(\App\Models\Purchase::class, 'driver_id');
     }
 
-    public function getActivePackageAttribute()
+    public function getActivePurchaseAttribute()
     {
-        $purchase = $this->purchases()
+        return Purchase::where('driver_id', $this->id)
             ->with('package')
             ->where('expires_at', '>', now())
             ->latest()
             ->first();
-            
-        return $purchase ? $purchase->package : null;
+    }
+
+    public function getActivePackageAttribute()
+    {
+        return $this->active_purchase ? $this->active_purchase->package : null;
     }
 
     public function pointTransactions()
