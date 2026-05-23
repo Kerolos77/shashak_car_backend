@@ -42,7 +42,7 @@ use BeyondCode\LaravelWebSockets\Facades\WebSocketsRouter;
 use App\Http\Controllers\Admin\WalletTransactionController;
 
 // WebSocketsRouter::webSocket('/my-websocket', \App\MyCustomWebSocketHandler::class);
-Broadcast::routes();
+// Broadcast::routes();
 Route::get('/account/delete/{id}', function ($id) {
     return 'SUCCESS';
 });
