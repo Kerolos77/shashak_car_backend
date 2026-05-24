@@ -17,10 +17,7 @@ class BroadcastServiceProvider extends ServiceProvider
             'middleware' => [
                 'api',
                 'auth:sanctum',
-                function ($request, $next) {
-                    auth()->shouldUse('sanctum');
-                    return $next($request);
-                }
+                \App\Http\Middleware\SetSanctumGuard::class,
             ]
         ]);
 
