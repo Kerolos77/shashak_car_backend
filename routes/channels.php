@@ -56,5 +56,11 @@ Broadcast::channel('location.{id}', function ($user, $id) {
 // Driver channel for receiving order notifications
 // Drivers can only subscribe to their own channel
 Broadcast::channel('driver.{id}', function ($user, $id) {
-    return (int) $user->id === (int) $id;
+    \Illuminate\Support\Facades\Log::info('Broadcasting Auth Attempt', [
+        'user_id' => $user ? $user->id : null,
+        'user_class' => $user ? get_class($user) : null,
+        'requested_channel_id' => $id,
+        'is_match' => $user ? ((int) $user->id === (int) $id) : false
+    ]);
+    return $user && (int) $user->id === (int) $id;
 });
