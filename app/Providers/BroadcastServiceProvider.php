@@ -16,8 +16,18 @@ class BroadcastServiceProvider extends ServiceProvider
         \Illuminate\Support\Facades\Route::match(['get', 'post'], '/api/broadcasting/auth', function (\Illuminate\Http\Request $request) {
             $user = auth('sanctum')->user();
             
-            // Get channel name from request
-            $channelName = $request->channel_name;
+            // Get channel name from request (works for GET query params and POST body)
+            $channelName = $request->input('channel_name');
+            
+            if (empty($channelName)) {
+                return response()->json([
+                    'message' => 'Channel name is missing.',
+                    'method' => $request->method(),
+                    'received_data' => $request->all(),
+                    'hint' => 'Make sure you are sending a POST request, and the JSON body is correctly formatted.'
+                ], 400);
+            }
+
             $normalizedChannelName = \Illuminate\Support\Str::replaceFirst('private-', '', $channelName);
 
             \Illuminate\Support\Facades\Log::info('Custom Broadcast Debug', [
@@ -25,7 +35,7 @@ class BroadcastServiceProvider extends ServiceProvider
                 'user_id' => $user ? $user->id : null,
                 'channel' => $channelName,
                 'normalized' => $normalizedChannelName,
-                'socket_id' => $request->socket_id,
+                'socket_id' => $request->input('socket_id'),
             ]);
 
             if (!$user) {
