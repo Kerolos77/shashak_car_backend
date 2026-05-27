@@ -21,6 +21,17 @@ use App\Http\Controllers\Api\V1\PackageApiController;
 
 Route::post('test', [AuthenticationController::class, 'test']);
 
+// Test endpoint for driver private channel broadcasting
+Route::get('test-broadcast/{driver_id}/{trip_id}', function ($driver_id, $trip_id) {
+    event(new \App\Events\TestDriverTripEvent($trip_id, $driver_id));
+    return response()->json([
+        'message' => 'Event dispatched successfully',
+        'driver_id' => $driver_id,
+        'trip_id' => $trip_id,
+        'channel' => 'private-driver.'.$driver_id
+    ]);
+});
+
 Route::get('test-trans', function () {
     app()->setLocale('ar');
     $trans = __('cruds.setting.fields.referral_bonus');
