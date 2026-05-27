@@ -16,14 +16,15 @@ use Illuminate\Support\Facades\Broadcast;
 
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
-});
+}, ['guards' => ['sanctum']]);
 
 Broadcast::channel('drivers', function ($user) {
     return true;
-});
+}, ['guards' => ['sanctum']]);
+
 Broadcast::channel('my-channel', function ($user) {
     return true; // or any condition to authorize the channel
-});
+}, ['guards' => ['sanctum']]);
 
 // Location tracking channel authorization
 Broadcast::channel('location.{id}', function ($user, $id) {
@@ -51,7 +52,7 @@ Broadcast::channel('location.{id}', function ($user, $id) {
     ->exists();
     
     return $hasActiveOrder;
-});
+}, ['guards' => ['sanctum']]);
 
 // Driver channel for receiving order notifications
 // Drivers can only subscribe to their own channel
@@ -63,4 +64,5 @@ Broadcast::channel('driver.{id}', function ($user, $id) {
         'is_match' => $user ? ((int) $user->id === (int) $id) : false
     ]);
     return $user && (int) $user->id === (int) $id;
-});
+}, ['guards' => ['sanctum']]);
+
