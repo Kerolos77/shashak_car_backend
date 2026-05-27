@@ -44,8 +44,15 @@ class BroadcastServiceProvider extends ServiceProvider
                 \Illuminate\Support\Facades\Log::error('AccessDenied thrown by Broadcaster!', [
                     'request_user' => $request->user() ? $request->user()->id : null,
                     'request_user_sanctum' => $request->user('sanctum') ? $request->user('sanctum')->id : null,
+                    'channel_name' => $channelName,
                 ]);
                 
+                if (empty($channelName)) {
+                    return response()->json([
+                        'message' => 'Channel name is missing. Make sure to send Content-Type: application/json or application/x-www-form-urlencoded header.'
+                    ], 400);
+                }
+
                 // FALLBACK: manually authenticate if Broadcast::auth() fails
                 $broadcaster = Broadcast::driver();
                 if ($broadcaster instanceof \Illuminate\Broadcasting\Broadcasters\PusherBroadcaster) {
