@@ -41,6 +41,7 @@ class Order extends Model
     protected $casts = [
         'payment_status' => 'string',  // pending | paid | failed
         'is_female_only' => 'boolean',
+        'is_shipping_order' => 'boolean',
         'is_escrow' => 'boolean',
         'wallet_paid' => 'decimal:2',
         'card_paid' => 'decimal:2',
@@ -50,6 +51,13 @@ class Order extends Model
         'on_trip_at' => 'datetime',
         'completed_at' => 'datetime',
         'canceled_at' => 'datetime',
+        'driver_arrived_at_sender_at' => 'datetime',
+        'sender_confirmed_handover_at' => 'datetime',
+        'driver_confirmed_pickup_at' => 'datetime',
+        'driver_confirmed_cash_at' => 'datetime',
+        'driver_arrived_at_receiver_at' => 'datetime',
+        'driver_confirmed_delivery_at' => 'datetime',
+        'receiver_confirmed_delivery_at' => 'datetime',
     ];
 
     protected $dates = [

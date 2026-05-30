@@ -71,9 +71,18 @@ class OrderResource extends JsonResource
                 'payment_status' => $this->payment_status,
             ],
             'offers' => $this->offers ? new OutCityOffersCollection($this->offers) : [],
-
-
-
+            'is_shipping_order' => $this->is_shipping_order ? 1 : 0,
+            'pickup_otp' => (auth()->id() == $this->user_id) ? ($this->pickup_otp ?? '') : '',
+            'delivery_otp' => (auth()->id() == $this->user_id || (auth()->user() && auth()->user()->phone_number === $this->receiver_phone)) ? ($this->delivery_otp ?? '') : '',
+            'receiver_name' => $this->receiver_name ?? '',
+            'receiver_phone' => $this->receiver_phone ?? '',
+            'driver_arrived_at_sender_at' => $this->driver_arrived_at_sender_at ? $this->driver_arrived_at_sender_at->toDateTimeString() : '',
+            'sender_confirmed_handover_at' => $this->sender_confirmed_handover_at ? $this->sender_confirmed_handover_at->toDateTimeString() : '',
+            'driver_confirmed_pickup_at' => $this->driver_confirmed_pickup_at ? $this->driver_confirmed_pickup_at->toDateTimeString() : '',
+            'driver_confirmed_cash_at' => $this->driver_confirmed_cash_at ? $this->driver_confirmed_cash_at->toDateTimeString() : '',
+            'driver_arrived_at_receiver_at' => $this->driver_arrived_at_receiver_at ? $this->driver_arrived_at_receiver_at->toDateTimeString() : '',
+            'driver_confirmed_delivery_at' => $this->driver_confirmed_delivery_at ? $this->driver_confirmed_delivery_at->toDateTimeString() : '',
+            'receiver_confirmed_delivery_at' => $this->receiver_confirmed_delivery_at ? $this->receiver_confirmed_delivery_at->toDateTimeString() : '',
         ];
 
         return $data;

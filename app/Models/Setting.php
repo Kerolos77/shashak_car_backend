@@ -16,6 +16,7 @@ class Setting extends Model
         'percentage_increase' => 'array',
         'active_type' => 'string',
         'referral_bonus' => 'decimal:2',
-        'commission_percentage' => 'decimal:2'
+        'commission_percentage' => 'decimal:2',
+        'min_driver_wallet_for_shipping' => 'decimal:2'
     ];
 }

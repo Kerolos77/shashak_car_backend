@@ -384,6 +384,16 @@
                                     placeholder="{{ __('cruds.setting.fields.commission_percentage') }}">
                             </div>
                         </div>
+                        <div class="col-lg-4">
+                            <div class="mb-3">
+                                <label class="form-label"
+                                    for="basic-default-min_driver_wallet_for_shipping">الحد الأدنى لمحفظة السائق لرحلات الشحن (ج.م)</label>
+                                <input type="number" step="0.5" value="{{ $row->min_driver_wallet_for_shipping }}"
+                                    name="min_driver_wallet_for_shipping" class="form-control"
+                                    id="basic-default-min_driver_wallet_for_shipping"
+                                    placeholder="الحد الأدنى لمحفظة السائق لرحلات الشحن">
+                            </div>
+                        </div>
                         <button type="submit" class="btn btn-primary waves-effect waves-light">{{ __('global.save') }}</button>
 
                     </div>

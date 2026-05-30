@@ -36,7 +36,10 @@ class UserResource extends JsonResource
                 'image' => $this->active_purchase->package->photo,
                 'expires_at' => $this->active_purchase->expires_at->toDateTimeString(),
             ] : null,
-
+            'national_id' => $this->national_id ?? '',
+            'national_id_front' => $this->national_id_front ? (path($this->id, 'users') . $this->national_id_front) : '',
+            'national_id_back' => $this->national_id_back ? (path($this->id, 'users') . $this->national_id_back) : '',
+            'national_id_selfie' => $this->national_id_selfie ? (path($this->id, 'users') . $this->national_id_selfie) : '',
         ];
 
         if ($this->token) {

@@ -68,12 +68,35 @@ $url = str_replace('%2B', '+', $url); // ?? ??? ????
         // return $url;
         //$response = Http::withOptions(['verify' => false])->get($url);
 
-        return $response->json();
+    return $response->json();
 
     } catch (\Exception $e) {
         return $e->getMessage();
     }
 }
 
+public function sendCustomSms($mobile, $message)
+{
+    if (preg_match('/^0/', $mobile)) {
+        $mobile = '20' . substr($mobile, 1);
+    }
+    
+    try {
+        $params = [
+            'username'   => $this->username,
+            'password'   => $this->password,
+            'sendername' => $this->sender,
+            'mobiles'    => $mobile,
+            'message'    => $message,
+        ];
+        $url = $this->baseUrl . '?' . http_build_query($params);
+        $url = str_replace('%2B', '+', $url);
+
+        $response = Http::withOptions(['verify' => false])->get($url);
+        return $response->json();
+    } catch (\Exception $e) {
+        return $e->getMessage();
+    }
+}
 
 }

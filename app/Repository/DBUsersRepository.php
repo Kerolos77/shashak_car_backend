@@ -209,6 +209,35 @@ $dataX = $this->saveImageAndThumbnail($this->request->file('image'), false, $use
 
 $user->profile_pic =  $dataX['image'];
 }
+
+if ($this->request->has('national_id')) {
+$user->national_id = $this->request->national_id;
+}
+
+if ($this->request->hasFile('national_id_front')) {
+if ($user->national_id_front != null) {
+$this->deletefile($user->national_id_front, $user->id, 'users');
+}
+$dataFront = $this->saveImageAndThumbnail($this->request->file('national_id_front'), false, $user->id, 'users');
+$user->national_id_front = $dataFront['image'];
+}
+
+if ($this->request->hasFile('national_id_back')) {
+if ($user->national_id_back != null) {
+$this->deletefile($user->national_id_back, $user->id, 'users');
+}
+$dataBack = $this->saveImageAndThumbnail($this->request->file('national_id_back'), false, $user->id, 'users');
+$user->national_id_back = $dataBack['image'];
+}
+
+if ($this->request->hasFile('national_id_selfie')) {
+if ($user->national_id_selfie != null) {
+$this->deletefile($user->national_id_selfie, $user->id, 'users');
+}
+$dataSelfie = $this->saveImageAndThumbnail($this->request->file('national_id_selfie'), false, $user->id, 'users');
+$user->national_id_selfie = $dataSelfie['image'];
+}
+
 $user->save();
 if ($user != null) {
 return Resp(new UserResource($user), __('messages.success_update_profile'), 200, true);

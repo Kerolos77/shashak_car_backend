@@ -73,10 +73,40 @@ class OrderApiController extends Controller
     }
 
     /**
-     * Reusable Payment Gate for acceptOffer and driverAcceptUserPrice.
-     * Handles wallet deduction, saved card charging, and mixed wallet_card split logic.
-     * Returns a response array on failure/requirement, or true on success.
-     */
+    private function checkDriverWalletForShipping(User $driver, Order $order)
+    {
+        $settings = Setting::first();
+        if ($order->is_shipping_order && $settings) {
+            $minWallet = $settings->min_driver_wallet_for_shipping ?? 0;
+            if ($driver->wallet_amount < $minWallet) {
+                return [
+                    'allowed' => false,
+                    'message' => "المحفظة الخاصة بك تحتوي على رصيد أقل من الحد الأدنى المطلوب لشحن المنتجات ({$minWallet} ج.م)، يرجى شحن المحفظة أولاً."
+                ];
+            }
+        }
+        return ['allowed' => true];
+    }
+
+    private function sendShippingSmsToReceiver(Order $order)
+    {
+        if ($order->is_shipping_order && $order->receiver_phone) {
+            $driverName = $order->driver ? $order->driver->full_name : ($order->driver_name ?? 'سائق شقشق');
+            $otp = $order->delivery_otp;
+            $trackingLink = "https://shakshak.net/track/" . $order->id;
+            
+            $message = "أهلاً بك، شحنتك رقم #{$order->id} مع السائق {$driverName} في الطريق إليك. للتتبع المباشر وتسجيل الدخول استخدم الرابط التالي: {$trackingLink} وكود التسليم الخاص بك هو: {$otp}";
+            
+            try {
+                $smsHelper = new \App\Helpers\SmsHelper();
+                $smsHelper->sendCustomSms($order->receiver_phone, $message);
+                \Log::info("Shipping SMS sent to receiver {$order->receiver_phone} for order {$order->id}");
+            } catch (\Exception $e) {
+                \Log::error("Failed to send shipping SMS: " . $e->getMessage());
+            }
+        }
+    }
+
     private function deductDriverCommission(Order $order)
     {
         $setting = Setting::first();
@@ -245,6 +275,11 @@ class OrderApiController extends Controller
 
         if (!$order) {
             return Resp(null, 'Order not found', 404, false);
+        }
+
+        $walletCheck = $this->checkDriverWalletForShipping($driver, $order);
+        if (!$walletCheck['allowed']) {
+            return Resp(null, $walletCheck['message'], 400, false);
         }
 
         if (!$order->canAcceptOffers()) {
@@ -495,6 +530,22 @@ class OrderApiController extends Controller
         if (!$service) {
             return Resp(null, 'Service not found', 404, false);
         }
+
+        if ($service->service_type === 'shipping') {
+            $request->validate([
+                'receiver_name' => 'required|string|max:255',
+                'receiver_phone' => 'required|string',
+            ]);
+
+            // Validate that the sender has complete national ID documents uploaded
+            $user = Auth::user();
+            if (empty($user->national_id) || empty($user->national_id_front) || empty($user->national_id_back) || empty($user->national_id_selfie)) {
+                return Resp(null, 'يرجى إكمال توثيق حسابك ورفع صور بطاقة الهوية (وجه، ظهر، وسيلفي مع البطاقة) أولاً قبل طلب رحلة شحن.', 400, false);
+            }
+        }
+
+        $pickupOtp = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+
         $baseData = [
             'service_id' => $request->service_id ?? '',
             'driver_id' => null,
@@ -514,7 +565,15 @@ class OrderApiController extends Controller
             'user_id' => Auth::user()->id,
             'inter_city' => $request->inter_city,
             'is_female_only' => $request->is_female_only ?? false,
+            'pickup_otp' => $pickupOtp,
         ];
+
+        if ($service->service_type === 'shipping') {
+            $baseData['is_shipping_order'] = true;
+            $baseData['receiver_name'] = $request->receiver_name;
+            $baseData['receiver_phone'] = $request->receiver_phone;
+            $baseData['delivery_otp'] = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+        }
 
         // Pre-populate payment details for all types to show in response
         $paymentType = $request->payment_type ?? 'cash';
@@ -891,6 +950,11 @@ class OrderApiController extends Controller
             return Resp(null, 'Order not found', 404, false);
         }
 
+        $walletCheck = $this->checkDriverWalletForShipping($driver, $order);
+        if (!$walletCheck['allowed']) {
+            return Resp(null, $walletCheck['message'], 400, false);
+        }
+
         // Check if driver already has a pending offer for this order
         $existingOffer = OrderOffer::where('order_id', $request->order_id)
             ->where('driver_id', $driverID)
@@ -973,6 +1037,11 @@ class OrderApiController extends Controller
             return Resp(null, 'Order not found', 404, false);
         }
 
+        $walletCheck = $this->checkDriverWalletForShipping($driver, $order);
+        if (!$walletCheck['allowed']) {
+            return Resp(null, $walletCheck['message'], 400, false);
+        }
+
         if (!$order->canBeAssigned()) {
             return Resp(null, 'Order is no longer available for assignment.', 400, false);
         }
@@ -1040,6 +1109,7 @@ class OrderApiController extends Controller
         }
 
         $order->update(['status' => Order::STATUS_DRIVER_ON_A_WAY]);
+        $this->sendShippingSmsToReceiver($order->fresh());
         TripStatusUpdated::dispatch($order->fresh());
 
         return Resp(new OrderResource($order->fresh()), 'Order accepted and driver on the way');
@@ -1132,6 +1202,11 @@ class OrderApiController extends Controller
             return Resp(null, 'Unauthorized', 403, false);
         }
 
+        $walletCheck = $this->checkDriverWalletForShipping($offer->driver, $offer->order);
+        if (!$walletCheck['allowed']) {
+            return Resp(null, $walletCheck['message'], 400, false);
+        }
+
         if (!$offer->order->canBeAssigned()) {
             return Resp(null, 'Order is no longer available for assignment.', 400, false);
         }
@@ -1197,6 +1272,7 @@ class OrderApiController extends Controller
         }
 
         $offer->order->update(['status' => Order::STATUS_DRIVER_ON_A_WAY]);
+        $this->sendShippingSmsToReceiver($offer->order->fresh());
         TripStatusUpdated::dispatch($offer->order->fresh());
 
         return Resp(new OrderResource($offer->order->fresh()), 'Offer accepted successfully');
@@ -1505,5 +1581,179 @@ class OrderApiController extends Controller
         $parts = explode(',', $address);
         $label = trim($parts[0] ?? $address);
         return $label ?: 'Unknown Location';
+    }
+
+    public function driverArriveSender(Request $request, Order $order)
+    {
+        $driverID = $this->getUserIDByToken(request()->bearerToken());
+        if ($order->driver_id != $driverID) {
+            return Resp(null, 'Unauthorized', 403, false);
+        }
+
+        if ($order->status !== Order::STATUS_DRIVER_ON_A_WAY) {
+            return Resp(null, 'Trip must be in driver_on_a_way state to mark arrival.', 400, false);
+        }
+
+        $order->update([
+            'driver_arrived_at_sender_at' => Carbon::now(),
+            'status' => Order::STATUS_ARRIVED
+        ]);
+
+        TripStatusUpdated::dispatch($order->fresh());
+
+        if ($order->user) {
+            $order->user->sendPushNotification("السائق وصل لموقع الاستلام", "السائق وصل لموقعك، يرجى تسليمه الشحنة وإعطائه كود الاستلام.", ['order_id' => $order->id, 'type' => 'trip_update']);
+        }
+
+        return Resp(new OrderResource($order->fresh()), 'Driver arrived at pickup location.');
+    }
+
+    public function verifyPickupOtp(Request $request, Order $order)
+    {
+        $driverID = $this->getUserIDByToken(request()->bearerToken());
+        if ($order->driver_id != $driverID) {
+            return Resp(null, 'Unauthorized', 403, false);
+        }
+
+        $request->validate([
+            'pickup_otp' => 'required|string',
+        ]);
+
+        if ($order->status !== Order::STATUS_ARRIVED) {
+            return Resp(null, 'الرحلة لم تبدأ بعد أو لم يصل السائق لموقع الاستلام بعد.', 400, false);
+        }
+
+        if ($order->pickup_otp !== $request->pickup_otp) {
+            return Resp(null, 'كود الاستلام غير صحيح، يرجى المحاولة مرة أخرى.', 400, false);
+        }
+
+        // Check if cash payment, and ensure cash receipt is implicitly confirmed here
+        if ($order->payment_type === 'cash') {
+            $order->driver_confirmed_cash_at = Carbon::now();
+        }
+
+        $order->update([
+            'sender_confirmed_handover_at' => Carbon::now(),
+            'driver_confirmed_pickup_at' => Carbon::now(),
+            'on_trip_at' => Carbon::now(),
+            'status' => Order::STATUS_ON_TRIP,
+        ]);
+
+        TripStatusUpdated::dispatch($order->fresh());
+
+        if ($order->user) {
+            $order->user->sendPushNotification("بدء الرحلة والتسليم للسائق", "نتمنى لك رحلة آمنة، تم بدء توصيل الشحنة بنجاح.", ['order_id' => $order->id, 'type' => 'trip_update']);
+        }
+
+        return Resp(new OrderResource($order->fresh()), 'Pickup OTP verified successfully. Trip started.');
+    }
+
+    public function driverArriveReceiver(Request $request, Order $order)
+    {
+        $driverID = $this->getUserIDByToken(request()->bearerToken());
+        if ($order->driver_id != $driverID) {
+            return Resp(null, 'Unauthorized', 403, false);
+        }
+
+        if ($order->status !== Order::STATUS_ON_TRIP) {
+            return Resp(null, 'الرحلة يجب أن تكون في حالة "جاري التوصيل" لتأكيد الوصول للمستلم.', 400, false);
+        }
+
+        $order->update([
+            'driver_arrived_at_receiver_at' => Carbon::now(),
+        ]);
+
+        TripStatusUpdated::dispatch($order->fresh());
+
+        if ($order->user) {
+            $order->user->sendPushNotification("السائق وصل للمستلم", "السائق وصل لموقع المرسل إليه وهو بانتظار تسليمه الشحنة.", ['order_id' => $order->id, 'type' => 'trip_update']);
+        }
+
+        // Notify Receiver if they have a device/token in our app or via push (we check using receiver_phone)
+        $receiverUser = User::where('phone_number', $order->receiver_phone)->first();
+        if ($receiverUser) {
+            $receiverUser->sendPushNotification("الشحنة وصلت!", "وصل السائق لموقعك لتسليمك الشحنة، كود التسليم الخاص بك هو: " . $order->delivery_otp, ['order_id' => $order->id, 'type' => 'trip_update']);
+        }
+
+        return Resp(new OrderResource($order->fresh()), 'Driver arrived at receiver location.');
+    }
+
+    public function verifyDeliveryOtp(Request $request, Order $order)
+    {
+        $driverID = $this->getUserIDByToken(request()->bearerToken());
+        if ($order->driver_id != $driverID) {
+            return Resp(null, 'Unauthorized', 403, false);
+        }
+
+        $request->validate([
+            'delivery_otp' => 'required|string',
+        ]);
+
+        if ($order->status !== Order::STATUS_ON_TRIP) {
+            return Resp(null, 'الرحلة ليست في مرحلة التوصيل حالياً لتأكيد التسليم.', 400, false);
+        }
+
+        if ($order->delivery_otp !== $request->delivery_otp) {
+            return Resp(null, 'كود التسليم غير صحيح، يرجى التأكد وإعادة المحاولة.', 400, false);
+        }
+
+        // Perform Trip Completion logic
+        $order->update([
+            'driver_confirmed_delivery_at' => Carbon::now(),
+            'receiver_confirmed_delivery_at' => Carbon::now(),
+            'is_end' => Carbon::now(),
+            'completed_at' => Carbon::now(),
+            'status' => Order::STATUS_COMPLETED
+        ]);
+
+        // Note: Commission deduction and electronic payout release (Escrow Release)
+        $driver = User::find($order->driver_id);
+        if ($order->payment_type !== 'cash') {
+            $escrowAmount = $order->wallet_paid + $order->card_paid;
+            if ($driver && $escrowAmount > 0) {
+                $driver->update([
+                    'wallet_amount' => $driver->wallet_amount + $escrowAmount
+                ]);
+
+                \App\Models\WalletTransaction::create([
+                    'user_id' => $driver->id,
+                    'amount' => $escrowAmount,
+                    'type' => 'deposit',
+                    'description' => "Order #{$order->id} Payout (Escrow Release for Shipping)"
+                ]);
+            }
+            $order->update(['is_escrow' => false]);
+        } else {
+            // Deduct commission from driver's wallet for cash trip
+            $this->deductDriverCommission($order);
+        }
+
+        // Reward points (Gamification)
+        $settings = Setting::first();
+        if ($settings && $driver) {
+            $driverPoints = $settings->points_driver_per_trip ?? 0;
+            if ($driverPoints > 0) {
+                $driver->increment('points', $driverPoints);
+                PointTransaction::create([
+                    'user_id' => $driver->id,
+                    'amount' => $driverPoints,
+                    'description' => 'Trip Completion Reward (Shipping Order #' . $order->id . ')',
+                    'order_id' => $order->id
+                ]);
+            }
+        }
+
+        TripStatusUpdated::dispatch($order->fresh());
+
+        if ($order->user) {
+            $order->user->sendPushNotification("اكتملت عملية الشحن", "تم تسليم شحنتك بنجاح للمستلم وإنهاء الرحلة. شكراً لك.", ['order_id' => $order->id, 'type' => 'trip_update']);
+        }
+
+        $receiverUser = User::where('phone_number', $order->receiver_phone)->first();
+        if ($receiverUser) {
+            $receiverUser->sendPushNotification("تم استلام الشحنة", "شكراً لك، تم تأكيد استلام شحنتك بنجاح.", ['order_id' => $order->id, 'type' => 'trip_update']);
+        }
+
+        return Resp(new OrderResource($order->fresh()), 'Delivery OTP verified. Trip completed successfully.');
     }
 }
