@@ -72,7 +72,6 @@ class OrderApiController extends Controller
         return Resp(new OrderResource($order->load(['driver', 'user', 'service', 'offers', 'reviews'])), 'success');
     }
 
-    /**
     private function checkDriverWalletForShipping(User $driver, Order $order)
     {
         $settings = Setting::first();
