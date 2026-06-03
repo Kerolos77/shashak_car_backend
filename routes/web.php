@@ -78,6 +78,13 @@ Auth::routes(['register' => false]);
 Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth:admin']], function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('home-v2', [HomeController::class, 'indexV2'])->name('home-v2');
+    
+    Route::get('switch-theme/{theme}', function($theme) {
+        if (in_array($theme, ['v1', 'v2'])) {
+            session()->put('admin_theme', $theme);
+        }
+        return redirect()->back();
+    })->name('switch-theme');
 
     Route::get('payment-methods', [PaymentMethodController::class, 'index'])->name('payment-methods.index');
     Route::put('payment-methods', [PaymentMethodController::class, 'update'])->name('payment-methods.update');

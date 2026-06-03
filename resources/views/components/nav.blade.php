@@ -127,6 +127,26 @@
                     <!--end::Menu wrapper-->
                 </div>
                 <!--end::My apps links-->
+                <!--begin::Theme V1/V2 Swapper-->
+                <div class="app-navbar-item ms-1 ms-md-4">
+                    @if(session()->get('admin_theme') === 'v2')
+                        <a href="{{ route('admin.switch-theme', 'v1') }}" 
+                           class="btn btn-sm btn-light-warning fw-bold px-3 d-flex align-items-center gap-2 border border-warning border-opacity-30" 
+                           title="{{ app()->getLocale() == 'ar' ? 'الرجوع إلى المظهر التقليدي V1' : 'Switch back to classic V1 look' }}">
+                            <span class="bullet bg-warning w-8px h-8px rounded-circle"></span>
+                            <span class="fs-8 text-uppercase">V1 Classic</span>
+                        </a>
+                    @else
+                        <a href="{{ route('admin.switch-theme', 'v2') }}" 
+                           class="btn btn-sm btn-light-success fw-bold px-3 d-flex align-items-center gap-2 border border-success border-opacity-30" 
+                           title="{{ app()->getLocale() == 'ar' ? 'تفعيل المظهر الفاخر V2' : 'Activate premium V2 dashboard' }}">
+                            <span class="bullet bg-success w-8px h-8px rounded-circle"></span>
+                            <span class="fs-8 text-uppercase fw-bold text-success">V2 Premium</span>
+                        </a>
+                    @endif
+                </div>
+                <!--end::Theme V1/V2 Swapper-->
+
                 <!--begin::Theme mode-->
                 <div class="app-navbar-item ms-1 ms-md-4">
                     <!--begin::Menu toggle-->
