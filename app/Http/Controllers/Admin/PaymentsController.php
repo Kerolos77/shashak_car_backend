@@ -34,31 +34,30 @@ class PaymentsController extends Controller
         }
 
         $user = User::find($request->userID);
-        if ($user->wallet_amount < $request->amount) {
-            return back()->with('error', 'Insufficient wallet balance for this driver.');
+        if (!$user) {
+            return back()->with('error', 'User not found.');
         }
 
-        // --- Paymob Payout/Accept Disbursements API Call Placeholder ---
-        // By default, Paymob Accept requires a separate Payout account/contract.
-        // $paymob = new \App\Services\PaymobService();
-        // $response = $paymob->transferToWallet($request->amount, $user->phone_number);
-        // if (!$response['success']) { return back()->with('error', 'Paymob Transfer Failed: ' . $response['message']); }
+        \Illuminate\Support\Facades\DB::transaction(function () use ($request, $user) {
+            // Find the pending WalletTransaction and update its description
+            $walletTx = \App\Models\WalletTransaction::where('user_id', $user->id)
+                ->where('amount', $request->amount)
+                ->where('type', 'withdraw')
+                ->where('description', 'like', '%Pending%')
+                ->latest()
+                ->first();
 
-        $user->update([
-            'wallet_amount' => $user->wallet_amount - $request->amount
-        ]);
+            if ($walletTx) {
+                $walletTx->update([
+                    'description' => 'تمت الموافقة على طلب السحب (Withdrawal Request Approved)'
+                ]);
+            }
 
-        \App\Models\WalletTransaction::create([
-            'user_id'     => $user->id,
-            'amount'      => $request->amount,
-            'type'        => 'withdraw',
-            'description' => 'Withdrawal Request Approved (Wallet Transfer)'
-        ]);
-
-        $request->update([
-            'success' => 1,
-            'status'  => 'success'
-        ]);
+            $request->update([
+                'success' => 1,
+                'status'  => 'success'
+            ]);
+        });
 
         return back()->with('success', 'Withdrawal approved and processed successfully.');
     }
@@ -70,9 +69,45 @@ class PaymentsController extends Controller
             return back()->with('error', 'Request already processed.');
         }
 
-        $request->update([
-            'status'  => 'rejected'
-        ]);
+        $user = User::find($request->userID);
+        if (!$user) {
+            return back()->with('error', 'User not found.');
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($request, $user) {
+            // 1. Refund the amount back to user's wallet
+            $user->update([
+                'wallet_amount' => $user->wallet_amount + $request->amount
+            ]);
+
+            // 2. Log a refund WalletTransaction of type 'deposit'
+            \App\Models\WalletTransaction::create([
+                'user_id'     => $user->id,
+                'amount'      => $request->amount,
+                'type'        => 'deposit',
+                'description' => 'إرجاع رصيد لرفض طلب السحب (Withdrawal Request Rejected - Refunded)'
+            ]);
+
+            // 3. Find the original pending WalletTransaction and mark it as rejected
+            $walletTx = \App\Models\WalletTransaction::where('user_id', $user->id)
+                ->where('amount', $request->amount)
+                ->where('type', 'withdraw')
+                ->where('description', 'like', '%Pending%')
+                ->latest()
+                ->first();
+
+            if ($walletTx) {
+                $walletTx->update([
+                    'description' => 'طلب سحب مرفوض (Withdrawal Request Rejected)'
+                ]);
+            }
+
+            // 4. Update the request status
+            $request->update([
+                'status'  => 'rejected',
+                'success' => 0
+            ]);
+        });
 
         return back()->with('success', 'Withdrawal request rejected.');
     }

@@ -93,16 +93,31 @@ class PaymentsApiController extends Controller
             return Resp(null, 'Insufficient wallet balance', 400, false);
         }
 
-        // Create withdraw request as Pending (Will be approved by Admin later)
-        $transactions = WithdrawRequest::create([
-            'amount'         => $request->value,
-            'userID'         => $userID,
-            'success'        => 0,  
-            'status'         => 'pending',
-            'payroll_method' => $request->payroll_method ?? 'wallet' // Expecting 'wallet' or 'card'
-        ]);
+        $withdrawRequest = \Illuminate\Support\Facades\DB::transaction(function () use ($user, $userID, $request) {
+            // 1. Deduct immediately from driver's wallet
+            $user->update([
+                'wallet_amount' => $user->wallet_amount - $request->value
+            ]);
 
-        return resp($transactions, 'Withdrawal request submitted successfully and is pending approval.', 200);
+            // 2. Log a pending WalletTransaction of type 'withdraw'
+            \App\Models\WalletTransaction::create([
+                'user_id'     => $user->id,
+                'amount'      => $request->value,
+                'type'        => 'withdraw',
+                'description' => 'طلب سحب قيد الانتظار (Withdrawal Request Pending)'
+            ]);
+
+            // 3. Create withdraw request as Pending (Will be approved by Admin later)
+            return WithdrawRequest::create([
+                'amount'         => $request->value,
+                'userID'         => $userID,
+                'success'        => 0,  
+                'status'         => 'pending',
+                'payroll_method' => $request->payroll_method ?? 'wallet' // Expecting 'wallet' or 'card'
+            ]);
+        });
+
+        return resp($withdrawRequest, 'Withdrawal request submitted successfully and is pending approval.', 200);
 
     }
     public function get_withdraw_request()
