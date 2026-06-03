@@ -14,7 +14,7 @@
 
     <link rel="shortcut icon" href="{{ asset('assets/media/logos/favicon.ico') }}" />
     <!--begin::Fonts(mandatory for all pages)-->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <!--end::Fonts-->
     <!--begin::Vendor Stylesheets(used for this page only)-->
     <link href="{{ asset('assets/plugins/custom/fullcalendar/fullcalendar.bundle.css') }}" rel="stylesheet" type="text/css" />
@@ -23,11 +23,14 @@
 @if(app()->getLocale()=='en')
     <link href="{{ asset('assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
-	@else
-    
-	  <link href="{{ asset('assets/plugins/global/plugins.bundle.rtl.css') }}" rel="stylesheet" type="text/css"/>
-                            <link href="{{ asset('assets/css/style.bundle.rtl.css') }}" rel="stylesheet" type="text/css"/>
-							@endif
+@else
+    <link href="{{ asset('assets/plugins/global/plugins.bundle.rtl.css') }}" rel="stylesheet" type="text/css"/>
+    <link href="{{ asset('assets/css/style.bundle.rtl.css') }}" rel="stylesheet" type="text/css"/>
+@endif
+
+    <!-- Global V2 Design Override Engine -->
+    <link href="{{ asset('assets/css/v2_dashboard.css') }}" rel="stylesheet" type="text/css" />
+
     <style>
         /* Language Switching Improvements */
         .app-navbar .menu-sub .menu-link.active {
@@ -136,8 +139,6 @@
                     <div class="px-6 app-sidebar-logo" id="kt_app_sidebar_logo">
                         <!--begin::Logo image-->
                         <a href="{{ url('/') }}">
-                                        {{-- <img src="{{ asset('app_logo.png') }}" width="100" alt="Logo"> --}}
-
                             <img alt="Logo" src="{{ asset('app_logo.png') }}"
                                 class="h-60px app-sidebar-logo-default" style=""/>
                             <img alt="Logo" src="{{ asset('app_logo.png') }}"
@@ -145,14 +146,6 @@
                         </a>
                         <!--end::Logo image-->
                         <!--begin::Sidebar toggle-->
-                        <!--begin::Minimized sidebar setup:
-                         if (isset($_COOKIE["sidebar_minimize_state"]) && $_COOKIE["sidebar_minimize_state"] === "on") {
-                           1. "src/js/layout/sidebar.js" adds "sidebar_minimize_state" cookie value to save the sidebar minimize state.
-                            2. Set data-kt-app-sidebar-minimize="on" attribute for body tag.
-                            3. Set data-kt-toggle-state="active" attribute to the toggle element with "kt_app_sidebar_toggle" id.
-                         4. Add "active" class to to sidebar toggle element with "kt_app_sidebar_toggle" id.
-                           }
-                           -->
                         <div id="kt_app_sidebar_toggle"
                             class="app-sidebar-toggle btn btn-icon btn-shadow btn-sm btn-color-muted btn-active-color-primary h-30px w-30px position-absolute top-50 start-100 translate-middle rotate"
                             data-kt-toggle="true" data-kt-toggle-state="active" data-kt-toggle-target="body"
@@ -168,29 +161,12 @@
                     <!--begin::sidebar menu-->
                     <x-sidebar />
                     <!--end::sidebar menu-->
-                    <!--begin::Footer-->
-                    {{-- <div class="px-6 pt-2 pb-6 app-sidebar-footer flex-column-auto" id="kt_app_sidebar_footer">
-                        <a href="{{ url('/') }}"
-                            class="px-0 overflow-hidden btn btn-flex flex-center btn-custom btn-primary text-nowrap h-40px w-100"
-                            data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-dismiss-="click"
-                            title="200+ in-house components and 3rd-party plugins">
-                            <span class="btn-label">Go To Site</span>
-                            <i class="m-0 ki-duotone ki-document btn-icon fs-2">
-                                <span class="path1"></span>
-                                <span class="path2"></span>
-                            </i>
-                        </a>
-                    </div> --}}
-                    <!--end::Footer-->
                 </div>
                 <!--end::Sidebar-->
                 <!--begin::Main-->
                 <div class="app-main flex-column flex-row-fluid" id="kt_app_main">
                     <!--begin::Content wrapper-->
                     <div class="d-flex flex-column flex-column-fluid">
-                        <!--begin::Toolbar-->
-
-                        <!--end::Toolbar-->
                         <!--begin::Content-->
                         <div id="kt_app_content" class="app-content flex-column-fluid">
                             <!--begin::Content container-->
@@ -212,26 +188,10 @@
                             class="py-3 app-container container-fluid d-flex flex-column flex-md-row flex-center flex-md-stack">
                             <!--begin::Copyright-->
                             <div class="order-2 text-gray-900 order-md-1">
-                                <span class="text-muted fw-semibold me-1">2024&copy;</span>
-                                <a href="https://keenthemes.com" target="_blank"
-                                    class="text-gray-800 text-hover-primary">Keenthemes</a>
+                                <span class="text-muted fw-semibold me-1">2026&copy;</span>
+                                <a href="{{ url('/') }}" class="text-gray-800 text-hover-primary">Shakshak Car</a>
                             </div>
                             <!--end::Copyright-->
-                            <!--begin::Menu-->
-                            <ul class="order-1 menu menu-gray-600 menu-hover-primary fw-semibold">
-                                <li class="menu-item">
-                                    <a href="https://keenthemes.com" target="_blank" class="px-2 menu-link">About</a>
-                                </li>
-                                <li class="menu-item">
-                                    <a href="https://devs.keenthemes.com" target="_blank"
-                                        class="px-2 menu-link">Support</a>
-                                </li>
-                                <li class="menu-item">
-                                    <a href="https://1.envato.market/EA4JP" target="_blank"
-                                        class="px-2 menu-link">Purchase</a>
-                                </li>
-                            </ul>
-                            <!--end::Menu-->
                         </div>
                         <!--end::Footer container-->
                     </div>
@@ -244,10 +204,6 @@
         <!--end::Page-->
     </div>
 
-
-    {{-- @include('admin.layouts.charts') --}}
-    <!--end::Modal - Invite Friend-->
-    <!--end::Modals-->
     <!--begin::Javascript-->
   <script src="{{ asset('assets/plugins/global/plugins.bundle.js') }}"></script>
 <script src="{{ asset('assets/js/scripts.bundle.js') }}"></script>
@@ -255,9 +211,6 @@
 
 <!-- Vendors Javascript (used for this page only) -->
 <script src="{{ asset('assets/plugins/custom/fullcalendar/fullcalendar.bundle.js') }}"></script>
-
-<!-- External JS Libraries -->
-
 
 <!-- Datatables Plugin -->
 <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
@@ -267,15 +220,10 @@
 <script src="{{ asset('assets/js/widgets.bundle.js') }}"></script>
 <script src="{{ asset('assets/js/custom/widgets.js') }}"></script>
 <script src="{{ asset('assets/js/custom/apps/chat/chat.js') }}"></script>
-<script src="{{ asset('assets/js/custom/utilities/modals/upgrade-plan.js') }}"></script>
-<script src="{{ asset('assets/js/custom/utilities/modals/create-app.js') }}"></script>
-<script src="{{ asset('assets/js/custom/utilities/modals/new-target.js') }}"></script>
-<script src="{{ asset('assets/js/custom/utilities/modals/users-search.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
     function confirmDelete(vendorId) {
-        // SweetAlert confirmation dialog
         Swal.fire({
             title: 'Are you sure?',
             text: "You won't be able to revert this action!",
@@ -285,32 +233,29 @@
             cancelButtonText: 'No, cancel!'
         }).then((result) => {
             if (result.isConfirmed) {
-                // If confirmed, submit the form
                 document.getElementById('delete-form-' + vendorId).submit();
             }
         });
     }
-    // Global success alert function
-function showSuccessAlert(message) {
-    Swal.fire({
-        icon: 'success',
-        title: 'Success!',
-        text: message,
-        showConfirmButton: false,
-        timer: 1500
-    });
-}
+    
+    function showSuccessAlert(message) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: message,
+            showConfirmButton: false,
+            timer: 1500
+        });
+    }
 
-// Global error alert function
-function showErrorAlert(message) {
-    Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: message,
-        showConfirmButton: true
-    });
-}
-
+    function showErrorAlert(message) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: message,
+            showConfirmButton: true
+        });
+    }
 </script>
 @stack('scripts')
     <!--end::Custom Javascript-->
