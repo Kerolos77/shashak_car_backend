@@ -227,6 +227,11 @@ class HomeController
         // Chart Data (Last 30 days)
         $chartData = $this->getChartData();
 
+        // Recent Detailed Records for V2 Dashboard Lists
+        $recentOrdersList = Order::with(['user', 'driver', 'service'])->orderBy('id', 'desc')->limit(5)->get();
+        $recentDriversList = DriverProfile::with(['user', 'service'])->orderBy('id', 'desc')->limit(5)->get();
+        $recentWithdrawalsList = WithdrawRequest::with(['user'])->orderBy('id', 'desc')->limit(5)->get();
+
         return view('admin.home_v2', compact(
             // Basic Counts
             'totalUsers', 'totalDrivers', 'totalOrders', 'totalServices', 'totalFreightVehicles',
@@ -260,7 +265,10 @@ class HomeController
             'userGrowth', 'driverGrowth', 'orderGrowth', 'incomeGrowth',
             
             // Chart Data
-            'chartData'
+            'chartData',
+
+            // Recent Detailed Lists
+            'recentOrdersList', 'recentDriversList', 'recentWithdrawalsList'
         ));
     }
 
