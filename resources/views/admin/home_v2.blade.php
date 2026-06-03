@@ -327,7 +327,7 @@
                                         <i class="ki-duotone ki-profile-user fs-5 me-2"><span class="path1"></span><span class="path2"></span></i>
                                         {{ __('admin.manage_drivers') }}
                                     </a>
-                                    <a href="{{ route('admin.order.index') }}" class="btn quick-action-btn py-3 px-5 fw-bold">
+                                    <a href="{{ route('admin.orders.index') }}" class="btn quick-action-btn py-3 px-5 fw-bold">
                                         <i class="ki-duotone ki-shopping-cart fs-5 me-2"><span class="path1"></span><span class="path2"></span></i>
                                         {{ __('admin.manage_orders') }}
                                     </a>
@@ -823,7 +823,7 @@
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    <a href="{{ route('admin.order.show', $order->id) }}" class="btn-table-action btn-table-action-view" title="{{ __('admin.view') }}">
+                                                    <a href="{{ route('admin.orders.show', $order->id) }}" class="btn-table-action btn-table-action-view" title="{{ __('admin.view') }}">
                                                         <i class="ki-duotone ki-eye fs-5"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
                                                     </a>
                                                 </td>
@@ -941,18 +941,12 @@
                                                 <td>
                                                     <div class="d-flex gap-2">
                                                         @if($withdraw->status === 'pending')
-                                                            <form action="{{ route('admin.payments.accept', $withdraw->id) }}" method="POST" class="d-inline">
-                                                                @csrf
-                                                                <button type="submit" class="btn-table-action btn-table-action-approve" title="{{ __('admin.approve') }}">
-                                                                    <i class="ki-duotone ki-check fs-5"></i>
-                                                                </button>
-                                                            </form>
-                                                            <form action="{{ route('admin.payments.reject', $withdraw->id) }}" method="POST" class="d-inline">
-                                                                @csrf
-                                                                <button type="submit" class="btn-table-action btn-table-action-reject" title="{{ __('admin.reject') }}">
-                                                                    <i class="ki-duotone ki-cross fs-5"><span class="path1"></span><span class="path2"></span></i>
-                                                                </button>
-                                                            </form>
+                                                            <a href="{{ route('admin.payments.accept', $withdraw->id) }}" class="btn-table-action btn-table-action-approve" title="{{ __('admin.approve') }}">
+                                                                <i class="ki-duotone ki-check fs-5"></i>
+                                                            </a>
+                                                            <a href="{{ route('admin.payments.reject', $withdraw->id) }}" class="btn-table-action btn-table-action-reject" title="{{ __('admin.reject') }}">
+                                                                <i class="ki-duotone ki-cross fs-5"><span class="path1"></span><span class="path2"></span></i>
+                                                            </a>
                                                         @else
                                                             <span class="text-gray-400 fs-8">-</span>
                                                         @endif
