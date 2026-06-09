@@ -40,7 +40,13 @@ class LocationTrackingController extends Controller
             // Prevent huge jumps if they were offline for a long time. Max 60 seconds decrement per ping.
             // If they ping every 10 seconds, this will accurately deduct 10 seconds.
             // If they close the app for an hour and ping, it will only deduct max 60 seconds.
-            $secondsDiff = $user->updated_at ? $user->updated_at->diffInSeconds($now) : 0;
+            $secondsDiff = 0;
+            if ($user->updated_at) {
+                $rawUpdatedAt = $user->getRawOriginal('updated_at');
+                if ($rawUpdatedAt) {
+                    $secondsDiff = \Carbon\Carbon::parse($rawUpdatedAt)->diffInSeconds($now);
+                }
+            }
             if ($secondsDiff > 0 && $secondsDiff <= 120) {
                 $user->cash_restriction_seconds_remaining = max(0, $user->cash_restriction_seconds_remaining - $secondsDiff);
             }
