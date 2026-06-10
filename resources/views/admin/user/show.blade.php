@@ -32,6 +32,20 @@
                             <span class="badge badge-light-primary ms-2">{{ $user->referrals->count() }}</span>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#kt_user_view_identity_tab">
+                            توثيق الهوية بالذكاء الاصطناعي
+                            @if($user->identity)
+                                @if($user->identity->status === 'verified')
+                                    <span class="badge badge-light-success ms-2">موثق</span>
+                                @else
+                                    <span class="badge badge-light-danger ms-2">فشل التحقق</span>
+                                @endif
+                            @else
+                                <span class="badge badge-light-dark ms-2">غير موثق</span>
+                            @endif
+                        </a>
+                    </li>
                 </ul>
                 <!--end::Tabs-->
 
@@ -175,6 +189,120 @@
                                         </tbody>
                                     </table>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="kt_user_view_identity_tab">
+                        <div class="card card-flush mb-6 mb-xl-9">
+                            <div class="card-header mt-6">
+                                <div class="card-title flex-column">
+                                    <h2 class="mb-1">بيانات الهوية والتحقق بالذكاء الاصطناعي</h2>
+                                </div>
+                            </div>
+                            <div class="card-body p-9 pt-4">
+                                @if($user->identity)
+                                    <div class="mb-8">
+                                        <div class="row g-5">
+                                            <div class="col-md-4">
+                                                <div class="border border-dashed border-gray-300 rounded px-6 py-4 text-center">
+                                                    <div class="fs-6 text-gray-400 fw-bold mb-2">وجه البطاقة</div>
+                                                    <a href="{{ url('files/UserIdentity/' . $user->id . '/' . $user->identity->front_image) }}" target="_blank">
+                                                        <img src="{{ url('files/UserIdentity/' . $user->id . '/' . $user->identity->front_image) }}" class="img-fluid rounded max-h-150px" style="max-height: 150px;" />
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="border border-dashed border-gray-300 rounded px-6 py-4 text-center">
+                                                    <div class="fs-6 text-gray-400 fw-bold mb-2">ظهر البطاقة</div>
+                                                    <a href="{{ url('files/UserIdentity/' . $user->id . '/' . $user->identity->back_image) }}" target="_blank">
+                                                        <img src="{{ url('files/UserIdentity/' . $user->id . '/' . $user->identity->back_image) }}" class="img-fluid rounded max-h-150px" style="max-height: 150px;" />
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="border border-dashed border-gray-300 rounded px-6 py-4 text-center">
+                                                    <div class="fs-6 text-gray-400 fw-bold mb-2">صورة السيلفي الحية</div>
+                                                    <a href="{{ url('files/UserIdentity/' . $user->id . '/' . $user->identity->selfie_image) }}" target="_blank">
+                                                        <img src="{{ url('files/UserIdentity/' . $user->id . '/' . $user->identity->selfie_image) }}" class="img-fluid rounded max-h-150px" style="max-height: 150px;" />
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <table class="table table-striped">
+                                        <tbody>
+                                            <tr>
+                                                <th>حالة التوثيق</th>
+                                                <td>
+                                                    @if($user->identity->status === 'verified')
+                                                        <span class="badge badge-success fs-6">Passed (موثق مقبول)</span>
+                                                    @else
+                                                        <span class="badge badge-danger fs-6">Failed (مرفوض)</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>الرقم القومي المستخرج</th>
+                                                <td><span class="badge badge-light-dark fw-bolder fs-6">{{ $user->identity->id_number }}</span></td>
+                                            </tr>
+                                            <tr>
+                                                <th>نسبة تطابق الوجه بالذكاء الاصطناعي</th>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <span class="me-2 fw-bolder">{{ $user->identity->ai_face_similarity }}%</span>
+                                                        <div class="progress h-6px w-100px bg-light-success">
+                                                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ $user->identity->ai_face_similarity }}%"></div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            @if($user->identity->ai_rejection_reason)
+                                                <tr class="table-danger">
+                                                    <th>سبب الرفض المعروض للمستخدم</th>
+                                                    <td class="text-danger fw-bold fs-6">{{ $user->identity->ai_rejection_reason }}</td>
+                                                </tr>
+                                            @endif
+                                            @if(is_array($user->identity->ai_verification_report))
+                                                <tr>
+                                                    <th>تقرير المطابقة بين الوجه والظهر</th>
+                                                    <td>
+                                                        @if($user->identity->ai_verification_report['front_back_matched'] ?? false)
+                                                            <span class="text-success"><i class="fa fa-check-circle me-1"></i> متطابقان وينتميان لنفس البطاقة</span>
+                                                        @else
+                                                            <span class="text-danger"><i class="fa fa-times-circle me-1"></i> غير متطابقان أو هناك اختلاف في قالب البطاقة</span>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <th>فحص الصور المعدلة ومصورة الشاشات</th>
+                                                    <td>
+                                                        <ul class="list-unstyled mb-0">
+                                                            <li>سيلفي حقيقي مباشر: {!! ($user->identity->ai_verification_report['is_real_selfie'] ?? false) ? '<span class="text-success">نعم</span>' : '<span class="text-danger">لا (اشتباه تزييف أو تصوير شاشة)</span>' !!}</li>
+                                                            <li>وجه البطاقة طبيعي: {!! ($user->identity->ai_verification_report['is_real_id_front'] ?? false) ? '<span class="text-success">نعم</span>' : '<span class="text-danger">لا (اشتباه تزييف أو تصوير شاشة)</span>' !!}</li>
+                                                            <li>ظهر البطاقة طبيعي: {!! ($user->identity->ai_verification_report['is_real_id_back'] ?? false) ? '<span class="text-success">نعم</span>' : '<span class="text-danger">لا (اشتباه تزييف أو تصوير شاشة)</span>' !!}</li>
+                                                            <li>تعديل رقمي/توليد ذكاء اصطناعي: {!! ($user->identity->ai_verification_report['ai_generated_or_modified_detected'] ?? false) ? '<span class="text-danger">تم اكتشافه!</span>' : '<span class="text-success">لا يوجد تعديل</span>' !!}</li>
+                                                        </ul>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <th>الاسم المستخرج بالكامل</th>
+                                                    <td>{{ $user->identity->ai_verification_report['extracted_full_name'] ?? '-' }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>ملاحظات الذكاء الاصطناعي التفصيلية</th>
+                                                    <td><p class="text-gray-700 fs-7" style="white-space: pre-wrap;">{{ $user->identity->ai_verification_report['detailed_report'] ?? '-' }}</p></td>
+                                                </tr>
+                                            @endif
+                                        </tbody>
+                                    </table>
+                                @else
+                                    <div class="text-center py-10">
+                                        <i class="fa fa-id-card fs-3x text-muted mb-4"></i>
+                                        <p class="text-gray-500 fs-5">لم يقم هذا العميل برفع أي مستندات أو طلب توثيق الهوية حتى الآن.</p>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>

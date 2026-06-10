@@ -200,6 +200,10 @@ class User extends Authenticatable implements HasLocalePreference
     {
         return $this->hasOne(DriverProfile::class);
     }
+    public function identity()
+    {
+        return $this->hasOne(UserIdentity::class);
+    }
     public function roles()
     {
         return $this->belongsToMany(Role::class);

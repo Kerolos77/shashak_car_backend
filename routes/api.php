@@ -117,6 +117,10 @@ Route::group(['prefix' => 'v1', 'as' => 'api.', 'middleware' => ['auth:sanctum']
         // User Shop Packages
         Route::get('packages', [\App\Http\Controllers\Api\V1\PackageApiController::class, 'index']);
         Route::post('packages/buy', [\App\Http\Controllers\Api\V1\PackageApiController::class, 'buy']);
+
+        // User Identity Verification APIs
+        Route::post('verify-identity', [\App\Http\Controllers\Api\V1\UserIdentityApiController::class, 'verifyIdentity']);
+        Route::get('identity-status', [\App\Http\Controllers\Api\V1\UserIdentityApiController::class, 'identityStatus']);
     });
     Route::prefix('services')->group(function () {
         Route::get('incity', [ServiceApiController::class, 'incity']);

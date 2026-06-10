@@ -35,7 +35,7 @@ class UserController extends Controller
     {
         abort_if(Gate::denies('user_show'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $user->load(['roles', 'referrals', 'referrer']);
+        $user->load(['roles', 'referrals', 'referrer', 'identity']);
 
         return view('admin.user.show', compact('user'));
     }
