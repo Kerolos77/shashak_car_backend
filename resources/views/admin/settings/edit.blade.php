@@ -394,6 +394,15 @@
                                     placeholder="الحد الأدنى لمحفظة السائق لرحلات الشحن">
                             </div>
                         </div>
+                        <div class="col-lg-12">
+                            <div class="mb-3">
+                                <label class="form-label"
+                                    for="basic-default-gemini_api_key">مفتاح API الخاص بالتحقق بالذكاء الاصطناعي (Gemini API Key)</label>
+                                <input type="text" value="{{ $row->gemini_api_key }}" name="gemini_api_key" class="form-control"
+                                    id="basic-default-gemini_api_key"
+                                    placeholder="أدخل مفتاح Gemini API هنا">
+                            </div>
+                        </div>
                         <button type="submit" class="btn btn-primary waves-effect waves-light">{{ __('global.save') }}</button>
 
                     </div>
