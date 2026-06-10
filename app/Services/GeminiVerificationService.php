@@ -17,7 +17,7 @@ class GeminiVerificationService
      */
     public function verifyIdentity(string $frontImagePath, string $backImagePath, string $selfieImagePath): array
     {
-        $apiKey = env('GEMINI_API_KEY');
+        $apiKey = config('services.gemini.key');
 
         if (empty($apiKey)) {
             Log::error('Gemini Verification failed: GEMINI_API_KEY is not set in .env');
