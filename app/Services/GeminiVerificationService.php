@@ -143,10 +143,11 @@ Your tasks are:
                     'status' => $response->status(),
                     'body' => $response->body(),
                 ]);
+                $apiError = $response->json('error.message') ?? $response->body();
                 return [
                     'success' => false,
                     'overall_status' => 'failed',
-                    'rejection_reason_arabic' => 'فشل الاتصال بخدمة التحقق الذكي، يرجى المحاولة لاحقاً.',
+                    'rejection_reason_arabic' => 'فشل الاتصال بـ Gemini: ' . $apiError,
                     'detailed_report' => 'Gemini API returned error status: ' . $response->status() . '. Body: ' . $response->body(),
                 ];
             }
