@@ -171,7 +171,8 @@ class UserIdentityApiController extends Controller
                     'rejection_reason' => $identity->ai_rejection_reason ?? '',
                     'id_number' => $identity->id_number ?? '',
                     'face_similarity_score' => $identity->ai_face_similarity ?? 0,
-                ]
+                ],
+                'ai_verification_report' => $identity->ai_verification_report,
             ]);
 
         } catch (\Exception $e) {

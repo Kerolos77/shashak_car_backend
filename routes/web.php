@@ -172,6 +172,15 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth:admi
     // Packages (Shop) Route
     Route::resource('packages', App\Http\Controllers\Admin\PackageController::class);
 
+    // Theme switching route
+    Route::get('switch-theme/{theme}', function ($theme) {
+        if (!in_array($theme, ['v1', 'v2'])) {
+            abort(400);
+        }
+        session()->put('admin_theme', $theme);
+        return redirect()->back();
+    })->name('switch-theme');
+
 });
 
 Route::group(['prefix' => 'profile', 'as' => 'profile.', 'middleware' => ['auth']], function () {
