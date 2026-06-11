@@ -28,10 +28,8 @@
     <link href="{{ asset('assets/css/style.bundle.rtl.css') }}" rel="stylesheet" type="text/css"/>
 @endif
 
-    @if(session()->get('admin_theme') === 'v2')
-        <!-- Global V2 Design Override Engine -->
-        <link href="{{ asset('assets/css/v2_dashboard.css') }}" rel="stylesheet" type="text/css" />
-    @endif
+    <!-- Global V2 Design Override Engine -->
+    <link href="{{ asset('assets/css/v2_dashboard.css') }}" rel="stylesheet" type="text/css" />
 
     <style>
         /* Language Switching Improvements */

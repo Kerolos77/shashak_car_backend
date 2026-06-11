@@ -127,25 +127,7 @@
                     <!--end::Menu wrapper-->
                 </div>
                 <!--end::My apps links-->
-                <!--begin::Theme V1/V2 Swapper-->
-                <div class="app-navbar-item ms-1 ms-md-4">
-                    @if(session()->get('admin_theme') === 'v2')
-                        <a href="{{ route('admin.switch-theme', 'v1') }}" 
-                           class="btn btn-sm btn-light-warning fw-bold px-3 d-flex align-items-center gap-2 border border-warning border-opacity-30" 
-                           title="{{ app()->getLocale() == 'ar' ? 'الرجوع إلى المظهر التقليدي V1' : 'Switch back to classic V1 look' }}">
-                            <span class="bullet bg-warning w-8px h-8px rounded-circle"></span>
-                            <span class="fs-8 text-uppercase">V1 Classic</span>
-                        </a>
-                    @else
-                        <a href="{{ route('admin.switch-theme', 'v2') }}" 
-                           class="btn btn-sm btn-light-success fw-bold px-3 d-flex align-items-center gap-2 border border-success border-opacity-30" 
-                           title="{{ app()->getLocale() == 'ar' ? 'تفعيل المظهر الفاخر V2' : 'Activate premium V2 dashboard' }}">
-                            <span class="bullet bg-success w-8px h-8px rounded-circle"></span>
-                            <span class="fs-8 text-uppercase fw-bold text-success">V2 Premium</span>
-                        </a>
-                    @endif
-                </div>
-                <!--end::Theme V1/V2 Swapper-->
+
 
                 <!--begin::Theme mode-->
                 <div class="app-navbar-item ms-1 ms-md-4">
@@ -255,14 +237,14 @@
                                     <div class="fw-bold d-flex align-items-center fs-5">
                                         {{ auth()->user()->name }}
                                         <span class="px-2 py-1 badge badge-light-success fw-bold fs-8 ms-2">
-                                            {{ app()->getLocale() == 'ar' ? 'مدير' : 'Admin' }}
+                                            {{ __('admin.admin_role') }}
                                         </span>
                                     </div>
                                     <a href="#" class="fw-semibold text-muted text-hover-primary fs-7">
                                         {{ auth()->user()->email }}
                                     </a>
                                     <span class="fw-semibold text-muted fs-8 mt-1">
-                                        {{ app()->getLocale() == 'ar' ? 'آخر تسجيل دخول: الآن' : 'Last login: Now' }}
+                                        {{ __('admin.last_login_now') }}
                                     </span>
                                 </div>
                                 <!--end::Username-->
@@ -285,12 +267,12 @@
                                     <span class="path2"></span>
                                 </i>
                                 <span class="menu-title position-relative">
-                                    {{ app()->getLocale() == 'ar' ? 'اللغة' : 'Language' }}
+                                    {{ __('admin.language') }}
                                     <span class="px-3 py-2 rounded fs-8 bg-light position-absolute translate-middle-y top-50 end-0 d-flex align-items-center">
-                                        {{ app()->getLocale() == 'ar' ? 'العربية' : 'English' }}
+                                        {{ app()->getLocale() == 'ar' ? __('admin.arabic') : __('admin.english') }}
                                         <img class="w-15px h-15px rounded-1 ms-2"
                                             src="{{ asset(app()->getLocale() == 'ar' ? 'assets/media/flags/saudi-arabia.svg' : 'assets/media/flags/united-states.svg') }}"
-                                            alt="{{ app()->getLocale() == 'ar' ? 'العربية' : 'English' }}" />
+                                            alt="{{ app()->getLocale() == 'ar' ? __('admin.arabic') : __('admin.english') }}" />
                                     </span>
                                 </span>
                             </a>
@@ -345,7 +327,7 @@
                                         <span class="path1"></span>
                                         <span class="path2"></span>
                                     </i>
-                                    {{ app()->getLocale() == 'ar' ? 'تسجيل الخروج' : 'Sign Out' }}
+                                    {{ __('admin.sign_out') }}
                                 </button>
                             </form>
                         </div>

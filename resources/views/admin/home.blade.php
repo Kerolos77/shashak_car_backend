@@ -504,16 +504,16 @@
                     <div class="card-header pt-6 pb-2 border-0">
                         <h3 class="card-title align-items-start flex-column">
                             <span class="card-label fw-bold text-gray-900 fs-4">
-                                {{ app()->getLocale() == 'ar' ? 'المتابعة الجغرافية الحية' : 'Live Geographic Tracking' }}
+                                {{ __('admin.live_tracking') }}
                             </span>
                             <span class="text-gray-500 mt-1 fw-semibold fs-7">
-                                {{ app()->getLocale() == 'ar' ? 'مواقع السائقين والرحلات النشطة حالياً في القاهرة' : 'Active drivers and live trips simulation in Cairo' }}
+                                {{ __('admin.active_drivers_simulation') }}
                             </span>
                         </h3>
                         <div class="card-toolbar">
                             <span class="badge badge-light-success fw-bold px-3 py-2 d-flex align-items-center gap-2">
                                 <span class="bullet bg-success w-6px h-6px rounded-circle animation-blink"></span>
-                                {{ app()->getLocale() == 'ar' ? 'المحاكاة نشطة' : 'Simulation Active' }}
+                                {{ __('admin.simulation_active') }}
                             </span>
                         </div>
                     </div>
@@ -874,7 +874,7 @@
                             <div class="accordion-item border-0">
                                 <h2 class="accordion-header" id="headingCatalog">
                                     <button class="accordion-button fs-6 fw-bold text-gray-800 collapsed py-4" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCatalog" aria-expanded="false" aria-controls="collapseCatalog" style="background:transparent !important; border:none !important; box-shadow:none !important;">
-                                        {{ app()->getLocale() == 'ar' ? 'إحصائيات الكتالوج والتعريفات' : 'Catalog & Settings Counts' }}
+                                        {{ __('admin.catalog_settings_counts') }}
                                     </button>
                                 </h2>
                                 <div id="collapseCatalog" class="accordion-collapse collapse" aria-labelledby="headingCatalog" data-bs-parent="#catalog_stats_accordion">
@@ -940,9 +940,9 @@ $(document).ready(function() {
     // Simulated drivers with initial positions and paths
     const drivers = [
         {
-            name: "{{ app()->getLocale() == 'ar' ? 'أحمد الشافعي' : 'Ahmed Shaffei' }}",
+            name: "{{ __('admin.sim_driver_1') }}",
             phone: "01023456789",
-            status: "{{ app()->getLocale() == 'ar' ? 'في رحلة نشطة' : 'On Active Trip' }}",
+            status: "{{ __('admin.sim_status_active') }}",
             lat: 30.0626,
             lng: 31.2497,
             deltaLat: 0.0003,
@@ -950,9 +950,9 @@ $(document).ready(function() {
             marker: null
         },
         {
-            name: "{{ app()->getLocale() == 'ar' ? 'محمود عبد العزيز' : 'Mahmoud Abdelaziz' }}",
+            name: "{{ __('admin.sim_driver_2') }}",
             phone: "01234567890",
-            status: "{{ app()->getLocale() == 'ar' ? 'يبحث عن طلب' : 'Searching for Trip' }}",
+            status: "{{ __('admin.sim_status_searching') }}",
             lat: 30.0131,
             lng: 31.2089,
             deltaLat: -0.0002,
@@ -960,9 +960,9 @@ $(document).ready(function() {
             marker: null
         },
         {
-            name: "{{ app()->getLocale() == 'ar' ? 'مصطفى كامل' : 'Mostafa Kamel' }}",
+            name: "{{ __('admin.sim_driver_3') }}",
             phone: "01545678901",
-            status: "{{ app()->getLocale() == 'ar' ? 'في طريق التوصيل' : 'Delivering Order' }}",
+            status: "{{ __('admin.sim_status_delivering') }}",
             lat: 30.0771,
             lng: 31.3426,
             deltaLat: 0.0004,

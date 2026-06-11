@@ -21,6 +21,9 @@ body, h1, h2, h3, h4, h5, h6, .card, .menu, .btn, .table, .breadcrumb, .breadcru
     font-family: Cairo, Outfit, sans-serif !important;
     -webkit-font-smoothing: antialiased;
 }
+body {
+    font-size: 1.05rem !important;
+}
 
 /* Base Layout Modifications */
 #kt_app_content {
