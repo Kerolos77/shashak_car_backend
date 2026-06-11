@@ -30,6 +30,16 @@
                             <span class="menu-title">{{ trans('global.dashboard') }}</span>
                         </a>
                     </div>
+
+                    <!-- Shipping Orders -->
+                    <div class="menu-item {{ request()->is('admin/shipping-orders*') ? 'here show' : '' }}">
+                        <a class="menu-link" href="{{ route('admin.shipping-orders.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-outline ki-truck fs-2"></i>
+                            </span>
+                            <span class="menu-title">Shipping Orders</span>
+                        </a>
+                    </div>
                     
                     <!-- Wallet Transactions -->
                     {{-- <div class="menu-item {{ request()->is('admin/wallet-transactions') ? 'here show' : '' }}">

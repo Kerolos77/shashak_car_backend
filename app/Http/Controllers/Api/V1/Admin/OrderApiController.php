@@ -646,10 +646,15 @@ class OrderApiController extends Controller
                        ->get();
 
         if ($drivers->isNotEmpty()) {
+            $isShipping = $order->is_shipping_order ?? false;
+            $notiTitle = $isShipping ? "طلب شحن جديد متاح" : "رحلة جديدة متاحة";
+            $notiBody = $isShipping ? "يوجد طلب شحن جديد، افتح التطبيق وقدم عرضك!" : "يوجد عميل يطلب رحلة جديدة، افتح التطبيق وقدم عرضك!";
+            $notiType = $isShipping ? 'new_shipping_order' : 'new_order';
+
             // 1. Dispatch database notifications to the queue efficiently
             \Illuminate\Support\Facades\Notification::send($drivers, new \App\Notifications\PushNotification(
-                "رحلة جديدة متاحة",
-                "يوجد عميل يطلب رحلة جديدة، افتح التطبيق وقدم عرضك!"
+                $notiTitle,
+                $notiBody
             ));
 
             // 2. Send Firebase Multicast Notification
@@ -660,12 +665,13 @@ class OrderApiController extends Controller
                     $messaging = app('firebase.messaging');
                     $message = \Kreait\Firebase\Messaging\CloudMessage::new()
                         ->withNotification([
-                            'title' => "رحلة جديدة متاحة",
-                            'body' => "يوجد عميل يطلب رحلة جديدة، افتح التطبيق وقدم عرضك!",
+                            'title' => $notiTitle,
+                            'body' => $notiBody,
                         ])
                         ->withData([
                             'order_id' => (string) $order->id, 
-                            'type' => 'new_order',
+                            'type' => $notiType,
+                            'is_shipping' => $isShipping ? 'true' : 'false',
                             'order_data' => json_encode($orderData)
                         ]);
                     

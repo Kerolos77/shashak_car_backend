@@ -66,3 +66,14 @@ Broadcast::channel('driver.{id}', function ($user, $id) {
     return $user && (int) $user->id === (int) $id;
 }, ['guards' => ['sanctum']]);
 
+// Driver channel for receiving shipping order notifications
+Broadcast::channel('driver-shipping.{id}', function ($user, $id) {
+    \Illuminate\Support\Facades\Log::info('Broadcasting Auth Attempt (Shipping)', [
+        'user_id' => $user ? $user->id : null,
+        'user_class' => $user ? get_class($user) : null,
+        'requested_channel_id' => $id,
+        'is_match' => $user ? ((int) $user->id === (int) $id) : false
+    ]);
+    return $user && (int) $user->id === (int) $id;
+}, ['guards' => ['sanctum']]);
+

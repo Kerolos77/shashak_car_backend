@@ -125,6 +125,9 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth:admi
     Route::get('manual-assign/{order}/drivers', [OrderController::class, 'manual_drivers'])->name('orders.manual_drivers');
     Route::post('manual-assign/{order}/assign', [OrderController::class, 'manual_assign'])->name('orders.manual_assign');
 
+    // Shipping Orders
+    Route::get('shipping-orders', [App\Http\Controllers\Admin\ShippingOrderController::class, 'index'])->name('shipping-orders.index');
+
 
     // Service
     Route::resource('services', ServiceController::class);

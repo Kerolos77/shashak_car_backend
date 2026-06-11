@@ -4,6 +4,7 @@ namespace App\Events;
 
 use App\Models\Order;
 use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -39,7 +40,11 @@ class TripStatusUpdated implements ShouldBroadcast
         if ($this->order->status === Order::STATUS_PENDING) {
             $eligibleDriverIds = \App\Services\EligibleDriverService::getEligibleDriverIds($this->order);
             foreach ($eligibleDriverIds as $driverId) {
-                $channels[] = new Channel('driver-' . $driverId);
+                if ($this->order->is_shipping_order) {
+                    $channels[] = new PrivateChannel('driver-shipping.' . $driverId);
+                } else {
+                    $channels[] = new PrivateChannel('driver.' . $driverId);
+                }
             }
         }
 
