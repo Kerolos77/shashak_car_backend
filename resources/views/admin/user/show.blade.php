@@ -103,9 +103,7 @@
                                             <th>{{ trans('cruds.user.fields.profile_pic') }}</th>
                                             <td>
                                                 @if($user->profile_pic)
-                                                    <a href="{{ $user->profile_pic->getUrl() }}" target="_blank" style="display: inline-block">
-                                                        <img src="{{ $user->profile_pic->getUrl('thumb') }}">
-                                                    </a>
+                                                    <a href="{{ $user->imageurl }}" target="_blank" style="display: inline-block"><img src="{{ $user->imageurl }}" style="max-height:80px; border-radius:8px;"></a>
                                                 @endif
                                             </td>
                                         </tr>
@@ -158,7 +156,7 @@
                                                                 <a href="{{ route('admin.users.show', $referral->id) }}">
                                                                     @if($referral->profile_pic)
                                                                         <div class="symbol-label">
-                                                                            <img src="{{ $referral->profile_pic->getUrl('thumb') }}" alt="{{ $referral->name }}" class="w-100" />
+                                                                            <img src="{{ $referral->imageurl }}" alt="{{ $referral->name }}" class="w-100" />
                                                                         </div>
                                                                     @else
                                                                         <div class="symbol-label fs-3 bg-light-danger text-danger">
