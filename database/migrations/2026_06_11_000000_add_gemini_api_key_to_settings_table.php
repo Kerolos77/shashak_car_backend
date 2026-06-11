@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::table('settings', function (Blueprint $table) {
             $table->text('gemini_api_key')->nullable()->after('radius');
+            $table->string('gemini_model', 100)->default('gemini-3.5-flash')->after('gemini_api_key');
         });
     }
 
@@ -22,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('settings', function (Blueprint $table) {
-            $table->dropColumn('gemini_api_key');
+            $table->dropColumn(['gemini_api_key', 'gemini_model']);
         });
     }
 };

@@ -22,6 +22,10 @@ class GeminiVerificationService
             ? $setting->gemini_api_key 
             : config('services.gemini.key');
 
+        $modelName = ($setting && !empty($setting->gemini_model))
+            ? $setting->gemini_model
+            : 'gemini-3.5-flash';
+
         if (empty($apiKey)) {
             Log::error('Gemini Verification failed: GEMINI_API_KEY is not set in .env');
             return [
@@ -132,11 +136,11 @@ Your tasks are:
                 ]
             ];
 
-            // Send request to Gemini API (1.5 Flash)
+            // Send request to Gemini API (dynamic model)
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
             ])->timeout(60) // High timeout for heavy multi-image processing
-              ->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" . $apiKey, $payload);
+              ->post("https://generativelanguage.googleapis.com/v1beta/models/" . $modelName . ":generateContent?key=" . $apiKey, $payload);
 
             if ($response->failed()) {
                 Log::error('Gemini API request failed', [

@@ -403,6 +403,15 @@
                                     placeholder="أدخل مفتاح Gemini API هنا">
                             </div>
                         </div>
+                        <div class="col-lg-12">
+                            <div class="mb-3">
+                                <label class="form-label"
+                                    for="basic-default-gemini_model">اسم نموذج الذكاء الاصطناعي المستخدم (Gemini Model Name)</label>
+                                <input type="text" value="{{ $row->gemini_model ?? 'gemini-3.5-flash' }}" name="gemini_model" class="form-control"
+                                    id="basic-default-gemini_model"
+                                    placeholder="أدخل اسم النموذج هنا (مثال: gemini-3.5-flash)">
+                            </div>
+                        </div>
                         <button type="submit" class="btn btn-primary waves-effect waves-light">{{ __('global.save') }}</button>
 
                     </div>
