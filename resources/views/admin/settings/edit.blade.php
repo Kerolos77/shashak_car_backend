@@ -407,9 +407,13 @@
                             <div class="mb-3">
                                 <label class="form-label"
                                     for="basic-default-gemini_model">اسم نموذج الذكاء الاصطناعي المستخدم (Gemini Model Name)</label>
-                                <input type="text" value="{{ $row->gemini_model ?? 'gemini-3.5-flash' }}" name="gemini_model" class="form-control"
-                                    id="basic-default-gemini_model"
-                                    placeholder="أدخل اسم النموذج هنا (مثال: gemini-3.5-flash)">
+                                <select name="gemini_model" class="form-select" id="basic-default-gemini_model">
+                                    <option value="gemini-3.5-flash" {{ ($row->gemini_model ?? 'gemini-3.5-flash') == 'gemini-3.5-flash' ? 'selected' : '' }}>Gemini 3.5 Flash (الأحدث والأنسب للتحقق السريع)</option>
+                                    <option value="gemini-3.5-pro" {{ ($row->gemini_model ?? '') == 'gemini-3.5-pro' ? 'selected' : '' }}>Gemini 3.5 Pro (الأقوى للأعمال المعقدة والذكاء العالي)</option>
+                                    <option value="gemini-3.1-flash" {{ ($row->gemini_model ?? '') == 'gemini-3.1-flash' ? 'selected' : '' }}>Gemini 3.1 Flash (مستقر وسريع)</option>
+                                    <option value="gemini-3.1-flash-lite" {{ ($row->gemini_model ?? '') == 'gemini-3.1-flash-lite' ? 'selected' : '' }}>Gemini 3.1 Flash-Lite (خفيف وسريع جداً للضغط العالي)</option>
+                                    <option value="gemini-3.1-pro" {{ ($row->gemini_model ?? '') == 'gemini-3.1-pro' ? 'selected' : '' }}>Gemini 3.1 Pro (ذكي ومناسب للعمليات الطويلة والمنطق المعقد)</option>
+                                </select>
                             </div>
                         </div>
                         <button type="submit" class="btn btn-primary waves-effect waves-light">{{ __('global.save') }}</button>
