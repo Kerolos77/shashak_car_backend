@@ -944,7 +944,6 @@ return [
         'currency'       => 'EGP',
         'invited_by'     => 'Invited By',
         'referral_code'  => 'Referral Code',
-        ],
     ],
     'gamification' => [
         'title'          => 'Gamification System',
