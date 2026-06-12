@@ -1,7 +1,12 @@
 @extends('layouts.admin')
 
-@section('title', $pageTitle)
-@section('pageName', $pageTitle)
+@section('title')
+{{ $pageTitle }}
+@endsection
+
+@section('pageName')
+{{ $pageTitle }}
+@endsection
 
 @section('breadcrumbs')
      
