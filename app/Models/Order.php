@@ -16,6 +16,23 @@ class Order extends Model
     public $table = 'orders';
     protected $guarded = ['id'];
 
+    public $orderable = [
+        'id',
+        'status',
+        'distance',
+        'final_rate',
+        'payment_status',
+        'created_at',
+    ];
+
+    public $filterable = [
+        'id',
+        'status',
+        'distance',
+        'final_rate',
+        'payment_status',
+    ];
+
     // Status constants
     const STATUS_PENDING = 'pending';
     const STATUS_SEARCHING = 'searching';
