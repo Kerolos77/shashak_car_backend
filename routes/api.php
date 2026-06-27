@@ -128,6 +128,10 @@ Route::group(['prefix' => 'v1', 'as' => 'api.', 'middleware' => ['auth:sanctum']
 
         Route::get('outcity', [ServiceApiController::class, 'outcity']);
         Route::get('all', [ServiceApiController::class, 'all']);
+
+        Route::get('rides', [ServiceApiController::class, 'rides']);
+        Route::get('travels', [ServiceApiController::class, 'travels']);
+        Route::get('shipping', [ServiceApiController::class, 'shipping']);
     });
 
     Route::prefix('order')->group(function () {

@@ -186,6 +186,19 @@
                     </div>
 
                     <div class="row mb-6">
+                        <label class="col-lg-4 col-form-label required fw-semibold fs-6">
+                            نوع الخدمة (Service Type)
+                        </label>
+                        <div class="col-lg-8">
+                            <select name="service_type" class="form-select form-select-solid" required>
+                                <option value="ride" {{ old('service_type', $row->service_type) == 'ride' ? 'selected' : '' }}>توصيل أشخاص (Ride)</option>
+                                <option value="travel" {{ old('service_type', $row->service_type) == 'travel' ? 'selected' : '' }}>سفر (Travel)</option>
+                                <option value="shipping" {{ old('service_type', $row->service_type) == 'shipping' ? 'selected' : '' }}>شحن (Shipping)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-6">
                         <label class="col-lg-4 col-form-label fw-semibold fs-6">
                             {{ __('cruds.service.fields.image') }}
                         </label>

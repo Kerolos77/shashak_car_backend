@@ -90,6 +90,10 @@ class Service extends Model implements HasMedia
     {
         return $q->where('intercity_type',$value);
     }
+    public function scopeServiceType($q, $value)
+    {
+        return $q->where('service_type', $value);
+    }
     public function registerMediaConversions(?Media $media = null): void
     {
         $thumbnailWidth  = 50;

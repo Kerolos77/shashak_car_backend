@@ -35,6 +35,21 @@ class ServiceApiController extends Controller
     return Resp($services, 'Services fetched successfully');
 }
 
+    public function rides()
+    {
+        return ServicesResource::Collection(Service::serviceType('ride')->get());
+    }
+
+    public function travels()
+    {
+        return ServicesResource::Collection(Service::serviceType('travel')->get());
+    }
+
+    public function shipping()
+    {
+        return ServicesResource::Collection(Service::serviceType('shipping')->get());
+    }
+
 
     // public function store(StoreServiceRequest $request)
     // {

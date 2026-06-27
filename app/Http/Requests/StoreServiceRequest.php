@@ -46,6 +46,11 @@ class StoreServiceRequest extends FormRequest
                 'required',
                 'max:255'
             ],
+            'service_type' => [
+                'string',
+                'required',
+                'in:ride,travel,shipping'
+            ],
         ];
     }
 }

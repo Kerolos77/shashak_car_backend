@@ -23,8 +23,8 @@ class ServiceController extends BaseController
             'enable' => $request->enable != null ? 1 : 0,
             'offer_rate' => $request->offer_rate != null ? 1 : 0,
             'intercity_type' => $request->intercity_type != null ? 1 : 0,
-            'intercity_type' => $request->intercity_type != null ? 1 : 0,
             'commission_type' => $request->commission_type != null ? 1 : 0,
+            'service_type' => $request->service_type,
         ];
     }
 

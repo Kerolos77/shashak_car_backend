@@ -57,6 +57,7 @@
                             <th class="text-center">{{ trans('global.admin_commission') }}</th>
                             <th class="text-center">{{ trans('global.enable') }}</th>
                             <th class="text-center">{{ trans('global.intercity_type') }}</th>
+                            <th class="text-center">نوع الخدمة (Type)</th>
                             <th class="text-center">{{ trans('global.km_charge') }}</th>
                             <th class="text-center">{{ trans('global.offer_rate') }}</th>
                             <th class="text-center">{{ trans('global.actions') }}</th>
@@ -95,6 +96,17 @@
                                     <span class="badge {{ $item->intercity_type ? 'badge-light-primary' : 'badge-light-info' }}">
                                         {{ $item->intercity_type ? trans('global.out_city') : trans('global.inter_city') }}
                                     </span>
+                                </td>
+                                <td class="text-center">
+                                    @if ($item->service_type === 'ride')
+                                        <span class="badge badge-light-success">توصيل (Ride)</span>
+                                    @elseif ($item->service_type === 'travel')
+                                        <span class="badge badge-light-warning">سفر (Travel)</span>
+                                    @elseif ($item->service_type === 'shipping')
+                                        <span class="badge badge-light-primary">شحن (Shipping)</span>
+                                    @else
+                                        <span class="badge badge-light-secondary">{{ $item->service_type }}</span>
+                                    @endif
                                 </td>
                                 <td class="text-center">{{ $item->km_charge ? number_format($item->km_charge, 2) . ' EGP' : 'N/A' }}</td>
                                 <td class="text-center">
