@@ -86,6 +86,26 @@
         [dir="rtl"] .app-navbar .menu-link button {
             text-align: right;
         }
+
+        /* Global Table Action Buttons styling */
+        .btn-table-action {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+        }
+        .btn-table-action-view { background: rgba(59, 130, 246, 0.08); color: #3B82F6; }
+        .btn-table-action-view:hover { background: #3B82F6; color: white; transform: scale(1.1); }
+        .btn-table-action-approve { background: rgba(16, 185, 129, 0.08); color: #10B981; }
+        .btn-table-action-approve:hover { background: #10B981; color: white; transform: scale(1.1); }
+        .btn-table-action-reject { background: rgba(239, 68, 68, 0.08); color: #EF4444; }
+        .btn-table-action-reject:hover { background: #EF4444; color: white; transform: scale(1.1); }
     </style>
     
     @livewireStyles
