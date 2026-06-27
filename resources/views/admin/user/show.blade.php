@@ -12,10 +12,16 @@
         <!--begin::Card-->
         <div class="card">
             <!--begin::Card header-->
-            <div class="card-header border-0 pt-6">
+            <div class="card-header border-0 pt-6 d-flex align-items-center justify-content-between">
                 <h3 class="card-title align-items-start flex-column">
                     <span class="card-label fw-bold fs-3">{{ trans('global.view') }} {{ trans('cruds.user.title_singular') }}</span>
                 </h3>
+                <div class="card-toolbar">
+                    <a href="{{ route('admin.users.export-pdf', $user->id) }}" class="btn btn-sm btn-danger px-4" target="_blank">
+                        <i class="ki-outline ki-document fs-5 me-1"></i>
+                        تصدير ملف أمني رسمي (PDF)
+                    </a>
+                </div>
             </div>
             <!--end::Card header-->
 

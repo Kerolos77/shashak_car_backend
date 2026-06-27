@@ -102,9 +102,11 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth:admi
     Route::resource('roles', RoleController::class);
 
     // Users
+    Route::get('users/{id}/export-pdf', [App\Http\Controllers\Admin\OfficialReportController::class, 'exportUserPdf'])->name('users.export-pdf');
     Route::resource('users', UserController::class);
 
     // Drivers
+    Route::get('drivers/{id}/export-pdf', [App\Http\Controllers\Admin\OfficialReportController::class, 'exportDriverPdf'])->name('drivers.export-pdf');
     Route::resource('drivers', DriverController::class);
     Route::put('drivers/activate/{id}', [DriverController::class, 'active'])->name('drivers.active');
     Route::put('drivers/block/{id}', [DriverController::class, 'block'])->name('drivers.block');

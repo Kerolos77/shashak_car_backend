@@ -38,7 +38,7 @@
                 </div>
 
                 <!-- Action Button row -->
-                <div class="d-flex gap-2 justify-content-center">
+                <div class="d-flex gap-2 justify-content-center mb-2">
                     <a href="{{ route('admin.drivers.edit', $row->id) }}" class="btn btn-sm btn-primary px-4 py-2">
                         <i class="ki-outline ki-pencil fs-5 me-1"></i>
                         {{ trans('global.edit') }}
@@ -46,6 +46,12 @@
                     <a href="{{ route('admin.drivers.index') }}" class="btn btn-sm btn-light px-4 py-2">
                         <i class="ki-outline ki-arrow-left fs-5 me-1"></i>
                         {{ trans('global.back') }}
+                    </a>
+                </div>
+                <div class="d-grid">
+                    <a href="{{ route('admin.drivers.export-pdf', $row->id) }}" class="btn btn-sm btn-danger py-2" target="_blank">
+                        <i class="ki-outline ki-document fs-5 me-1"></i>
+                        تصدير ملف أمني رسمي (PDF)
                     </a>
                 </div>
             </div>

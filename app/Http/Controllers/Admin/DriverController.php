@@ -106,36 +106,49 @@ class DriverController extends BaseController
             ])->find($userId);
             
             if (!$user || !$user->profile) {
-                return null;
+                return [];
             }
             
             $documents = [];
             
             // Criminal record image
             if ($user->profile->criminal_record_image) {
+                $img = $user->profile->criminal_record_image;
+                $imageUrl = (str_starts_with($img, 'uploads/') || str_starts_with($img, 'http'))
+                    ? url($img)
+                    : url('files/DriverLicense/' . $userId . '/' . $img);
                 $documents[] = [
                     'type' => 'criminal_record',
                     'name' => 'سجل جنائي',
-                    'image' => url('files/DriverLicense/' . $userId . '/' . $user->profile->criminal_record_image),
+                    'image' => $imageUrl,
                     'status' => 'uploaded'
                 ];
             }
             
             // Identity documents
             if ($user->profile->identity) {
-                if ($user->profile->identity->front_side) {
+                $identity = $user->profile->identity;
+                if ($identity->front_identity_image) {
                     $documents[] = [
                         'type' => 'identity_front',
                         'name' => 'الهوية - الوجه الأمامي',
-                        'image' => url('files/DriverLicense/' . $userId . '/' . $user->profile->identity->front_side),
+                        'image' => url('files/DriverLicense/' . $userId . '/' . $identity->front_identity_image),
                         'status' => 'uploaded'
                     ];
                 }
-                if ($user->profile->identity->back_side) {
+                if ($identity->back_identity_image) {
                     $documents[] = [
                         'type' => 'identity_back',
                         'name' => 'الهوية - الوجه الخلفي',
-                        'image' => url('files/DriverLicense/' . $userId . '/' . $user->profile->identity->back_side),
+                        'image' => url('files/DriverLicense/' . $userId . '/' . $identity->back_identity_image),
+                        'status' => 'uploaded'
+                    ];
+                }
+                if ($identity->driver_image_with_id) {
+                    $documents[] = [
+                        'type' => 'identity_with_driver',
+                        'name' => 'صورة السائق مع الهوية',
+                        'image' => url('files/DriverLicense/' . $userId . '/' . $identity->driver_image_with_id),
                         'status' => 'uploaded'
                     ];
                 }
@@ -143,45 +156,59 @@ class DriverController extends BaseController
             
             // Driver licenses
             if ($user->profile->driver_licenses) {
-                foreach ($user->profile->driver_licenses as $license) {
-                    if ($license->front_side) {
-                        $documents[] = [
-                            'type' => 'license_front',
-                            'name' => 'رخصة القيادة - الوجه الأمامي',
-                            'image' => url('files/DriverLicense/' . $userId . '/' . $license->front_side),
-                            'status' => 'uploaded'
-                        ];
-                    }
-                    if ($license->back_side) {
-                        $documents[] = [
-                            'type' => 'license_back',
-                            'name' => 'رخصة القيادة - الوجه الخلفي',
-                            'image' => url('files/DriverLicense/' . $userId . '/' . $license->back_side),
-                            'status' => 'uploaded'
-                        ];
-                    }
+                $license = $user->profile->driver_licenses;
+                if ($license->front_license_image) {
+                    $documents[] = [
+                        'type' => 'license_front',
+                        'name' => 'رخصة القيادة - الوجه الأمامي',
+                        'image' => url('files/DriverLicense/' . $userId . '/' . $license->front_license_image),
+                        'status' => 'uploaded'
+                    ];
+                }
+                if ($license->back_license_image) {
+                    $documents[] = [
+                        'type' => 'license_back',
+                        'name' => 'رخصة القيادة - الوجه الخلفي',
+                        'image' => url('files/DriverLicense/' . $userId . '/' . $license->back_license_image),
+                        'status' => 'uploaded'
+                    ];
+                }
+                if ($license->driver_with_license_image) {
+                    $documents[] = [
+                        'type' => 'license_with_driver',
+                        'name' => 'صورة السائق مع رخصة القيادة',
+                        'image' => url('files/DriverLicense/' . $userId . '/' . $license->driver_with_license_image),
+                        'status' => 'uploaded'
+                    ];
                 }
             }
             
             // Car licenses
             if ($user->profile->car_licenses) {
-                foreach ($user->profile->car_licenses as $carLicense) {
-                    if ($carLicense->front_side) {
-                        $documents[] = [
-                            'type' => 'car_license_front',
-                            'name' => 'رخصة السيارة - الوجه الأمامي',
-                            'image' => url('files/DriverLicense/' . $userId . '/' . $carLicense->front_side),
-                            'status' => 'uploaded'
-                        ];
-                    }
-                    if ($carLicense->back_side) {
-                        $documents[] = [
-                            'type' => 'car_license_back',
-                            'name' => 'رخصة السيارة - الوجه الخلفي',
-                            'image' => url('files/DriverLicense/' . $userId . '/' . $carLicense->back_side),
-                            'status' => 'uploaded'
-                        ];
-                    }
+                $carLicense = $user->profile->car_licenses;
+                if ($carLicense->front_license_image) {
+                    $documents[] = [
+                        'type' => 'car_license_front',
+                        'name' => 'رخصة السيارة - الوجه الأمامي',
+                        'image' => url('files/DriverLicense/' . $userId . '/' . $carLicense->front_license_image),
+                        'status' => 'uploaded'
+                    ];
+                }
+                if ($carLicense->back_license_image) {
+                    $documents[] = [
+                        'type' => 'car_license_back',
+                        'name' => 'رخصة السيارة - الوجه الخلفي',
+                        'image' => url('files/DriverLicense/' . $userId . '/' . $carLicense->back_license_image),
+                        'status' => 'uploaded'
+                    ];
+                }
+                if ($carLicense->driver_with_license_image) {
+                    $documents[] = [
+                        'type' => 'car_license_with_driver',
+                        'name' => 'صورة السائق مع رخصة السيارة',
+                        'image' => url('files/DriverLicense/' . $userId . '/' . $carLicense->driver_with_license_image),
+                        'status' => 'uploaded'
+                    ];
                 }
             }
             
