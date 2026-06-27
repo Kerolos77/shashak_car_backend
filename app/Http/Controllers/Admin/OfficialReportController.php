@@ -229,7 +229,10 @@ class OfficialReportController extends Controller
         
         $avatarBase64 = null;
         if ($user->profile_pic) {
-            $avatarPath = public_path('files/users/' . $user->id . '/' . $user->profile_pic);
+            $path = $user->profile_pic;
+            $avatarPath = (str_starts_with($path, 'uploads/') || str_starts_with($path, 'http'))
+                ? public_path($path)
+                : public_path('files/users/' . $user->id . '/' . $path);
             $avatarBase64 = $this->imageToBase64($avatarPath);
         }
         

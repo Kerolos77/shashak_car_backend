@@ -2,11 +2,12 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="utf-8">
-    <title>تقرير أمني رسمي - {{ $user->name }}</title>
+    <title>{{ App\Helpers\ArabicShaper::shape('تقرير أمني رسمي - ' . $user->name) }}</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
         body {
-            font-family: 'DejaVu Sans', 'Cairo', sans-serif;
-            font-size: 12px;
+            font-family: 'Cairo', 'DejaVu Sans', sans-serif;
+            font-size: 11px;
             color: #333;
             line-height: 1.5;
             margin: 0;
@@ -155,12 +156,12 @@
     <table class="header-table">
         <tr>
             <td style="width: 25%; text-align: right; vertical-align: middle; font-size: 10px;">
-                <strong>شقشق كار (Shashak Car)</strong><br>
-                نظام إدارة النقل الذكي<br>
-                تاريخ الطباعة: {{ date('Y-m-d H:i') }}
+                <strong>{{ App\Helpers\ArabicShaper::shape('شقشق كار (Shashak Car)') }}</strong><br>
+                {{ App\Helpers\ArabicShaper::shape('نظام إدارة النقل الذكي') }}<br>
+                {{ App\Helpers\ArabicShaper::shape('تاريخ الطباعة: ' . date('Y-m-d H:i')) }}
             </td>
             <td style="width: 50%;" class="logo-title">
-                <h1>مستند أمني رسمي لحالة مستخدم</h1>
+                <h1>{{ App\Helpers\ArabicShaper::shape('مستند أمني رسمي لحالة مستخدم') }}</h1>
                 <h2>Official Security & Identity Report</h2>
             </td>
             <td style="width: 25%; text-align: left; vertical-align: middle; font-size: 10px; direction: ltr;">
@@ -174,49 +175,49 @@
     <!-- Metadata Table -->
     <table class="meta-table">
         <tr>
-            <td style="width: 35%;"><strong>رقم التقرير (Report ID):</strong> SEC-{{ $user->id }}-{{ date('Ymd') }}</td>
-            <td style="width: 30%; text-align: center;"><strong>المصدر:</strong> إدارة العمليات والأمن (Operations)</td>
+            <td style="width: 35%;"><strong>{{ App\Helpers\ArabicShaper::shape('رقم التقرير (Report ID):') }}</strong> SEC-{{ $user->id }}-{{ date('Ymd') }}</td>
+            <td style="width: 30%; text-align: center;"><strong>{{ App\Helpers\ArabicShaper::shape('المصدر: إدارة العمليات والأمن (Operations)') }}</strong></td>
             <td style="width: 35%; text-align: left; direction: ltr;"><strong>Target:</strong> Official Police Inquiry</td>
         </tr>
     </table>
 
     <!-- User Profile & Summary Info -->
-    <div class="section-title">البيانات الأساسية للمستخدم (Basic Profile Details)</div>
+    <div class="section-title">{{ App\Helpers\ArabicShaper::shape('البيانات الأساسية للمستخدم (Basic Profile Details)') }}</div>
     
     <table class="profile-container">
         <tr>
             <td style="vertical-align: top; width: 80%;">
                 <table class="data-table">
                     <tr>
-                        <th>الاسم الكامل (Full Name)</th>
-                        <td><strong>{{ $user->name }}</strong></td>
+                        <th>{{ App\Helpers\ArabicShaper::shape('الاسم الكامل (Full Name)') }}</th>
+                        <td><strong>{{ App\Helpers\ArabicShaper::shape($user->name) }}</strong></td>
                     </tr>
                     <tr>
-                        <th>نوع الحساب (Account Type)</th>
+                        <th>{{ App\Helpers\ArabicShaper::shape('نوع الحساب (Account Type)') }}</th>
                         <td>
                             @if($type === 'driver')
-                                <span class="badge badge-primary">سائق كابتن (Driver Captain)</span>
+                                <span class="badge badge-primary">{{ App\Helpers\ArabicShaper::shape('سائق كابتن (Driver Captain)') }}</span>
                             @else
-                                <span class="badge badge-success">عميل راكب (Client Passenger)</span>
+                                <span class="badge badge-success">{{ App\Helpers\ArabicShaper::shape('عميل راكب (Client Passenger)') }}</span>
                             @endif
                         </td>
                     </tr>
                     <tr>
-                        <th>رقم الهاتف (Phone Number)</th>
+                        <th>{{ App\Helpers\ArabicShaper::shape('رقم الهاتف (Phone Number)') }}</th>
                         <td>{{ $user->phone_number }}</td>
                     </tr>
                     <tr>
-                        <th>البريد الإلكتروني (Email)</th>
+                        <th>{{ App\Helpers\ArabicShaper::shape('البريد الإلكتروني (Email)') }}</th>
                         <td>{{ $user->email }}</td>
                     </tr>
                     <tr>
-                        <th>الدولة والمدينة (Country & City)</th>
+                        <th>{{ App\Helpers\ArabicShaper::shape('الدولة والمدينة (Country & City)') }}</th>
                         <td>
-                            {{ $user->country->name ?? '-' }} - {{ $user->city->name ?? '-' }}
+                            {{ App\Helpers\ArabicShaper::shape(($user->country->name ?? '-') . ' - ' . ($user->city->name ?? '-')) }}
                         </td>
                     </tr>
                     <tr>
-                        <th>تاريخ التسجيل (Register Date)</th>
+                        <th>{{ App\Helpers\ArabicShaper::shape('تاريخ التسجيل (Register Date)') }}</th>
                         <td>{{ $user->created_at }}</td>
                     </tr>
                 </table>
@@ -233,76 +234,76 @@
 
     @if($type === 'driver' && $profile)
         <!-- Driver & Vehicle Details Section -->
-        <div class="section-title">بيانات السائق والسيارة المعتمدة (Driver & Vehicle Specifications)</div>
+        <div class="section-title">{{ App\Helpers\ArabicShaper::shape('بيانات السائق والسيارة المعتمدة (Driver & Vehicle Specifications)') }}</div>
         <table class="data-table">
             <tr>
-                <th style="width: 25%;">الرقم القومي (National ID)</th>
+                <th style="width: 25%;">{{ App\Helpers\ArabicShaper::shape('الرقم القومي (National ID)') }}</th>
                 <td style="width: 25%;">{{ $profile->id_number }}</td>
-                <th style="width: 25%;">تاريخ الميلاد (Date of Birth)</th>
+                <th style="width: 25%;">{{ App\Helpers\ArabicShaper::shape('تاريخ الميلاد (Date of Birth)') }}</th>
                 <td style="width: 25%;">{{ $profile->birth_date }}</td>
             </tr>
             <tr>
-                <th>نوع الخدمة (Service Type)</th>
-                <td>{{ $profile->service->title ?? '-' }}</td>
-                <th>حالة السائق (Driver Status)</th>
+                <th>{{ App\Helpers\ArabicShaper::shape('نوع الخدمة (Service Type)') }}</th>
+                <td>{{ App\Helpers\ArabicShaper::shape($profile->service->title ?? '-') }}</td>
+                <th>{{ App\Helpers\ArabicShaper::shape('حالة السائق (Driver Status)') }}</th>
                 <td>
                     @if($profile->status === 'active')
-                        <span class="badge badge-success">نشط ومفعل (Active)</span>
+                        <span class="badge badge-success">{{ App\Helpers\ArabicShaper::shape('نشط ومفعل (Active)') }}</span>
                     @elseif($profile->status === 'blocked')
-                        <span class="badge badge-danger">محظور (Blocked)</span>
+                        <span class="badge badge-danger">{{ App\Helpers\ArabicShaper::shape('محظور (Blocked)') }}</span>
                     @else
-                        <span class="badge badge-danger">معلق للمراجعة (Pending)</span>
+                        <span class="badge badge-danger">{{ App\Helpers\ArabicShaper::shape('معلق للمراجعة (Pending)') }}</span>
                     @endif
                 </td>
             </tr>
             @if($profile->driver_cars)
                 <tr>
-                    <th>ماركة وموديل السيارة (Car Model)</th>
-                    <td>{{ $profile->driver_cars->brand->title ?? '-' }} - {{ $profile->driver_cars->model->model_name ?? '-' }}</td>
-                    <th>سنة الصنع ولون السيارة</th>
-                    <td>{{ $profile->driver_cars->release_year ?? '-' }} - {{ $profile->driver_cars->color ?? '-' }}</td>
+                    <th>{{ App\Helpers\ArabicShaper::shape('ماركة وموديل السيارة (Car Model)') }}</th>
+                    <td>{{ App\Helpers\ArabicShaper::shape(($profile->driver_cars->brand->title ?? '-') . ' - ' . ($profile->driver_cars->model->model_name ?? '-')) }}</td>
+                    <th>{{ App\Helpers\ArabicShaper::shape('سنة الصنع ولون السيارة') }}</th>
+                    <td>{{ $profile->driver_cars->release_year ?? '-' }} - {{ App\Helpers\ArabicShaper::shape($profile->driver_cars->color ?? '-') }}</td>
                 </tr>
                 <tr>
-                    <th>رقم لوحة السيارة (License Plate)</th>
-                    <td colspan="3"><strong>{{ $profile->driver_cars->car_number ?? '-' }}</strong></td>
+                    <th>{{ App\Helpers\ArabicShaper::shape('رقم لوحة السيارة (License Plate)') }}</th>
+                    <td colspan="3"><strong>{{ App\Helpers\ArabicShaper::shape($profile->driver_cars->car_number ?? '-') }}</strong></td>
                 </tr>
             @endif
         </table>
     @endif
 
     <!-- Last Known Location Section -->
-    <div class="section-title">آخر موقع جغرافي تم رصده (Last Known GPS Location)</div>
+    <div class="section-title">{{ App\Helpers\ArabicShaper::shape('آخر موقع جغرافي تم رصده (Last Known GPS Location)') }}</div>
     <div class="map-section">
         <table style="width: 100%; border: none;">
             <tr>
                 <td style="width: 60%; vertical-align: top; border: none; padding: 0;">
                     <p style="margin: 0 0 8px 0; font-size: 11px;">
-                        تم رصد آخر إحداثيات جغرافية لهذا المستخدم من خلال نظام التتبع الفعلي (Real-time tracking).
+                        {{ App\Helpers\ArabicShaper::shape('تم رصد آخر إحداثيات جغرافية لهذا المستخدم من خلال نظام التتبع الفعلي (Real-time tracking).') }}
                     </p>
                     <table style="width: 100%; border: none; font-size: 11px;">
                         <tr>
-                            <td style="width: 40%; padding: 4px 0;"><strong>خط العرض (Latitude):</strong></td>
-                            <td style="padding: 4px 0;">{{ $latitude ?? 'غير متوفر (Not Available)' }}</td>
+                            <td style="width: 40%; padding: 4px 0;"><strong>{{ App\Helpers\ArabicShaper::shape('خط العرض (Latitude):') }}</strong></td>
+                            <td style="padding: 4px 0;">{{ $latitude ?? 'Not Available' }}</td>
                         </tr>
                         <tr>
-                            <td style="padding: 4px 0;"><strong>خط الطول (Longitude):</strong></td>
-                            <td style="padding: 4px 0;">{{ $longitude ?? 'غير متوفر (Not Available)' }}</td>
+                            <td style="padding: 4px 0;"><strong>{{ App\Helpers\ArabicShaper::shape('خط الطول (Longitude):') }}</strong></td>
+                            <td style="padding: 4px 0;">{{ $longitude ?? 'Not Available' }}</td>
                         </tr>
                         <tr>
-                            <td style="padding: 4px 0;"><strong>وقت التحديث (Last Update):</strong></td>
+                            <td style="padding: 4px 0;"><strong>{{ App\Helpers\ArabicShaper::shape('وقت التحديث (Last Update):') }}</strong></td>
                             <td style="padding: 4px 0;">{{ $user->updated_at }}</td>
                         </tr>
                     </table>
                 </td>
                 <td style="width: 40%; vertical-align: middle; text-align: left; border: none; padding: 0;">
                     @if($mapLink)
-                        <a href="{{ $mapLink }}" class="map-link" target="_blank">رابط خرائط جوجل (Google Maps)</a>
+                        <a href="{{ $mapLink }}" class="map-link" target="_blank">{{ App\Helpers\ArabicShaper::shape('رابط خرائط جوجل (Google Maps)') }}</a>
                         <br>
                         <span style="font-size: 9px; color: #555; display: inline-block; margin-top: 5px;">
-                            اضغط على الرابط لعرض الموقع الفعلي على الخريطة مباشرة.
+                            {{ App\Helpers\ArabicShaper::shape('اضغط على الرابط لعرض الموقع الفعلي على الخريطة مباشرة.') }}
                         </span>
                     @else
-                        <span style="color: #c62828; font-weight: bold; font-size: 10px;">تعذر تحديد الموقع الجغرافي حالياً</span>
+                        <span style="color: #c62828; font-weight: bold; font-size: 10px;">{{ App\Helpers\ArabicShaper::shape('تعذر تحديد الموقع الجغرافي حالياً') }}</span>
                     @endif
                 </td>
             </tr>
@@ -311,13 +312,13 @@
 
     <!-- Official Footer Note on first page -->
     <div style="margin-top: 20px; font-size: 10px; color: #555; border: 1px solid #ccc; padding: 10px; background-color: #fafafa;">
-        <strong>إشعار قانوني هام (Legal Disclaimer):</strong><br>
-        هذا المستند تم توليده تلقائياً من قاعدة بيانات "شقشق كار" استجابة لطلب أمني عاجل. أي تلاعب أو تزوير في البيانات الواردة في هذا التقرير يعرض فاعله للمساءلة القانونية الجنائية طبقاً لقوانين مكافحة جرائم تقنية المعلومات.
+        <strong>{{ App\Helpers\ArabicShaper::shape('إشعار قانوني هام (Legal Disclaimer):') }}</strong><br>
+        {{ App\Helpers\ArabicShaper::shape('هذا المستند تم توليده تلقائياً من قاعدة بيانات شقشق كار استجابة لطلب أمني عاجل. أي تلاعب أو تزوير في البيانات الواردة في هذا التقرير يعرض فاعله للمساءلة القانونية الجنائية طبقاً لقوانين مكافحة جرائم تقنية المعلومات.') }}
     </div>
 
     <!-- Footer for page 1 -->
     <div class="footer">
-        شقشق كار - مستند أمني رسمي سري وخاص
+        {{ App\Helpers\ArabicShaper::shape('شقشق كار - مستند أمني رسمي سري وخاص') }}
     </div>
 
     @if(count($documents) > 0)
@@ -325,9 +326,9 @@
         <div class="page-break"></div>
 
         <!-- Section: Uploaded Verification Documents -->
-        <div class="section-title">الملفات والمستندات الثبوتية المرفوعة (Uploaded Verification & Identity Files)</div>
+        <div class="section-title">{{ App\Helpers\ArabicShaper::shape('الملفات والمستندات الثبوتية المرفوعة (Uploaded Verification & Identity Files)') }}</div>
         <p style="font-size: 11px; margin-bottom: 15px; text-align: right;">
-            المستندات التالية هي المستندات الرسمية التي قام المستخدم برفعها على التطبيق لتوثيق حسابه ومراجعتها من قبل الإدارة.
+            {{ App\Helpers\ArabicShaper::shape('المستندات التالية هي المستندات الرسمية التي قام المستخدم برفعها على التطبيق لتوثيق حسابه ومراجعتها من قبل الإدارة.') }}
         </p>
 
         @foreach($documents as $index => $doc)
@@ -337,13 +338,13 @@
             
             <div class="doc-container">
                 <div class="doc-title">
-                    مستند رقم {{ $index + 1 }}: {{ $doc['name'] }}
+                    {{ App\Helpers\ArabicShaper::shape('مستند رقم ' . ($index + 1) . ': ' . $doc['name']) }}
                 </div>
                 @if($doc['image'])
                     <img src="{{ $doc['image'] }}" class="doc-img" alt="{{ $doc['name'] }}">
                 @else
                     <div style="width: 100%; height: 200px; border: 1px dashed #ccc; line-height: 200px; text-align: center; color: #999; background-color: #fafafa;">
-                        الملف غير متوفر أو لم يتم رفعه بصيغة صورة صالحة (File not available or corrupted)
+                        {{ App\Helpers\ArabicShaper::shape('الملف غير متوفر أو لم يتم رفعه بصيغة صورة صالحة (File not available or corrupted)') }}
                     </div>
                 @endif
             </div>

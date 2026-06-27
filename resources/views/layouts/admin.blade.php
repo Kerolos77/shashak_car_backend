@@ -276,6 +276,11 @@
             showConfirmButton: true
         });
     }
+
+    // Move all modals to the body to prevent backdrop stacking bugs
+    $(document).ready(function() {
+        $('.modal').appendTo('body');
+    });
 </script>
 @stack('scripts')
     <!--end::Custom Javascript-->
