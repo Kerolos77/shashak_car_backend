@@ -3,7 +3,7 @@
     <div class="mb-5 d-flex align-items-center position-relative my-1">
         <i class="ki-outline ki-magnifier fs-3 position-absolute ms-4 translate-middle-y top-50"></i>
         <input type="text" wire:model.debounce.300ms="search" class="form-control form-control-solid w-250px ps-12 fs-7" 
-               placeholder="بحث بالاسم، الجوال أو البريد..." />
+               placeholder="{{ __('admin.search_placeholder_user') }}" />
     </div>
 
     <div class="table-responsive">

@@ -96,4 +96,11 @@ return [
     'shipping_orders' => 'Shipping Orders',
     'manual_assignment' => 'Manual Assignment',
     'new_shipping_order' => 'New Shipping Order',
+    'search_placeholder_driver' => 'Search by name, phone, plate or national ID...',
+    'search_placeholder_user' => 'Search by name, phone or email...',
+    'filter_by_service' => 'Filter by Service Type',
+    'all_services' => 'All Services',
+    'reset_filter' => 'Reset',
+    'search_btn' => 'Search',
+    'car_number' => 'Car Plate',
 ];

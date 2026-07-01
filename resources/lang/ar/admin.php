@@ -96,4 +96,11 @@ return [
     'shipping_orders' => 'طلبات الشحن',
     'manual_assignment' => 'التعيين اليدوي',
     'new_shipping_order' => 'طلب شحن جديد',
+    'search_placeholder_driver' => 'بحث بالاسم، الجوال، اللوحة أو الهوية...',
+    'search_placeholder_user' => 'بحث بالاسم، الجوال أو البريد...',
+    'filter_by_service' => 'تصفية حسب نوع الخدمة',
+    'all_services' => 'كل الخدمات',
+    'reset_filter' => 'تصفير',
+    'search_btn' => 'بحث',
+    'car_number' => 'رقم اللوحة',
 ];
