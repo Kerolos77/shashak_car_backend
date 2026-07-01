@@ -44,6 +44,10 @@ class Service extends Model implements HasMedia
         'km_charge',
         'offer_rate',
         'title',
+        'weight',
+        'height',
+        'width',
+        'length',
     ];
 
     protected $fillable = [
@@ -54,6 +58,12 @@ class Service extends Model implements HasMedia
         'km_charge',
         'offer_rate',
         'title',
+        'service_type',
+        'commission_type',
+        'weight',
+        'height',
+        'width',
+        'length',
     ];
 
     public $orderable = [
@@ -65,6 +75,10 @@ class Service extends Model implements HasMedia
         'km_charge',
         'offer_rate',
         'title',
+        'weight',
+        'height',
+        'width',
+        'length',
     ];
 
     protected function serializeDate(DateTimeInterface $date)

@@ -51,6 +51,26 @@ class StoreServiceRequest extends FormRequest
                 'required',
                 'in:ride,travel,shipping'
             ],
+            'weight' => [
+                'required_if:service_type,shipping',
+                'nullable',
+                'numeric',
+            ],
+            'height' => [
+                'required_if:service_type,shipping',
+                'nullable',
+                'numeric',
+            ],
+            'width' => [
+                'required_if:service_type,shipping',
+                'nullable',
+                'numeric',
+            ],
+            'length' => [
+                'required_if:service_type,shipping',
+                'nullable',
+                'numeric',
+            ],
         ];
     }
 }

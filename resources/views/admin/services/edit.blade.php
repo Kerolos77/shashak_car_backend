@@ -46,6 +46,29 @@
 
             commissionTypeCheckbox.addEventListener('change', toggleAdminCommissionInput);
             toggleAdminCommissionInput();
+
+            const serviceTypeSelect = document.getElementById('service_type');
+            const shippingDimensionsContainer = document.getElementById('shippingDimensionsContainer');
+            const dimensionInputs = shippingDimensionsContainer.querySelectorAll('input');
+
+            function toggleShippingDimensions() {
+                if (serviceTypeSelect.value === 'shipping') {
+                    shippingDimensionsContainer.classList.remove('d-none');
+                    dimensionInputs.forEach(input => {
+                        input.setAttribute('required', 'required');
+                    });
+                } else {
+                    shippingDimensionsContainer.classList.add('d-none');
+                    dimensionInputs.forEach(input => {
+                        input.removeAttribute('required');
+                    });
+                }
+            }
+
+            if (serviceTypeSelect) {
+                serviceTypeSelect.addEventListener('change', toggleShippingDimensions);
+                toggleShippingDimensions();
+            }
         });
 
         // Models Repeater Logic
@@ -190,11 +213,54 @@
                             نوع الخدمة (Service Type)
                         </label>
                         <div class="col-lg-8">
-                            <select name="service_type" class="form-select form-select-solid" required>
+                            <select name="service_type" id="service_type" class="form-select form-select-solid" required>
                                 <option value="ride" {{ old('service_type', $row->service_type) == 'ride' ? 'selected' : '' }}>توصيل أشخاص (Ride)</option>
                                 <option value="travel" {{ old('service_type', $row->service_type) == 'travel' ? 'selected' : '' }}>سفر (Travel)</option>
                                 <option value="shipping" {{ old('service_type', $row->service_type) == 'shipping' ? 'selected' : '' }}>شحن (Shipping)</option>
                             </select>
+                        </div>
+                    </div>
+
+                    <div id="shippingDimensionsContainer" class="d-none">
+                        <div class="row mb-6">
+                            <label class="col-lg-4 col-form-label required fw-semibold fs-6">
+                                {{ __('cruds.service.fields.weight') }}
+                            </label>
+                            <div class="col-lg-8">
+                                <input type="number" name="weight" id="weight" step="0.1" class="form-control form-control-solid" 
+                                       placeholder="{{ __('cruds.service.fields.weight') }}" 
+                                       value="{{ old('weight', $row->weight) }}">
+                            </div>
+                        </div>
+                        <div class="row mb-6">
+                            <label class="col-lg-4 col-form-label required fw-semibold fs-6">
+                                {{ __('cruds.service.fields.length') }}
+                            </label>
+                            <div class="col-lg-8">
+                                <input type="number" name="length" id="length" step="0.1" class="form-control form-control-solid" 
+                                       placeholder="{{ __('cruds.service.fields.length') }}" 
+                                       value="{{ old('length', $row->length) }}">
+                            </div>
+                        </div>
+                        <div class="row mb-6">
+                            <label class="col-lg-4 col-form-label required fw-semibold fs-6">
+                                {{ __('cruds.service.fields.width') }}
+                            </label>
+                            <div class="col-lg-8">
+                                <input type="number" name="width" id="width" step="0.1" class="form-control form-control-solid" 
+                                       placeholder="{{ __('cruds.service.fields.width') }}" 
+                                       value="{{ old('width', $row->width) }}">
+                            </div>
+                        </div>
+                        <div class="row mb-6">
+                            <label class="col-lg-4 col-form-label required fw-semibold fs-6">
+                                {{ __('cruds.service.fields.height') }}
+                            </label>
+                            <div class="col-lg-8">
+                                <input type="number" name="height" id="height" step="0.1" class="form-control form-control-solid" 
+                                       placeholder="{{ __('cruds.service.fields.height') }}" 
+                                       value="{{ old('height', $row->height) }}">
+                            </div>
                         </div>
                     </div>
 

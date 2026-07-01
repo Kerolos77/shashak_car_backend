@@ -25,6 +25,10 @@ class ServiceController extends BaseController
             'intercity_type' => $request->intercity_type != null ? 1 : 0,
             'commission_type' => $request->commission_type != null ? 1 : 0,
             'service_type' => $request->service_type,
+            'weight' => $request->weight,
+            'height' => $request->height,
+            'width' => $request->width,
+            'length' => $request->length,
         ];
     }
 

@@ -65,6 +65,24 @@
                                 </span>
                             </td>
                         </tr>
+                        @if($row->service_type === 'shipping')
+                        <tr>
+                            <th class="fw-semibold text-gray-700">{{ trans('cruds.service.fields.weight') }}</th>
+                            <td>{{ $row->weight }}</td>
+                        </tr>
+                        <tr>
+                            <th class="fw-semibold text-gray-700">{{ trans('cruds.service.fields.length') }}</th>
+                            <td>{{ $row->length }}</td>
+                        </tr>
+                        <tr>
+                            <th class="fw-semibold text-gray-700">{{ trans('cruds.service.fields.width') }}</th>
+                            <td>{{ $row->width }}</td>
+                        </tr>
+                        <tr>
+                            <th class="fw-semibold text-gray-700">{{ trans('cruds.service.fields.height') }}</th>
+                            <td>{{ $row->height }}</td>
+                        </tr>
+                        @endif
                         @if($row->thumbnail && count($row->thumbnail) > 0)
                         <tr>
                             <th class="fw-semibold text-gray-700">{{ trans('cruds.service.fields.image') }}</th>
