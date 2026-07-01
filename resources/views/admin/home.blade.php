@@ -154,7 +154,7 @@
 @endpush
 
 @section('breadcrumbs')
-    <li class="breadcrumb-item text-muted">{{ __('admin.global.home') ?? 'الرئيسية' }}</li>
+    <li class="breadcrumb-item text-muted">{{ __('global.home') }}</li>
     <span class="bullet bg-gray-300 w-5px h-2px"></span>
     <li class="breadcrumb-item text-dark">{{ __('admin.system_overview') }}</li>
 @endsection

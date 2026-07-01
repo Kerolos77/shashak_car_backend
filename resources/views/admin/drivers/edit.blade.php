@@ -119,7 +119,7 @@
                                 </div>
                                 <div class="card-body pt-0">
                                     <div class="mb-5">
-                                        <label class="form-label required">{{ __('cruds.user.fields.full_name') }}</label>
+                                        <label class="form-label required">{{ __('cruds.user.fields.name') }}</label>
                                         <input type="text" name="user[full_name]" class="form-control @error('user.full_name') is-invalid @enderror" 
                                                value="{{ old('user.full_name', $row->user->full_name) }}" required>
                                         @error('user.full_name')

@@ -60,7 +60,7 @@
         <!-- Wallet Highlights -->
         <div class="card">
             <div class="card-header pt-6 pb-2 border-0">
-                <h3 class="card-label fw-bold text-gray-900 fs-4">Financial Highlights</h3>
+                <h3 class="card-label fw-bold text-gray-900 fs-4">{{ __('admin.financial_statistics') }}</h3>
             </div>
             <div class="card-body pt-0">
                 <div class="d-flex align-items-center mb-6">
@@ -101,7 +101,7 @@
         <!-- Details Card -->
         <div class="card mb-7">
             <div class="card-header pt-6 pb-2 border-0">
-                <h3 class="card-label fw-bold text-gray-900 fs-4">Driver Profile Information</h3>
+                <h3 class="card-label fw-bold text-gray-900 fs-4">{{ trans('cruds.driver.fields.driver_information') }}</h3>
             </div>
             <div class="card-body pt-0">
                 <div class="table-responsive">
@@ -134,15 +134,15 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th class="fw-bold text-gray-500">Service Assigned</th>
-                                <td class="fw-bold text-gray-900">{{ $row->service->name ?? '-' }}</td>
+                                <th class="fw-bold text-gray-500">{{ trans('cruds.service.title_singular') }}</th>
+                                <td class="fw-bold text-gray-900">{{ $row->service->title ?? '-' }}</td>
                             </tr>
                             <tr>
-                                <th class="fw-bold text-gray-500">National ID</th>
+                                <th class="fw-bold text-gray-500">{{ trans('cruds.driver.fields.id_number') }}</th>
                                 <td class="fw-bold text-gray-900">{{ $row->id_number ?? '-' }}</td>
                             </tr>
                             <tr>
-                                <th class="fw-bold text-gray-500">Birth Date</th>
+                                <th class="fw-bold text-gray-500">{{ trans('cruds.driver.fields.birth_date') }}</th>
                                 <td class="fw-bold text-gray-900">{{ $row->birth_date ?? '-' }}</td>
                             </tr>
                         </tbody>
