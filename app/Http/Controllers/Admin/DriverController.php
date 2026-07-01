@@ -20,14 +20,34 @@ class DriverController extends BaseController
         $pendingDriversCount = $this->model->where('status', '=', 'pending')->count(); 
         $activeDriversCount = $this->model->where('status', '=', 'active')->count(); 
         $blockedDriversCount = $this->model->where('status', '=', 'blocked')->count(); 
-        $rows = DriverProfile::with('user'); 
-       if ($request->status != null && $request->status != '') {
-              $rows = $rows->where('status', $request->status);
-       }
-         $rows = $rows->orderBy('id', 'desc')->paginate(10);
-         $moduleName = $this->getModelName();
-         $pageTitle = $moduleName;
-         $pageDes = "Here you can create " .$moduleName;
+        $rows = DriverProfile::with(['user', 'driver_cars', 'service']); 
+        
+        if ($request->status != null && $request->status != '') {
+            $rows = $rows->where('status', $request->status);
+        }
+
+        if ($request->search != null && $request->search != '') {
+            $searchTerm = '%' . $request->search . '%';
+            $rows = $rows->where(function($q) use ($searchTerm) {
+                $q->whereHas('user', function($userQuery) use ($searchTerm) {
+                    $userQuery->where('name', 'like', $searchTerm)
+                              ->orWhere('phone_number', 'like', $searchTerm)
+                              ->orWhere('email', 'like', $searchTerm);
+                })->orWhereHas('driver_cars', function($carQuery) use ($searchTerm) {
+                    $carQuery->where('car_number', 'like', $searchTerm);
+                })->orWhere('id_number', 'like', $searchTerm);
+            });
+        }
+        
+        if ($request->service_id != null && $request->service_id != '') {
+            $rows = $rows->where('service_id', $request->service_id);
+        }
+
+        $rows = $rows->orderBy('id', 'desc')->paginate(10);
+        $moduleName = $this->getModelName();
+        $pageTitle = $moduleName;
+        $pageDes = "Here you can create " .$moduleName;
+        $services = \App\Models\Service::pluck('title', 'id');
 
         return view('admin.drivers.index', compact(
             'rows', 
@@ -37,7 +57,8 @@ class DriverController extends BaseController
             'blockedDriversCount',
             'moduleName',
             'pageTitle',
-            'pageDes'
+            'pageDes',
+            'services'
         ));
     }
     public function block($id)  

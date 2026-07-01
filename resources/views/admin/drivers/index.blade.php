@@ -148,6 +148,38 @@
     </div>
 
     <div class="card-body pt-0">
+        <!-- Search & Filter Controls -->
+        <form action="{{ route('admin.drivers.index') }}" method="GET" class="mb-5 border border-dashed border-gray-300 p-4 rounded bg-light bg-opacity-30">
+            @if(request('status'))
+                <input type="hidden" name="status" value="{{ request('status') }}">
+            @endif
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4 col-12">
+                    <label class="form-label fs-7 fw-bold text-gray-700">بحث بالاسم، الجوال، اللوحة أو الهوية</label>
+                    <div class="position-relative">
+                        <i class="ki-outline ki-magnifier fs-3 position-absolute ms-4 translate-middle-y top-50"></i>
+                        <input type="text" name="search" class="form-control form-control-solid ps-12 fs-7" 
+                               placeholder="بحث..." value="{{ request('search') }}">
+                    </div>
+                </div>
+                <div class="col-md-3 col-12">
+                    <label class="form-label fs-7 fw-bold text-gray-700">تصفية حسب نوع الخدمة</label>
+                    <select name="service_id" class="form-select form-select-solid fs-7">
+                        <option value="">كل الخدمات</option>
+                        @foreach($services as $id => $title)
+                            <option value="{{ $id }}" {{ request('service_id') == $id ? 'selected' : '' }}>{{ $title }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3 col-12 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm px-5 py-3">بحث</button>
+                    @if(request('search') || request('service_id'))
+                        <a href="{{ route('admin.drivers.index', request('status') ? ['status' => request('status')] : []) }}" class="btn btn-light btn-sm px-5 py-3">تصفير</a>
+                    @endif
+                </div>
+            </div>
+        </form>
+
         <div class="table-responsive">
             <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_users">
                 <thead>
@@ -172,7 +204,12 @@
                                 </div>
                                 <div class="d-flex flex-column">
                                     <span class="text-gray-900 fw-bold fs-6">{{ $item->user->full_name }}</span>
-                                    <span class="text-gray-400 fs-8">Wallet: {{ number_format($item->user->wallet_amount ?? 0, 2) }} EGP</span>
+                                    <div class="d-flex flex-wrap gap-2 mt-1">
+                                        <span class="badge badge-light-warning fs-9">Wallet: {{ number_format($item->user->wallet_amount ?? 0, 2) }} EGP</span>
+                                        @if($item->driver_cars && $item->driver_cars->car_number)
+                                            <span class="badge badge-light-success fs-9"><i class="ki-outline ki-car text-success fs-9 me-1"></i>اللوحة: {{ $item->driver_cars->car_number }}</span>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         </td>
