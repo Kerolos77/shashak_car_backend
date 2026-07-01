@@ -886,12 +886,7 @@
                                                     <span class="text-gray-500 fs-8">{{ __('admin.services') }}</span>
                                                 </div>
                                             </div>
-                                            <div class="col-6">
-                                                <div class="p-3 bg-light bg-opacity-40 rounded text-center border">
-                                                    <span class="fs-4 fw-bold text-gray-900 d-block">{{ $totalFreightVehicles }}</span>
-                                                    <span class="text-gray-500 fs-8">{{ __('admin.freight_vehicles') }}</span>
-                                                </div>
-                                            </div>
+
                                             <div class="col-6">
                                                 <div class="p-3 bg-light bg-opacity-40 rounded text-center border">
                                                     <span class="fs-4 fw-bold text-gray-900 d-block">{{ $totalAdmins }}</span>

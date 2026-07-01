@@ -7,7 +7,6 @@ use App\Models\DriverProfile;
 use App\Models\Order;
 use App\Models\Income;
 use App\Models\Service;
-use App\Models\FreightVehicle;
 use App\Models\PaymentTransaction;
 use App\Models\WalletTransaction;
 use App\Models\room;
@@ -17,7 +16,6 @@ use App\Models\Page;
 use App\Models\Airport;
 use App\Models\Caption;
 use App\Models\PaymentMethod;
-use App\Models\VehicleType;
 use App\Models\WithdrawRequest;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -41,14 +39,12 @@ class HomeController
         $totalDrivers = DriverProfile::count();
         $totalOrders = Order::count();
         $totalServices = Service::count();
-        $totalFreightVehicles = FreightVehicle::count();
         $totalAdmins = Admin::count();
         $totalFaqs = Faq::count();
         $totalPages = Page::count();
         $totalAirports = Airport::count();
         $totalCaptions = Caption::count();
         $totalPaymentMethods = PaymentMethod::count();
-        $totalVehicleTypes = VehicleType::count();
 
         // Today's Statistics
         $todayUsers = User::whereDate('created_at', $today)->count();
@@ -114,9 +110,9 @@ class HomeController
 
         return view('admin.home', compact(
             // Basic Counts
-            'totalUsers', 'totalDrivers', 'totalOrders', 'totalServices', 'totalFreightVehicles',
+            'totalUsers', 'totalDrivers', 'totalOrders', 'totalServices',
             'totalAdmins', 'totalFaqs', 'totalPages', 'totalAirports', 'totalCaptions',
-            'totalPaymentMethods', 'totalVehicleTypes',
+            'totalPaymentMethods',
             
             // Today's Statistics
             'todayUsers', 'todayDrivers', 'todayOrders', 'todayIncome', 'todayChats',

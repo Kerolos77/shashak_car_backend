@@ -35,8 +35,6 @@ use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Auth\UserProfileController;
-use App\Http\Controllers\Admin\VehicleTypeController;
-use App\Http\Controllers\Admin\FreightVehicleController;
 use App\Http\Controllers\Admin\IncomeController;
 use BeyondCode\LaravelWebSockets\Facades\WebSocketsRouter;
 use App\Http\Controllers\Admin\WalletTransactionController;
@@ -118,9 +116,6 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth:admi
     // Faq
     Route::resource('faqs', FaqController::class);
 
-    // Freight Vehicle
-    Route::resource('freight-vehicles', FreightVehicleController::class);
-
     // Orders
     Route::resource('orders', OrderController::class, ['except' => ['store', 'update', 'destroy']]);
     Route::get('manual-assign', [OrderController::class, 'manual_index'])->name('orders.manual_index');
@@ -133,11 +128,6 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth:admi
 
     // Service
     Route::resource('services', ServiceController::class);
-
-    // Vehicle Type
-    Route::resource('vehicle-types', VehicleTypeController::class);
-    Route::put('vehicle-types/activate/{id}', [VehicleTypeController::class, 'activate'])->name('vehicle-types.activate');
-    Route::put('vehicle-types/deactivate/{id}', [VehicleTypeController::class, 'deactivate'])->name('vehicle-types.deactivate');
 
     // Wallet Transaction
     Route::resource('wallet-transactions', WalletTransactionController::class);

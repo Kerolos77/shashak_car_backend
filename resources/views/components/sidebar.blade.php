@@ -292,15 +292,7 @@
                         </a>
                     </div>
                     
-                    <!-- Vehicle Types -->
-                    <div class="menu-item {{ request()->is('admin/vehicle-types*') ? 'here show' : '' }}">
-                        <a class="menu-link" href="{{ route('admin.vehicle-types.index') }}">
-                            <span class="menu-icon">
-                                <i class="ki-outline ki-truck fs-2"></i>
-                            </span>
-                            <span class="menu-title">{{ trans('app.vehicle_types') }}</span>
-                        </a>
-                    </div>
+
                     
                     <!-- Incomes -->
                     <div class="menu-item {{ request()->is('admin/incomes*') ? 'here show' : '' }}">
@@ -322,36 +314,7 @@
                         </a>
                     </div>
                     
-                    <!-- Freight Vehicles -->
-                    @can('freight_vehicle_access')
-                    <div data-kt-menu-trigger="click" class="menu-item menu-accordion {{ request()->is('admin/freight-vehicles*') ? 'here show' : '' }}">
-                        <span class="menu-link">
-                            <span class="menu-icon">
-                                <i class="ki-outline ki-delivery fs-2"></i>
-                            </span>
-                            <span class="menu-title">{{ trans('cruds.freightVehicle.title') }}</span>
-                            <span class="menu-arrow"></span>
-                        </span>
-                        <div class="menu-sub menu-sub-accordion">
-                            <div class="menu-item {{ request()->is('admin/freight-vehicles') ? 'here' : '' }}">
-                                <a class="menu-link" href="{{ route('admin.freight-vehicles.index') }}">
-                                    <span class="menu-bullet">
-                                        <span class="bullet bullet-dot"></span>
-                                    </span>
-                                    <span class="menu-title">{{ __('global.list') }}</span>
-                                </a>
-                            </div>
-                            <div class="menu-item {{ request()->is('admin/freight-vehicles/create') ? 'here' : '' }}">
-                                <a class="menu-link" href="{{ route('admin.freight-vehicles.create') }}">
-                                    <span class="menu-bullet">
-                                        <span class="bullet bullet-dot"></span>
-                                    </span>
-                                    <span class="menu-title">{{ __('global.create') }}</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    @endcan
+
                     
                 </div>
                 <!--end::Menu-->
