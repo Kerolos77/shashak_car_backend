@@ -93,4 +93,7 @@ return [
     'sign_out' => 'تسجيل الخروج',
     'admin_role' => 'مدير',
     'last_login_now' => 'آخر تسجيل دخول: الآن',
+    'shipping_orders' => 'طلبات الشحن',
+    'manual_assignment' => 'التعيين اليدوي',
+    'new_shipping_order' => 'طلب شحن جديد',
 ];

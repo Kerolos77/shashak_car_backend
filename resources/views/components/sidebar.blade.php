@@ -37,7 +37,7 @@
                             <span class="menu-icon">
                                 <i class="ki-outline ki-truck fs-2"></i>
                             </span>
-                            <span class="menu-title">Shipping Orders</span>
+                            <span class="menu-title">{{ __('admin.shipping_orders') }}</span>
                         </a>
                     </div>
                     
@@ -164,9 +164,9 @@
                     <div class="menu-item {{ request()->is('admin/manual-assign*') ? 'here show' : '' }}">
                         <a class="menu-link" href="{{ route('admin.orders.manual_index') }}">
                             <span class="menu-icon">
-                                <i class="ki-outline ki- people fs-2"></i>
+                                <i class="ki-outline ki-people fs-2"></i>
                             </span>
-                            <span class="menu-title">Manual Assignment</span>
+                            <span class="menu-title">{{ __('admin.manual_assignment') }}</span>
                         </a>
                     </div>
                     

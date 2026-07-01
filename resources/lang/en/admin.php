@@ -93,4 +93,7 @@ return [
     'sign_out' => 'Sign Out',
     'admin_role' => 'Admin',
     'last_login_now' => 'Last login: Now',
+    'shipping_orders' => 'Shipping Orders',
+    'manual_assignment' => 'Manual Assignment',
+    'new_shipping_order' => 'New Shipping Order',
 ];
