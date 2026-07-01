@@ -16,7 +16,6 @@
 @push('scripts')
     <script src="{{ asset('assets/vendor/libs/quill/katex.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/quill/quill.js') }}"></script>
-    <script src="{{ asset('assets/js/forms-editors.js') }}"></script>
 @endpush
 
 <div id="kt_app_content" class="app-content flex-column-fluid">
@@ -91,21 +90,36 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
+        var quillEn = new Quill('.content_en', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['clean']
+                ]
+            }
+        });
+
+        var quillAr = new Quill('.content_ar', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['clean']
+                ]
+            }
+        });
+
         var form = $('form.form');
         form.on('submit', function(e) {
-            var contentEn = $('.content_en .ql-editor').html();
-            var contentAr = $('.content_ar .ql-editor').html();
-            $('#content_en').val(contentEn);
-            $('#content_ar').val(contentAr);
+            $('#content_en').val(quillEn.root.innerHTML);
+            $('#content_ar').val(quillAr.root.innerHTML);
         });
     });
 </script>
 @endpush
-            </div>
-            <!--end::Card body-->
-        </div>
-        <!--end::Card-->
-    </div>
-</div>
-
 @endsection

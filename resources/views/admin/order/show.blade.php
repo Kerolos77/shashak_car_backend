@@ -116,10 +116,10 @@
                             @if($order->driver)
                             <div class="d-flex align-items-center">
                                 <div class="avatar-initial green me-3">
-                                    {{ substr($order->driver ?? 'D', 0, 1) }}
+                                    {{ substr($order->driver->full_name ?? 'D', 0, 1) }}
                                 </div>
                                 <div class="d-flex flex-column">
-                                    <span class="text-gray-900 fw-bold fs-6">{{ $order->driver ?? '-' }}</span>
+                                    <span class="text-gray-900 fw-bold fs-6">{{ $order->driver->full_name ?? '-' }}</span>
                                     <span class="text-gray-500 fs-7">Status: {{ $order->accepted_driver ?? '-' }}</span>
                                 </div>
                             </div>

@@ -16,7 +16,6 @@
 @push('scripts')
     <script src="{{ asset('assets/vendor/libs/quill/katex.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/quill/quill.js') }}"></script>
-    <script src="{{ asset('assets/js/forms-editors.js') }}"></script>
 @endpush
 
 <div id="kt_app_content" class="app-content flex-column-fluid">
@@ -53,6 +52,7 @@
                         </label>
                         <div class="col-lg-8">
                             <div class="content_en"></div>
+                            <input type="hidden" name="content_en" id="content_en">
                         </div>
                     </div>
 
@@ -62,6 +62,7 @@
                         </label>
                         <div class="col-lg-8">
                             <div class="content_ar"></div>
+                            <input type="hidden" name="content_ar" id="content_ar">
                         </div>
                     </div>
 
@@ -86,4 +87,38 @@
     </div>
 </div>
 
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        var quillEn = new Quill('.content_en', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['clean']
+                ]
+            }
+        });
+
+        var quillAr = new Quill('.content_ar', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['clean']
+                ]
+            }
+        });
+
+        $('form.form').on('submit', function(e) {
+            $('#content_en').val(quillEn.root.innerHTML);
+            $('#content_ar').val(quillAr.root.innerHTML);
+        });
+    });
+</script>
+@endpush
 @endsection

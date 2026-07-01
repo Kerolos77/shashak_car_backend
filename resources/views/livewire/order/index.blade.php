@@ -160,7 +160,7 @@
                                 {{ $order->distance_type }}
                             </td>
                             <td>
-                                {{ $order->driver }}
+                                {{ $order->driver->full_name ?? '-' }}
                             </td>
                             <td>
                                 {{ $order->final_rate }}
@@ -184,7 +184,7 @@
                                 {{ $order->rejected_driver }}
                             </td>
                             <td>
-                                {{ $order->service }}
+                                {{ $order->service->title ?? '-' }}
                             </td>
                             <td>
                                 {{ $order->source_location_l_at_lng }}
