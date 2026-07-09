@@ -386,7 +386,6 @@
                         </div>
                         <div class="col-lg-4">
                             <div class="mb-3">
-                                <label class="form-label"
                                     for="basic-default-min_driver_wallet_for_shipping">الحد الأدنى لمحفظة السائق لرحلات الشحن (ج.م)</label>
                                 <input type="number" step="0.5" value="{{ $row->min_driver_wallet_for_shipping }}"
                                     name="min_driver_wallet_for_shipping" class="form-control"
@@ -416,6 +415,61 @@
                                 </select>
                             </div>
                         </div>
+                        <hr class="my-4">
+                        <h4 class="mb-3">إعدادات حساب وإدارة المصروفات</h4>
+                        <div class="col-lg-12">
+                            <div class="mb-3">
+                                <label class="form-label" for="digitalocean_api_token">ديجيتال أوشن API Token (سحوبات السيرفر)</label>
+                                <input type="text" value="{{ $row->digitalocean_api_token }}" name="digitalocean_api_token" class="form-control"
+                                    id="digitalocean_api_token" placeholder="أدخل DigitalOcean API Token">
+                            </div>
+                        </div>
+                        <div class="col-lg-12">
+                            <div class="mb-3">
+                                <label class="form-label" for="gcp_service_account_json">Google Cloud Service Account JSON (فواتير فايربيز وجيميني)</label>
+                                <textarea name="gcp_service_account_json" class="form-control" id="gcp_service_account_json" rows="4" 
+                                    placeholder="ألصق محتويات ملف Service Account JSON هنا">{{ $row->gcp_service_account_json }}</textarea>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label class="form-label" for="gcp_billing_account_id">Google Cloud Billing Account ID</label>
+                                <input type="text" value="{{ $row->gcp_billing_account_id }}" name="gcp_billing_account_id" class="form-control"
+                                    id="gcp_billing_account_id" placeholder="مثال: 012345-6789AB-CDEF01">
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label class="form-label" for="usd_to_egp_exchange_rate">سعر صرف الدولار الافتراضي (مقابل الجنيه المصري)</label>
+                                <input type="number" step="0.01" value="{{ $row->usd_to_egp_exchange_rate }}" name="usd_to_egp_exchange_rate" class="form-control"
+                                    id="usd_to_egp_exchange_rate" placeholder="سعر الصرف الافتراضي (مثل 50.00)">
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="mb-3">
+                                <label class="form-label" for="paymob_card_commission_percent">عمولة بايموب - الكروت (%)</label>
+                                <input type="number" step="0.01" value="{{ $row->paymob_card_commission_percent }}" name="paymob_card_commission_percent" class="form-control" id="paymob_card_commission_percent">
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="mb-3">
+                                <label class="form-label" for="paymob_card_commission_fixed">عمولة بايموب - الكروت (مبلغ ثابت ج.م)</label>
+                                <input type="number" step="0.01" value="{{ $row->paymob_card_commission_fixed }}" name="paymob_card_commission_fixed" class="form-control" id="paymob_card_commission_fixed">
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="mb-3">
+                                <label class="form-label" for="paymob_wallet_commission_percent">عمولة بايموب - المحافظ (%)</label>
+                                <input type="number" step="0.01" value="{{ $row->paymob_wallet_commission_percent }}" name="paymob_wallet_commission_percent" class="form-control" id="paymob_wallet_commission_percent">
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="mb-3">
+                                <label class="form-label" for="paymob_wallet_commission_fixed">عمولة بايموب - المحافظ (مبلغ ثابت ج.م)</label>
+                                <input type="number" step="0.01" value="{{ $row->paymob_wallet_commission_fixed }}" name="paymob_wallet_commission_fixed" class="form-control" id="paymob_wallet_commission_fixed">
+                            </div>
+                        </div>
+                        <hr class="my-4">
                         <button type="submit" class="btn btn-primary waves-effect waves-light">{{ __('global.save') }}</button>
 
                     </div>

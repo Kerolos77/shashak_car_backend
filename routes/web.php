@@ -133,6 +133,10 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth:admi
     Route::resource('wallet-transactions', WalletTransactionController::class);
     Route::post('wallet-transactions/add-amount', [WalletTransactionController::class, 'add_amount'])->name('add_amount');
 
+    // Expenses
+    Route::post('expenses/sync', [\App\Http\Controllers\Admin\ExpenseController::class, 'sync'])->name('expenses.sync');
+    Route::resource('expenses', \App\Http\Controllers\Admin\ExpenseController::class);
+
     // Audit Logs
     Route::resource('audit-logs', AuditLogController::class, ['except' => ['store', 'update', 'destroy', 'create', 'edit']]);
 

@@ -349,6 +349,19 @@
                     </a>
                 </div>
 
+                <!-- Expenses -->
+                <div class="menu-item">
+                    <a class="menu-link {{ request()->is('admin/expenses*') ? 'active' : '' }}" href="{{ route('admin.expenses.index') }}">
+                        <span class="menu-icon">
+                            <i class="ki-duotone ki-discount fs-2">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                        </span>
+                        <span class="menu-title">المصروفات</span>
+                    </a>
+                </div>
+
                 <!-- Chats -->
                 <div class="menu-item">
                     <a class="menu-link {{ request()->is('admin/chats*') ? 'active' : '' }}" href="{{ route('admin.chats.index') }}">

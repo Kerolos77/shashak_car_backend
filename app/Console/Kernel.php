@@ -15,6 +15,7 @@ class Kernel extends ConsoleKernel
       
         $schedule->command('backup:clesr')->hourly();
         $schedule->command('orders:cancel-expired')->everyMinute();
+        $schedule->command('expenses:sync')->daily();
     }
 
     /**

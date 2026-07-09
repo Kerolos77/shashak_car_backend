@@ -181,6 +181,11 @@ Your tasks are:
                 ];
             }
 
+            // Log the cost/tokens if usageMetadata exists
+            if (isset($responseBody['usageMetadata'])) {
+                $this->logGeminiExpense($modelName, $responseBody['usageMetadata']);
+            }
+
             // Return the parsed data along with raw response
             $parsedData['success'] = true;
             $parsedData['raw_response'] = $responseBody;
@@ -197,6 +202,68 @@ Your tasks are:
                 'rejection_reason_arabic' => 'حدث خطأ غير متوقع أثناء معالجة التحقق.',
                 'detailed_report' => 'Exception: ' . $e->getMessage(),
             ];
+        }
+    }
+
+    /**
+     * Calculate and log the cost of a Gemini API call.
+     */
+    private function logGeminiExpense(string $modelName, array $usageMetadata): void
+    {
+        try {
+            $promptTokens = $usageMetadata['promptTokenCount'] ?? 0;
+            $candidatesTokens = $usageMetadata['candidatesTokenCount'] ?? 0;
+
+            if ($promptTokens === 0 && $candidatesTokens === 0) {
+                return;
+            }
+
+            // Standard prices (per 1M tokens in USD)
+            $inputRate = 0.075 / 1000000;
+            $outputRate = 0.30 / 1000000;
+
+            if (str_contains($modelName, 'pro')) {
+                $inputRate = 1.25 / 1000000;
+                $outputRate = 5.00 / 1000000;
+            }
+
+            $costUsd = ($promptTokens * $inputRate) + ($candidatesTokens * $outputRate);
+
+            // Get exchange rate from settings
+            $setting = \App\Models\Setting::first();
+            $exchangeRate = $setting->usd_to_egp_exchange_rate ?? 50.00;
+
+            $costEgp = $costUsd * $exchangeRate;
+
+            // Generate a unique reference ID for this call
+            $referenceId = 'gemini_' . uniqid() . '_' . time();
+
+            \App\Models\Expense::create([
+                'category' => 'google_cloud',
+                'amount' => $costUsd,
+                'currency' => 'USD',
+                'exchange_rate' => $exchangeRate,
+                'amount_egp' => $costEgp,
+                'description' => sprintf(
+                    'استدعاء Gemini API للتحقق من الهوية (النموذج: %s، الرموز المدخلة: %d، الرموز المخرجة: %d، التكلفة: $%s)',
+                    $modelName,
+                    $promptTokens,
+                    $candidatesTokens,
+                    number_format($costUsd, 6)
+                ),
+                'expense_date' => now()->toDateString(),
+                'is_automated' => true,
+                'reference_id' => $referenceId,
+            ]);
+
+            Log::info('Gemini expense logged successfully', [
+                'model' => $modelName,
+                'cost_usd' => $costUsd,
+                'cost_egp' => $costEgp
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to log Gemini expense: ' . $e->getMessage());
         }
     }
 }

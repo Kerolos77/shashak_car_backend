@@ -355,6 +355,9 @@ class PaymobService
                     'transaction_userId' => $transaction->userID,
                 ]);
             }
+
+            // Log Paymob commission as automated expense
+            $this->logPaymobCommission($transaction, $ctx['amount']);
         }
 
         // Broadcast real-time status update (WebSocket / Pusher)
@@ -362,6 +365,70 @@ class PaymobService
             event(new PaymentStatusUpdated($transaction));
         } catch (\Exception $e) {
             Log::error('Paymob webhook broadcast error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Calculate and log the Paymob fee based on configured card/wallet rates.
+     */
+    private function logPaymobCommission(PaymentTransaction $transaction, float $amount): void
+    {
+        try {
+            $setting = \App\Models\Setting::first();
+            
+            // Default rates if settings are null
+            $percent = 2.75;
+            $fixed = 3.00;
+            
+            // Check payment method
+            $isWallet = false;
+            if (isset($transaction->payment_method) && strtolower($transaction->payment_method) === 'wallet') {
+                $isWallet = true;
+            }
+
+            if ($setting) {
+                if ($isWallet) {
+                    $percent = $setting->paymob_wallet_commission_percent ?? 1.50;
+                    $fixed = $setting->paymob_wallet_commission_fixed ?? 0.00;
+                } else {
+                    $percent = $setting->paymob_card_commission_percent ?? 2.75;
+                    $fixed = $setting->paymob_card_commission_fixed ?? 3.00;
+                }
+            }
+
+            // Calculate commission
+            $commission = ($amount * ($percent / 100)) + $fixed;
+
+            // Log to expenses table
+            \App\Models\Expense::updateOrCreate([
+                'category' => 'paymob',
+                'reference_id' => (string) $transaction->id,
+            ], [
+                'amount' => $commission,
+                'currency' => 'EGP',
+                'exchange_rate' => 1.0000,
+                'amount_egp' => $commission,
+                'description' => sprintf(
+                    'عمولة بايموب لمعاملة شحن محفظة رقم #%s بقيمة %s ج.م (طريقة الدفع: %s، عمولة: %s%% + %s ج.م)',
+                    $transaction->payment_id,
+                    $amount,
+                    $isWallet ? 'محفظة' : 'بطاقة ائتمان',
+                    $percent,
+                    $fixed
+                ),
+                'expense_date' => now()->toDateString(),
+                'is_automated' => true,
+            ]);
+
+            Log::info('Paymob commission logged successfully', [
+                'transaction_id' => $transaction->id,
+                'amount' => $amount,
+                'commission' => $commission
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to log Paymob commission: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
         }
     }
 
