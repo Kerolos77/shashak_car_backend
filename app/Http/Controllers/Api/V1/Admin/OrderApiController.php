@@ -536,9 +536,13 @@ class OrderApiController extends Controller
                 'receiver_phone' => 'required|string',
             ]);
 
-            // Validate that the sender has complete national ID documents uploaded
+            // Validate that the sender has a verified UserIdentity or legacy documents
             $user = Auth::user();
-            if (empty($user->national_id) || empty($user->national_id_front) || empty($user->national_id_back) || empty($user->national_id_selfie)) {
+            $identity = \App\Models\UserIdentity::where('user_id', $user->id)->first();
+            $isVerified = ($identity && $identity->status === 'verified');
+            $hasLegacyDocs = (!empty($user->national_id) && !empty($user->national_id_front) && !empty($user->national_id_back) && !empty($user->national_id_selfie));
+
+            if (!$isVerified && !$hasLegacyDocs) {
                 return Resp(null, 'يرجى إكمال توثيق حسابك ورفع صور بطاقة الهوية (وجه، ظهر، وسيلفي مع البطاقة) أولاً قبل طلب رحلة شحن.', 400, false);
             }
         }
