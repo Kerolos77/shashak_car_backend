@@ -368,6 +368,7 @@ return [
     'roles'             => 'Roles',
     'client'            => 'Client',
  'incomes'            => 'Income',
+    'expenses'           => 'Expenses',
 
 
  'todayIncome'            => 'Today Income',

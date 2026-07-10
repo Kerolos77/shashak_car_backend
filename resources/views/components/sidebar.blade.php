@@ -304,6 +304,16 @@
                         </a>
                     </div>
                     
+                    <!-- Expenses -->
+                    <div class="menu-item {{ request()->is('admin/expenses*') ? 'here show' : '' }}">
+                        <a class="menu-link" href="{{ route('admin.expenses.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-outline ki-discount fs-2"></i>
+                            </span>
+                            <span class="menu-title">{{ trans('global.expenses') }}</span>
+                        </a>
+                    </div>
+                    
                     <!-- Chats -->
                     <div class="menu-item {{ request()->is('admin/chats*') ? 'here show' : '' }}">
                         <a class="menu-link" href="{{ route('admin.chats.index') }}">
