@@ -764,6 +764,7 @@ class OrderApiController extends Controller
         $order->update([
             'accepted_driver' => Carbon::now(),
             'on_trip_at' => Carbon::now(),
+            'is_started' => Carbon::now(),
             'status' => Order::STATUS_ON_TRIP
         ]);
 
@@ -812,6 +813,7 @@ class OrderApiController extends Controller
 
         $order->update([
             'is_end' => Carbon::now(),
+            'is_complete' => Carbon::now(),
             'completed_at' => Carbon::now(),
             'status' => Order::STATUS_COMPLETED
         ]);
@@ -1645,6 +1647,7 @@ class OrderApiController extends Controller
             'sender_confirmed_handover_at' => Carbon::now(),
             'driver_confirmed_pickup_at' => Carbon::now(),
             'on_trip_at' => Carbon::now(),
+            'is_started' => Carbon::now(),
             'status' => Order::STATUS_ON_TRIP,
         ]);
 
@@ -1750,6 +1753,7 @@ class OrderApiController extends Controller
             'driver_confirmed_delivery_at' => Carbon::now(),
             'receiver_confirmed_delivery_at' => Carbon::now(),
             'is_end' => Carbon::now(),
+            'is_complete' => Carbon::now(),
             'completed_at' => Carbon::now(),
             'status' => Order::STATUS_COMPLETED
         ]);
