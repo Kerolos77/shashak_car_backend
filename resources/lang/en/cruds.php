@@ -927,6 +927,8 @@ return [
             'min_deposit' => 'Min Deposit',
             'referral_bonus' => 'Referral Bonus',
             'commission_percentage' => 'Commission Percentage',
+            'play_store_url' => 'Google Play Store URL',
+            'app_store_url' => 'Apple App Store URL',
         ]
     ],
     'ordersM' => [

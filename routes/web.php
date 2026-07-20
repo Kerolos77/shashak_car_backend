@@ -45,6 +45,8 @@ Route::get('/account/delete/{id}', function ($id) {
     return 'SUCCESS';
 });
 
+Route::get('/track/{id}', [\App\Http\Controllers\PublicTrackingController::class, 'trackOrderPublic'])->name('orders.track_public');
+
 Route::get('/page/{slug}', function ($slug) {
     $page = Page::where('slug', '=', $slug)->first();
     return view('welcome', compact('page'));

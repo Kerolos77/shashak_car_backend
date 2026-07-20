@@ -1648,13 +1648,52 @@ class OrderApiController extends Controller
             'status' => Order::STATUS_ON_TRIP,
         ]);
 
-        TripStatusUpdated::dispatch($order->fresh());
+        $freshOrder = $order->fresh();
+        TripStatusUpdated::dispatch($freshOrder);
 
-        if ($order->user) {
-            $order->user->sendPushNotification("بدء الرحلة والتسليم للسائق", "نتمنى لك رحلة آمنة، تم بدء توصيل الشحنة بنجاح.", ['order_id' => $order->id, 'type' => 'trip_update']);
+        if ($freshOrder->user) {
+            $freshOrder->user->sendPushNotification("بدء الرحلة والتسليم للسائق", "نتمنى لك رحلة آمنة، تم بدء توصيل الشحنة بنجاح.", ['order_id' => $freshOrder->id, 'type' => 'trip_update']);
         }
 
-        return Resp(new OrderResource($order->fresh()), 'Pickup OTP verified successfully. Trip started.');
+        // Send detailed SMS to receiver on trip start
+        if ($freshOrder->is_shipping_order && $freshOrder->receiver_phone) {
+            try {
+                $senderName = $freshOrder->user ? $freshOrder->user->full_name : 'الراسل';
+                $senderPhone = $freshOrder->user ? $freshOrder->user->phone : '';
+                $driverName = $freshOrder->driver ? $freshOrder->driver->full_name : 'سائق شكشك';
+                $driverPhone = $freshOrder->driver ? $freshOrder->driver->phone : '';
+                $deliveryOtp = $freshOrder->delivery_otp;
+                $trackingLink = url('/track/' . $freshOrder->id);
+                
+                $message = "أهلاً بك، بدأت رحلة شحن طلبك رقم #{$freshOrder->id}.\n"
+                         . "الراسل: {$senderName} ({$senderPhone}).\n"
+                         . "السائق: {$driverName} ({$driverPhone}).\n"
+                         . "لتتبع الشحنة والتفاصيل: {$trackingLink}\n"
+                         . "كود التسليم: {$deliveryOtp} (يرجى إعطاؤه للسائق عند الاستلام لتأكيد تسليم الشحنة).";
+
+                $smsHelper = new \App\Helpers\SmsHelper();
+                $smsHelper->sendCustomSms($freshOrder->receiver_phone, $message);
+                \Log::info("Shipping Trip Started: Detailed SMS sent to receiver {$freshOrder->receiver_phone} for order {$freshOrder->id}");
+            } catch (\Exception $e) {
+                \Log::error("Failed to send shipping trip started SMS: " . $e->getMessage());
+            }
+
+            // Notify Receiver via Push Notification if they have a registered account in our app
+            try {
+                $receiverUser = \App\Models\User::where('phone_number', $freshOrder->receiver_phone)->first();
+                if ($receiverUser) {
+                    $receiverUser->sendPushNotification(
+                        "شحنتك في الطريق!", 
+                        "بدأ السائق التحرك بتوصيل شحنتك رقم #{$freshOrder->id} إليك. يمكنك متابعة السائق في التطبيق.", 
+                        ['order_id' => $freshOrder->id, 'type' => 'trip_update']
+                    );
+                }
+            } catch (\Exception $e) {
+                \Log::error("Failed to send shipping trip started push notification to receiver: " . $e->getMessage());
+            }
+        }
+
+        return Resp(new OrderResource($freshOrder), 'Pickup OTP verified successfully. Trip started.');
     }
 
     public function driverArriveReceiver(Request $request, Order $order)

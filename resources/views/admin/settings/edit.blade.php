@@ -189,6 +189,24 @@
                                     placeholder="{{ __('cruds.setting.fields.link_3') }}">
                             </div>
                         </div>
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label class="form-label"
+                                    for="basic-default-play_store_url">{{ __('cruds.setting.fields.play_store_url') }}</label>
+                                <input type="url" value="{{ $row->play_store_url }}" name="play_store_url"
+                                    class="form-control" id="basic-default-play_store_url"
+                                    placeholder="{{ __('cruds.setting.fields.play_store_url') }}">
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label class="form-label"
+                                    for="basic-default-app_store_url">{{ __('cruds.setting.fields.app_store_url') }}</label>
+                                <input type="url" value="{{ $row->app_store_url }}" name="app_store_url"
+                                    class="form-control" id="basic-default-app_store_url"
+                                    placeholder="{{ __('cruds.setting.fields.app_store_url') }}">
+                            </div>
+                        </div>
                         <div class="col-lg-4">
                             <div class="mb-3">
                                 <label class="form-label"

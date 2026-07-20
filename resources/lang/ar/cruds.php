@@ -879,6 +879,8 @@ return [
         'min_deposit'               => 'الحد الأدنى للإيداع',
         'referral_bonus'            => 'مكافأة الإحالة',
         'commission_percentage'     => 'نسبة العمولة',
+        'play_store_url'            => 'رابط متجر Google Play',
+        'app_store_url'             => 'رابط متجر App Store',
     ]
 ],
 'ordersM' => [
