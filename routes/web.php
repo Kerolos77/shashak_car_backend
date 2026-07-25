@@ -101,15 +101,24 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth:admi
     // Roles
     Route::resource('roles', RoleController::class);
 
-    // Users
+    // Users Actions
     Route::get('users/{id}/export-pdf', [App\Http\Controllers\Admin\OfficialReportController::class, 'exportUserPdf'])->name('users.export-pdf');
+    Route::post('users/{id}/toggle-vip', [UserController::class, 'toggleVip'])->name('users.toggle-vip');
+    Route::post('users/{id}/add-wallet', [UserController::class, 'addWalletBalance'])->name('users.add-wallet');
     Route::resource('users', UserController::class);
 
-    // Drivers
+    // Drivers Actions
     Route::get('drivers/{id}/export-pdf', [App\Http\Controllers\Admin\OfficialReportController::class, 'exportDriverPdf'])->name('drivers.export-pdf');
     Route::resource('drivers', DriverController::class);
     Route::put('drivers/activate/{id}', [DriverController::class, 'active'])->name('drivers.active');
     Route::put('drivers/block/{id}', [DriverController::class, 'block'])->name('drivers.block');
+    Route::post('drivers/{id}/reset-cash-ban', [DriverController::class, 'resetCashBan'])->name('drivers.reset-cash-ban');
+    Route::post('drivers/{id}/toggle-vip', [DriverController::class, 'toggleVip'])->name('drivers.toggle-vip');
+    Route::post('drivers/{id}/add-wallet', [DriverController::class, 'addWalletBalance'])->name('drivers.add-wallet');
+    Route::post('drivers/{id}/gift-package', [DriverController::class, 'giftPackage'])->name('drivers.gift-package');
+
+    // Reviews Management
+    Route::delete('reviews/{id}', [App\Http\Controllers\Admin\ReviewManagementController::class, 'destroy'])->name('reviews.destroy');
 
     // Airports
     Route::resource('airports', AirportController::class, ['except' => ['store', 'update', 'destroy']]);

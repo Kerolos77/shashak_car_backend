@@ -25,6 +25,7 @@ class User extends Authenticatable implements HasLocalePreference
     protected $guarded = [];
     protected $casts = [
         'is_active' => 'boolean',
+        'is_vip' => 'boolean',
     ];
 
     protected $hidden = [
@@ -370,4 +371,8 @@ class User extends Authenticatable implements HasLocalePreference
         ->exists();
     }
      
+    public function auditLogs()
+    {
+        return $this->hasMany(AdminUserAuditLog::class, 'user_id')->orderBy('id', 'desc');
+    }
 }

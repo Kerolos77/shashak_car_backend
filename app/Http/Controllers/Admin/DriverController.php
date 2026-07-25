@@ -98,20 +98,144 @@ class DriverController extends BaseController
     public function show($id)  
     {
         $row = $this->model->with(['user', 'user.country', 'user.city'])->findOrFail($id);
+        $userId = $row->user_id;
+
         $moduleName = $this->getModelName();
         $pageTitle = $moduleName;
         $pageDes = "Here you can create " .$moduleName;
         
         // Get driver documents from API
-        $driverDocuments = $this->getDriverDocuments($row->user_id);
+        $driverDocuments = $this->getDriverDocuments($userId);
         
+        // Order Stats
+        $orderStats = [
+            'total' => \App\Models\Order::where('driver_id', $userId)->count(),
+            'completed' => \App\Models\Order::where('driver_id', $userId)->where('status', \App\Models\Order::STATUS_COMPLETED)->count(),
+            'canceled' => \App\Models\Order::where('driver_id', $userId)->where('status', \App\Models\Order::STATUS_CANCELED)->count(),
+            'total_earnings' => \App\Models\Order::where('driver_id', $userId)->where('status', \App\Models\Order::STATUS_COMPLETED)->sum('final_rate'),
+        ];
+
+        // Reviews received
+        $reviews = \App\Models\Review::where('to_user_id', $userId)->with('fromUser')->orderBy('id', 'desc')->get();
+
+        // Active Packages & Purchases
+        $activePackages = \App\Models\Purchase::where('driver_id', $userId)->with('package')->orderBy('id', 'desc')->get();
+        $availablePackages = \App\Models\Package::where('is_active', 1)->get();
+
+        // Audit logs
+        $auditLogs = \App\Models\AdminUserAuditLog::where('user_id', $userId)->with('admin')->orderBy('id', 'desc')->get();
+
         return view('admin.drivers.show', compact(
             'row', 
             'moduleName',
             'pageTitle',
             'pageDes',
-            'driverDocuments'
+            'driverDocuments',
+            'orderStats',
+            'reviews',
+            'activePackages',
+            'availablePackages',
+            'auditLogs'
         ));
+    }
+
+    public function resetCashBan($id)
+    {
+        $driverProfile = $this->model->findOrFail($id);
+        $user = \App\Models\User::findOrFail($driverProfile->user_id);
+
+        $user->cash_restriction_seconds_remaining = 0;
+        $user->save();
+
+        \App\Models\AdminUserAuditLog::create([
+            'admin_id' => \Illuminate\Support\Facades\Auth::guard('admin')->id() ?? \Illuminate\Support\Facades\Auth::id(),
+            'user_id'  => $user->id,
+            'action'   => 'reset_cash_ban',
+            'notes'    => 'تم تصفير وإلغاء حظر الكاش فوراً عن السائق بواسطة الإدارة.',
+        ]);
+
+        return redirect()->back()->with('success', __('تم فك وتصفير حظر الكاش عن السائق بنجاح.'));
+    }
+
+    public function toggleVip($id)
+    {
+        $driverProfile = $this->model->findOrFail($id);
+        $user = \App\Models\User::findOrFail($driverProfile->user_id);
+
+        $user->is_vip = !$user->is_vip;
+        $user->save();
+
+        $statusText = $user->is_vip ? 'تفعيل شارة السائق المميز (VIP)' : 'إلغاء شارة VIP';
+
+        \App\Models\AdminUserAuditLog::create([
+            'admin_id' => \Illuminate\Support\Facades\Auth::guard('admin')->id() ?? \Illuminate\Support\Facades\Auth::id(),
+            'user_id'  => $user->id,
+            'action'   => 'toggle_vip',
+            'notes'    => "تم {$statusText} للسائق.",
+        ]);
+
+        return redirect()->back()->with('success', __("تم {$statusText} بنجاح."));
+    }
+
+    public function addWalletBalance(Request $request, $id)
+    {
+        $request->validate([
+            'amount' => 'required|numeric',
+            'notes' => 'nullable|string|max:255',
+        ]);
+
+        $driverProfile = $this->model->findOrFail($id);
+        $user = \App\Models\User::findOrFail($driverProfile->user_id);
+
+        $amount = (float)$request->amount;
+        $user->wallet_amount = ($user->wallet_amount ?? 0) + $amount;
+        $user->save();
+
+        \App\Models\WalletTransaction::create([
+            'user_id' => $user->id,
+            'amount' => abs($amount),
+            'type' => $amount >= 0 ? 'deposit' : 'withdraw',
+            'status' => 'completed',
+            'notes' => $request->notes ?? 'إضافة/خصم رصيد يدوي من الإدارة',
+        ]);
+
+        \App\Models\AdminUserAuditLog::create([
+            'admin_id' => \Illuminate\Support\Facades\Auth::guard('admin')->id() ?? \Illuminate\Support\Facades\Auth::id(),
+            'user_id'  => $user->id,
+            'action'   => 'add_wallet',
+            'notes'    => "تم تغيير رصيد المحفظة بمبلغ ({$amount} ج.م) - السبب: " . ($request->notes ?? 'إضافة يدوية'),
+        ]);
+
+        return redirect()->back()->with('success', __('تم تعديل رصيد محفظة السائق وتسجيل المعاملة بنجاح.'));
+    }
+
+    public function giftPackage(Request $request, $id)
+    {
+        $request->validate([
+            'package_id' => 'required|exists:driver_packages,id',
+        ]);
+
+        $driverProfile = $this->model->findOrFail($id);
+        $user = \App\Models\User::findOrFail($driverProfile->user_id);
+        $package = \App\Models\Package::findOrFail($request->package_id);
+
+        $expiresAt = now()->addDays($package->duration_days ?? 30);
+
+        \App\Models\Purchase::create([
+            'driver_id' => $user->id,
+            'package_id' => $package->id,
+            'expires_at' => $expiresAt,
+            'status' => 'active',
+        ]);
+
+        \App\Models\AdminUserAuditLog::create([
+            'admin_id' => \Illuminate\Support\Facades\Auth::guard('admin')->id() ?? \Illuminate\Support\Facades\Auth::id(),
+            'user_id'  => $user->id,
+            'action'   => 'gift_package',
+            'notes'    => "تم إهداء وتفعيل باقة ({$package->name}) مجاناً للسائق لغايـة " . $expiresAt->format('Y-m-d'),
+        ]);
+
+        return redirect()->back()->with('success', __('تم إهداء وتفعيل الباقة للسائق بنجاح.'));
     }
     
     private function getDriverDocuments($userId)

@@ -7,28 +7,92 @@
 @endsection
 
 @section('content')
+
+@if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-5" role="alert">
+        <i class="ki-outline ki-check-circle fs-3 me-2 text-success"></i>
+        <div>{{ session('success') }}</div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
 <div id="kt_app_content" class="app-content flex-column-fluid">
     <div id="kt_app_content_container" class="app-container container-xxxl">
-        <!--begin::Card-->
-        <div class="card">
-            <!--begin::Card header-->
-            <div class="card-header border-0 pt-6 d-flex align-items-center justify-content-between">
-                <h3 class="card-title align-items-start flex-column">
-                    <span class="card-label fw-bold fs-3">{{ trans('global.view') }} {{ trans('cruds.user.title_singular') }}</span>
-                </h3>
-                <div class="card-toolbar">
+        
+        <!-- Header & Quick Actions -->
+        <div class="card mb-6 shadow-sm">
+            <div class="card-body p-6 d-flex flex-wrap align-items-center justify-content-between gap-4">
+                <div class="d-flex align-items-center gap-4">
+                    <div class="symbol symbol-70px symbol-circle border border-primary border-opacity-20 p-1">
+                        <img src="{{ asset($user->profile_pic ?? 'assets/media/avatars/blank.png') }}" alt="{{ $user->name }}" style="object-fit: cover;">
+                    </div>
+                    <div>
+                        <h2 class="fw-bold mb-1 d-flex align-items-center gap-2">
+                            {{ $user->name }}
+                            @if($user->is_vip)
+                                <span class="badge badge-light-warning text-dark fw-bold" title="عميل مميز (VIP)">⭐ VIP Member</span>
+                            @endif
+                        </h2>
+                        <div class="text-muted fs-6">{{ $user->email }} | {{ $user->phone_number }}</div>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2">
+                    <!-- Toggle VIP Button -->
+                    <form action="{{ route('admin.users.toggle-vip', $user->id) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-sm {{ $user->is_vip ? 'btn-light-warning' : 'btn-outline-warning' }} fw-bold">
+                            <i class="ki-outline ki-star fs-5 me-1"></i> {{ $user->is_vip ? 'إلغاء شارة VIP' : 'تمييز كـ VIP ⭐' }}
+                        </button>
+                    </form>
+
+                    <!-- Add Wallet Balance Button -->
+                    <button type="button" class="btn btn-sm btn-primary fw-bold" data-bs-toggle="modal" data-bs-target="#userWalletModal">
+                        <i class="ki-outline ki-wallet fs-5 me-1"></i> إضافة رصيد محفظة
+                    </button>
+
                     <a href="{{ route('admin.users.export-pdf', $user->id) }}" class="btn btn-sm btn-danger px-4" target="_blank">
-                        <i class="ki-outline ki-document fs-5 me-1"></i>
-                        تصدير ملف أمني رسمي (PDF)
+                        <i class="ki-outline ki-document fs-5 me-1"></i> تصدير PDF
                     </a>
                 </div>
             </div>
-            <!--end::Card header-->
+        </div>
 
-            <!--begin::Card body-->
-            <div class="card-body pt-0">
-                <!--begin::Tabs-->
-                <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x mb-5 fs-6">
+        <!-- Order Statistics Cards -->
+        @if(isset($orderStats))
+            <div class="row g-4 mb-6">
+                <div class="col-sm-6 col-md-3">
+                    <div class="card bg-light-primary border-0 p-4 rounded-3 text-center shadow-sm">
+                        <span class="fs-6 text-muted fw-semibold d-block mb-1">إجمالي رحلات العميل</span>
+                        <span class="fs-2x fw-bold text-primary">{{ $orderStats['total'] }}</span>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="card bg-light-success border-0 p-4 rounded-3 text-center shadow-sm">
+                        <span class="fs-6 text-muted fw-semibold d-block mb-1">الرحلات المكتملة</span>
+                        <span class="fs-2x fw-bold text-success">{{ $orderStats['completed'] }}</span>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="card bg-light-danger border-0 p-4 rounded-3 text-center shadow-sm">
+                        <span class="fs-6 text-muted fw-semibold d-block mb-1">الرحلات الملغاة</span>
+                        <span class="fs-2x fw-bold text-danger">{{ $orderStats['canceled'] }}</span>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="card bg-light-info border-0 p-4 rounded-3 text-center shadow-sm">
+                        <span class="fs-6 text-muted fw-semibold d-block mb-1">إجمالي ما أنفقه</span>
+                        <span class="fs-2x fw-bold text-info">{{ number_format($orderStats['total_spent'], 0) }}ج.م</span>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <!-- Main Card -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <!-- Tabs -->
+                <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x mb-5 fs-6 fw-bold">
                     <li class="nav-item">
                         <a class="nav-link active" data-bs-toggle="tab" href="#kt_user_view_overview_tab">{{ trans('global.overview') }}</a>
                     </li>
@@ -52,19 +116,30 @@
                             @endif
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#kt_user_view_reviews_tab">
+                            التقييمات والمراجعات ({{ isset($reviews) ? $reviews->count() : 0 }})
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#kt_user_view_audit_tab">
+                            سجل إجراءات الإدارة ({{ isset($auditLogs) ? $auditLogs->count() : 0 }})
+                        </a>
+                    </li>
                 </ul>
-                <!--end::Tabs-->
 
-                <!--begin::Tab Content-->
+                <!-- Tab Content -->
                 <div class="tab-content" id="myTabContent">
+
+                    <!-- TAB 1: Overview -->
                     <div class="tab-pane fade show active" id="kt_user_view_overview_tab">
-                        <div class="card card-flush mb-6 mb-xl-9">
-                            <div class="card-header mt-6">
+                        <div class="card card-flush mb-6">
+                            <div class="card-header mt-4">
                                 <div class="card-title flex-column">
-                                    <h2 class="mb-1">{{ trans('cruds.user.fields.user_information') }}</h2>
+                                    <h3 class="mb-1">{{ trans('cruds.user.fields.user_information') }}</h3>
                                 </div>
                             </div>
-                            <div class="card-body p-9 pt-4">
+                            <div class="card-body p-6 pt-0">
                                 <table class="table table-striped">
                                     <tbody>
                                         <tr>
@@ -78,6 +153,14 @@
                                         <tr>
                                             <th>{{ trans('cruds.user.fields.email') }}</th>
                                             <td>{{ $user->email }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>رصيد المحفظة الحركية</th>
+                                            <td class="fw-bold text-success fs-5">{{ number_format($user->wallet_amount ?? 0, 2) }} ج.م</td>
+                                        </tr>
+                                        <tr>
+                                            <th>متوسط تقييم العميل</th>
+                                            <td class="fw-bold text-dark">⭐ {{ number_format($user->rating ?? 5.0, 2) }} / 5.0</td>
                                         </tr>
                                         <tr>
                                             <th>{{ trans('cruds.referral.fields.referral_code') }}</th>
@@ -101,149 +184,58 @@
                                                 @endforeach
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <th>{{ trans('cruds.user.fields.phone_number') }}</th>
-                                            <td>{{ $user->phone_number }}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>{{ trans('cruds.user.fields.profile_pic') }}</th>
-                                            <td>
-                                                @if($user->profile_pic)
-                                                    <a href="{{ $user->imageurl }}" target="_blank" style="display: inline-block"><img src="{{ $user->imageurl }}" style="max-height:80px; border-radius:8px;"></a>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th>{{ trans('cruds.user.fields.wallet_amount') }}</th>
-                                            <td>{{ $user->wallet_amount }}</td>
-                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
 
+                    <!-- TAB 2: Referrals -->
                     <div class="tab-pane fade" id="kt_user_view_overview_referrals_tab">
-                        <div class="card card-flush mb-6 mb-xl-9">
-                            <div class="card-body p-9">
-                                <!-- Referral Summary -->
-                                <div class="row mb-8">
-                                    <div class="col-md-6">
-                                        <div class="border border-dashed border-gray-300 rounded px-6 py-4">
-                                            <div class="fs-6 text-gray-400 fw-bold">{{ trans('cruds.referral.total_referrals') }}</div>
-                                            <div class="fs-2 fw-bolder text-gray-800">{{ $user->referrals->count() }}</div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="border border-dashed border-gray-300 rounded px-6 py-4">
-                                            <div class="fs-6 text-gray-400 fw-bold">{{ trans('cruds.referral.total_earnings') }}</div>
-                                            <div class="fs-2 fw-bold text-success">{{ number_format($user->total_referral_earnings, 2) }} {{ trans('cruds.referral.currency') }}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                    
-                                <!-- Referred Users Table -->
-                                <div class="table-responsive">
-                                    <table class="table align-middle table-row-dashed fs-6 gy-5">
-                                        <thead>
-                                            <tr class="text-start text-gray-400 fw-bolder fs-7 text-uppercase gs-0">
-                                                <th class="min-w-200px">{{ trans('cruds.referral.invited_user') }}</th>
-                                                <th class="min-w-150px">{{ trans('cruds.user.fields.phone_number') }}</th>
-                                                <th class="min-w-150px">{{ trans('cruds.referral.join_date') }}</th>
-                                                <th class="min-w-100px text-end">{{ trans('cruds.referral.bonus_earned') }}</th>
+                        <div class="card card-flush">
+                            <div class="card-body pt-4">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>{{ trans('cruds.user.fields.id') }}</th>
+                                            <th>{{ trans('cruds.user.fields.name') }}</th>
+                                            <th>{{ trans('cruds.user.fields.email') }}</th>
+                                            <th>{{ trans('cruds.user.fields.created_at') }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($user->referrals as $ref)
+                                            <tr>
+                                                <td>{{ $ref->id }}</td>
+                                                <td>{{ $ref->name }}</td>
+                                                <td>{{ $ref->email }}</td>
+                                                <td>{{ $ref->created_at }}</td>
                                             </tr>
-                                        </thead>
-                                        <tbody class="fw-bold text-gray-600">
-                                            @forelse($user->referrals as $referral)
-                                                <tr>
-                                                    <td>
-                                                        <div class="d-flex align-items-center">
-                                                            <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
-                                                                <a href="{{ route('admin.users.show', $referral->id) }}">
-                                                                    @if($referral->profile_pic)
-                                                                        <div class="symbol-label">
-                                                                            <img src="{{ $referral->imageurl }}" alt="{{ $referral->name }}" class="w-100" />
-                                                                        </div>
-                                                                    @else
-                                                                        <div class="symbol-label fs-3 bg-light-danger text-danger">
-                                                                            {{ substr($referral->name, 0, 1) }}
-                                                                        </div>
-                                                                    @endif
-                                                                </a>
-                                                            </div>
-                                                            <div class="d-flex flex-column">
-                                                                <a href="{{ route('admin.users.show', $referral->id) }}" class="text-gray-800 text-hover-primary mb-1">{{ $referral->name }}</a>
-                                                                <span>{{ $referral->email }}</span>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td>{{ $referral->phone_number }}</td>
-                                                    <td>{{ $referral->created_at->format('M d, Y') }}</td>
-                                                    <td class="text-end text-success fs-5">
-                                                        +{{ $user->getReferralBonusVal($referral) }} {{ trans('cruds.referral.currency') }}
-                                                    </td>
-                                                </tr>
-                                            @empty
-                                                <tr>
-                                                    <td colspan="4" class="text-center text-muted fs-6 py-5">
-                                                        {{ trans('global.no_results') }}
-                                                    </td>
-                                                </tr>
-                                            @endforelse
-                                        </tbody>
-                                    </table>
-                                </div>
+                                        @empty
+                                            <tr>
+                                                <td colspan="4" class="text-center text-muted">لا يوجد أحيلوا عن طريق هذا العميل.</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
 
+                    <!-- TAB 3: Identity Verification -->
                     <div class="tab-pane fade" id="kt_user_view_identity_tab">
-                        <div class="card card-flush mb-6 mb-xl-9">
-                            <div class="card-header mt-6">
-                                <div class="card-title flex-column">
-                                    <h2 class="mb-1">بيانات الهوية والتحقق بالذكاء الاصطناعي</h2>
-                                </div>
-                            </div>
-                            <div class="card-body p-9 pt-4">
+                        <div class="card card-flush">
+                            <div class="card-body pt-4">
                                 @if($user->identity)
-                                    <div class="mb-8">
-                                        <div class="row g-5">
-                                            <div class="col-md-4">
-                                                <div class="border border-dashed border-gray-300 rounded px-6 py-4 text-center">
-                                                    <div class="fs-6 text-gray-400 fw-bold mb-2">وجه البطاقة</div>
-                                                    <a href="{{ url('files/UserIdentity/' . $user->id . '/' . $user->identity->front_image) }}" target="_blank">
-                                                        <img src="{{ url('files/UserIdentity/' . $user->id . '/' . $user->identity->front_image) }}" class="img-fluid rounded max-h-150px" style="max-height: 150px;" />
-                                                    </a>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="border border-dashed border-gray-300 rounded px-6 py-4 text-center">
-                                                    <div class="fs-6 text-gray-400 fw-bold mb-2">ظهر البطاقة</div>
-                                                    <a href="{{ url('files/UserIdentity/' . $user->id . '/' . $user->identity->back_image) }}" target="_blank">
-                                                        <img src="{{ url('files/UserIdentity/' . $user->id . '/' . $user->identity->back_image) }}" class="img-fluid rounded max-h-150px" style="max-height: 150px;" />
-                                                    </a>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="border border-dashed border-gray-300 rounded px-6 py-4 text-center">
-                                                    <div class="fs-6 text-gray-400 fw-bold mb-2">صورة السيلفي الحية</div>
-                                                    <a href="{{ url('files/UserIdentity/' . $user->id . '/' . $user->identity->selfie_image) }}" target="_blank">
-                                                        <img src="{{ url('files/UserIdentity/' . $user->id . '/' . $user->identity->selfie_image) }}" class="img-fluid rounded max-h-150px" style="max-height: 150px;" />
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
                                     <table class="table table-striped">
                                         <tbody>
                                             <tr>
                                                 <th>حالة التوثيق</th>
                                                 <td>
                                                     @if($user->identity->status === 'verified')
-                                                        <span class="badge badge-success fs-6">Passed (موثق مقبول)</span>
+                                                        <span class="badge badge-light-success fw-bolder fs-6">موثق بنجاح</span>
                                                     @else
-                                                        <span class="badge badge-danger fs-6">Failed (مرفوض)</span>
+                                                        <span class="badge badge-light-danger fw-bolder fs-6">فشل التحقق</span>
                                                     @endif
                                                 </td>
                                             </tr>
@@ -251,69 +243,99 @@
                                                 <th>الرقم القومي المستخرج</th>
                                                 <td><span class="badge badge-light-dark fw-bolder fs-6">{{ $user->identity->id_number }}</span></td>
                                             </tr>
-                                            <tr>
-                                                <th>نسبة تطابق الوجه بالذكاء الاصطناعي</th>
-                                                <td>
-                                                    <div class="d-flex align-items-center">
-                                                        <span class="me-2 fw-bolder">{{ $user->identity->ai_face_similarity }}%</span>
-                                                        <div class="progress h-6px w-100px bg-light-success">
-                                                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ $user->identity->ai_face_similarity }}%"></div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            @if($user->identity->ai_rejection_reason)
-                                                <tr class="table-danger">
-                                                    <th>سبب الرفض المعروض للمستخدم</th>
-                                                    <td class="text-danger fw-bold fs-6">{{ $user->identity->ai_rejection_reason }}</td>
-                                                </tr>
-                                            @endif
-                                            @if(is_array($user->identity->ai_verification_report))
-                                                <tr>
-                                                    <th>تقرير المطابقة بين الوجه والظهر</th>
-                                                    <td>
-                                                        @if($user->identity->ai_verification_report['front_back_matched'] ?? false)
-                                                            <span class="text-success"><i class="fa fa-check-circle me-1"></i> متطابقان وينتميان لنفس البطاقة</span>
-                                                        @else
-                                                            <span class="text-danger"><i class="fa fa-times-circle me-1"></i> غير متطابقان أو هناك اختلاف في قالب البطاقة</span>
-                                                        @endif
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <th>فحص الصور المعدلة ومصورة الشاشات</th>
-                                                    <td>
-                                                        <ul class="list-unstyled mb-0">
-                                                            <li>سيلفي حقيقي مباشر: {!! ($user->identity->ai_verification_report['is_real_selfie'] ?? false) ? '<span class="text-success">نعم</span>' : '<span class="text-danger">لا (اشتباه تزييف أو تصوير شاشة)</span>' !!}</li>
-                                                            <li>وجه البطاقة طبيعي: {!! ($user->identity->ai_verification_report['is_real_id_front'] ?? false) ? '<span class="text-success">نعم</span>' : '<span class="text-danger">لا (اشتباه تزييف أو تصوير شاشة)</span>' !!}</li>
-                                                            <li>ظهر البطاقة طبيعي: {!! ($user->identity->ai_verification_report['is_real_id_back'] ?? false) ? '<span class="text-success">نعم</span>' : '<span class="text-danger">لا (اشتباه تزييف أو تصوير شاشة)</span>' !!}</li>
-                                                            <li>تعديل رقمي/توليد ذكاء اصطناعي: {!! ($user->identity->ai_verification_report['ai_generated_or_modified_detected'] ?? false) ? '<span class="text-danger">تم اكتشافه!</span>' : '<span class="text-success">لا يوجد تعديل</span>' !!}</li>
-                                                        </ul>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <th>الاسم المستخرج بالكامل</th>
-                                                    <td>{{ $user->identity->ai_verification_report['extracted_full_name'] ?? '-' }}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>ملاحظات الذكاء الاصطناعي التفصيلية</th>
-                                                    <td><p class="text-gray-700 fs-7" style="white-space: pre-wrap;">{{ $user->identity->ai_verification_report['detailed_report'] ?? '-' }}</p></td>
-                                                </tr>
-                                            @endif
                                         </tbody>
                                     </table>
                                 @else
                                     <div class="text-center py-10">
-                                        <i class="fa fa-id-card fs-3x text-muted mb-4"></i>
                                         <p class="text-gray-500 fs-5">لم يقم هذا العميل برفع أي مستندات أو طلب توثيق الهوية حتى الآن.</p>
                                     </div>
                                 @endif
                             </div>
                         </div>
                     </div>
-                </div>
-                <!--end::Tab Content-->
 
-                <!--begin::Actions-->
+                    <!-- TAB 4: Reviews & Deletion -->
+                    <div class="tab-pane fade" id="kt_user_view_reviews_tab">
+                        <div class="card card-flush p-4">
+                            <h4 class="fw-bold mb-4">التقييمات المكتوبة عن العميل</h4>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle border rounded-3">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>الكاتب</th>
+                                            <th>التقييم</th>
+                                            <th>التعليق</th>
+                                            <th>التاريخ</th>
+                                            <th>إجراء</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if(isset($reviews))
+                                            @forelse($reviews as $rev)
+                                                <tr>
+                                                    <td class="fw-bold">{{ $rev->fromUser->full_name ?? $rev->fromUser->name ?? 'مستخدم #' . $rev->from_user_id }}</td>
+                                                    <td><span class="badge bg-light-warning text-dark fw-bold">⭐ {{ $rev->rating }}</span></td>
+                                                    <td class="small text-muted">{{ $rev->comment ?? 'لا يوجد' }}</td>
+                                                    <td class="small text-muted">{{ $rev->created_at ? $rev->created_at->format('Y-m-d H:i') : '-' }}</td>
+                                                    <td>
+                                                        <form action="{{ route('admin.reviews.destroy', $rev->id) }}" method="POST" onsubmit="return confirm('هل أنت ممتأكد من حذف هذا التقييم الكيدي؟ سيتم إعادة حساب المتوسط تلقائياً.')">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-sm btn-icon btn-light-danger" title="حذف التقييم">
+                                                                <i class="ki-outline ki-trash fs-5"></i>
+                                                            </button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="5" class="text-center text-muted py-4">لا توجد تقييمات مكتوبة لهذا العميل.</td>
+                                                </tr>
+                                            @endforelse
+                                        @endif
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 5: Admin Audit Trail -->
+                    <div class="tab-pane fade" id="kt_user_view_audit_tab">
+                        <div class="card card-flush p-4">
+                            <h4 class="fw-bold mb-4">سجل إجراءات الإدارة على حساب العميل</h4>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle border rounded-3">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>المشرف / Admin</th>
+                                            <th>الإجراء</th>
+                                            <th>الملاحظات</th>
+                                            <th>التاريخ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if(isset($auditLogs))
+                                            @forelse($auditLogs as $log)
+                                                <tr>
+                                                    <td class="fw-bold">{{ $log->admin->name ?? $log->admin->email ?? 'مشرف النظام' }}</td>
+                                                    <td><span class="badge bg-light-primary text-primary fw-bold">{{ $log->action }}</span></td>
+                                                    <td class="small text-dark">{{ $log->notes }}</td>
+                                                    <td class="small text-muted">{{ $log->created_at->format('Y-m-d H:i') }}</td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="4" class="text-center text-muted py-4">لا توجد سجلات سابقة للمشرفين على هذا الحساب.</td>
+                                                </tr>
+                                            @endforelse
+                                        @endif
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- Action Buttons -->
                 <div class="d-flex justify-content-end mt-4">
                     @can('user_edit')
                         <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-primary me-2">
@@ -324,11 +346,38 @@
                         {{ trans('global.back') }}
                     </a>
                 </div>
-                <!--end::Actions-->
             </div>
-            <!--end::Card body-->
         </div>
-        <!--end::Card-->
+
     </div>
 </div>
+
+<!-- Modal: User Wallet Top-up -->
+<div class="modal fade" id="userWalletModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form action="{{ route('admin.users.add-wallet', $user->id) }}" method="POST" class="modal-content">
+            @csrf
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">إضافة / خصم رصيد في محفظة العميل</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">المبلغ (جنية مصري)</label>
+                    <input type="number" step="0.5" name="amount" class="form-control" placeholder="أدخل المبلغ (استخدم سالب - للخصم)" required>
+                    <small class="text-muted">أدخل 50 للإضافة أو -20 للخصم.</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">سبب الإضافة/الخصم</label>
+                    <input type="text" name="notes" class="form-control" placeholder="مثال: تعويض عن رحلة / هدية شحن">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
+                <button type="submit" class="btn btn-primary fw-bold">حفظ وتعديل الرصيد</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @endsection
