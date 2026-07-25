@@ -24,7 +24,7 @@ class DispatchSettingController extends Controller
             'city_override_settings' => [],
         ]);
 
-        $cities = MarketopiaCity::where('is_active', 1)->get();
+        $cities = MarketopiaCity::where('status', 1)->get();
         if ($cities->isEmpty()) {
             $cities = MarketopiaCity::all();
         }
