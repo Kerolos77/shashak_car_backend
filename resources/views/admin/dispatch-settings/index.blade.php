@@ -258,22 +258,28 @@
             <!-- TAB 3: CITY OVERRIDES -->
             <div class="tab-pane fade" id="cities" role="tabpanel">
                 <div class="card dispatch-card p-4 mb-4">
-                    <div class="dispatch-header d-flex justify-content-between align-items-center">
+                    <div class="dispatch-header d-flex justify-content-between align-items-center flex-wrap gap-3">
                         <div>
                             <span class="section-title mb-1">
                                 <i class="ti ti-building text-success"></i> {{ __('تخصيص قواعد النطاق والمسافات للمدن والمحافظات') }}
                             </span>
                             <p class="text-muted small mb-0">
-                                {{ __('افتراضياً: تعمل جميع المدن بالقيم العامة أعلاه. يمكنك تعديل القيم لمدينة معينة إذا أردت استثناءها.') }}
+                                {{ __('مرتبة أبجدياً. جميع المدن تعمل بالقيم العامة الافتراضية ما لم تقم بتحديد قيم مخصصة لمدينة معينة.') }}
                             </p>
+                        </div>
+                        <div style="min-width: 280px;">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="ti ti-search text-muted"></i></span>
+                                <input type="text" id="citySearchInput" class="form-control border-start-0" placeholder="{{ __('ابحث باسم المدينة...') }}" onkeyup="filterCitiesTable()">
+                            </div>
                         </div>
                     </div>
 
                     <div class="table-responsive mt-3">
-                        <table class="table table-hover align-middle border rounded-3">
+                        <table class="table table-hover align-middle border rounded-3" id="citiesTable">
                             <thead class="table-light">
                                 <tr>
-                                    <th style="width: 25%;">{{ __('المدينة') }}</th>
+                                    <th style="width: 25%;">{{ __('المدينة (أبجدي)') }}</th>
                                     <th style="width: 25%;">{{ __('مسافة الكاش (KM)') }}</th>
                                     <th style="width: 25%;">{{ __('مسافة الفيزا (KM)') }}</th>
                                     <th style="width: 25%;">{{ __('الحالة') }}</th>
@@ -329,3 +335,27 @@
     </form>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    function filterCitiesTable() {
+        let input = document.getElementById('citySearchInput');
+        let filter = input.value.toLowerCase().trim();
+        let table = document.getElementById('citiesTable');
+        if (!table) return;
+        let rows = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < rows.length; i++) {
+            let cityNameCell = rows[i].getElementsByTagName('td')[0];
+            if (cityNameCell) {
+                let textValue = cityNameCell.textContent || cityNameCell.innerText;
+                if (textValue.toLowerCase().indexOf(filter) > -1) {
+                    rows[i].style.display = '';
+                } else {
+                    rows[i].style.display = 'none';
+                }
+            }
+        }
+    }
+</script>
+@endpush

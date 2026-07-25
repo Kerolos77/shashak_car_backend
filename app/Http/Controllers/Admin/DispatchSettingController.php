@@ -29,6 +29,10 @@ class DispatchSettingController extends Controller
             $cities = MarketopiaCity::all();
         }
 
+        $cities = $cities->sortBy(function ($city) {
+            return $city->name ?? $city->title ?? '';
+        }, SORT_NATURAL | SORT_FLAG_CASE)->values();
+
         return view('admin.dispatch-settings.index', compact('setting', 'cities'));
     }
 
