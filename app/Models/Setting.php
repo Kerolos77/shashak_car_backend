@@ -20,5 +20,15 @@ class Setting extends Model
         'min_driver_wallet_for_shipping' => 'decimal:2',
         'play_store_url' => 'string',
         'app_store_url' => 'string',
+        'max_cash_pickup_distance_km' => 'float',
+        'max_card_pickup_distance_km' => 'float',
+        'destination_mode_tolerance_km' => 'float',
+        'auto_cash_ban_enabled' => 'boolean',
+        'max_driver_cash_debt_limit' => 'decimal:2',
+        'cash_restriction_duration_minutes' => 'integer',
+        'max_consecutive_cancellations_before_ban' => 'integer',
+        'min_driver_rating_for_cash' => 'decimal:2',
+        'dispatch_priority_strategy' => 'string',
+        'city_override_settings' => 'array',
     ];
 }

@@ -173,6 +173,10 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth:admi
     // Packages (Shop) Route
     Route::resource('packages', App\Http\Controllers\Admin\PackageController::class);
 
+    // Dispatch & Restrictions Settings Route
+    Route::get('dispatch-settings', [App\Http\Controllers\Admin\DispatchSettingController::class, 'index'])->name('dispatch-settings.index');
+    Route::post('dispatch-settings', [App\Http\Controllers\Admin\DispatchSettingController::class, 'update'])->name('dispatch-settings.update');
+
     // Theme switching route
     Route::get('switch-theme/{theme}', function ($theme) {
         if (!in_array($theme, ['v1', 'v2'])) {

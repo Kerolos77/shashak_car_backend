@@ -47,18 +47,56 @@ class EligibleDriverService
             $driversQuery->where('gender', 'female');
         }
 
+        $settings = \App\Models\Setting::first();
+        $destTolerance = $settings->destination_mode_tolerance_km ?? 5.0;
+        $maxPickupDistance = ($order->payment_type === 'cash') 
+            ? ($settings->max_cash_pickup_distance_km ?? 10.0) 
+            : ($settings->max_card_pickup_distance_km ?? 15.0);
+
         // Apply Shadow Ban / Cash restriction filter
         if ($order->payment_type === 'cash') {
             $driversQuery->where(function($query) {
                 $query->where('cash_restriction_seconds_remaining', '<=', 0)
                       ->orWhereNull('cash_restriction_seconds_remaining');
             });
+
+            if ($settings && $settings->auto_cash_ban_enabled) {
+                // Cash debt limit check
+                if ($settings->max_driver_cash_debt_limit > 0) {
+                    $maxDebt = $settings->max_driver_cash_debt_limit;
+                    $driversQuery->where(function($q) use ($maxDebt) {
+                        $q->whereNull('balance')
+                          ->orWhere('balance', '>=', -$maxDebt);
+                    });
+                }
+            }
         }
 
         $drivers = $driversQuery->get();
 
-        // Filter drivers based on car model, year requirements, and destination
-        $eligibleDrivers = $drivers->filter(function ($driver) use ($allowedModels, $order) {
+        // Filter drivers based on car model, year requirements, rating, pickup distance, and destination
+        $eligibleDrivers = $drivers->filter(function ($driver) use ($allowedModels, $order, $settings, $destTolerance, $maxPickupDistance) {
+            // Min rating check for cash orders
+            if ($order->payment_type === 'cash' && $settings && $settings->auto_cash_ban_enabled && $settings->min_driver_rating_for_cash > 0) {
+                $driverRating = $driver->rating ?? 5.0;
+                if ($driverRating < $settings->min_driver_rating_for_cash) {
+                    return false;
+                }
+            }
+
+            // Pickup distance filter
+            if ($driver->latitude && $driver->longitude && $order->source_lat && $order->source_long) {
+                $pickupDistance = self::calculateDistance(
+                    $driver->latitude,
+                    $driver->longitude,
+                    $order->source_lat,
+                    $order->source_long
+                );
+                if ($pickupDistance > $maxPickupDistance) {
+                    return false;
+                }
+            }
+
             // Destination Filter Logic
             if ($driver->profile && $driver->profile->is_heading_destination) {
                 $destLat = $driver->profile->destination_lat;
@@ -70,7 +108,7 @@ class EligibleDriverService
 
                     // Haversine distance
                     $distance = self::calculateDistance($destLat, $destLong, $orderDestLat, $orderDestLong);
-                    if ($distance > 5) { // 5km tolerance
+                    if ($distance > $destTolerance) {
                         return false; 
                     }
                 }

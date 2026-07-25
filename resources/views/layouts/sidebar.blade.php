@@ -294,6 +294,19 @@
                 </div>
                 @endcan
 
+                <!-- Dispatch & Ban Settings -->
+                <div class="menu-item">
+                    <a class="menu-link {{ request()->is('admin/dispatch-settings*') ? 'active' : '' }}" href="{{ route('admin.dispatch-settings.index') }}">
+                        <span class="menu-icon">
+                            <i class="ki-duotone ki-geolocation fs-2">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                        </span>
+                        <span class="menu-title">إعدادات التوزيع والحظر</span>
+                    </a>
+                </div>
+
 
                 <!-- Countries -->
                 <div class="menu-item">
