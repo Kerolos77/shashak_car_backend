@@ -20,10 +20,19 @@ class DriverController extends BaseController
         $pendingDriversCount = $this->model->where('status', '=', 'pending')->count(); 
         $activeDriversCount = $this->model->where('status', '=', 'active')->count(); 
         $blockedDriversCount = $this->model->where('status', '=', 'blocked')->count(); 
+        $vipDriversCount = $this->model->whereHas('user', function($q) { $q->where('is_vip', 1); })->count();
+
         $rows = DriverProfile::with(['user', 'driver_cars', 'service']); 
         
         if ($request->status != null && $request->status != '') {
             $rows = $rows->where('status', $request->status);
+        }
+
+        if ($request->has('is_vip') && $request->is_vip !== null && $request->is_vip !== '') {
+            $isVipVal = $request->is_vip == '1' ? 1 : 0;
+            $rows = $rows->whereHas('user', function($q) use ($isVipVal) {
+                $q->where('is_vip', $isVipVal);
+            });
         }
 
         if ($request->search != null && $request->search != '') {
@@ -55,6 +64,7 @@ class DriverController extends BaseController
             'allDriversCount',
             'activeDriversCount',
             'blockedDriversCount',
+            'vipDriversCount',
             'moduleName',
             'pageTitle',
             'pageDes',

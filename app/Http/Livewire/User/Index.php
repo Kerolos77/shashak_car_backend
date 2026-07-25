@@ -20,6 +20,8 @@ class Index extends Component
 
     public string $search = '';
 
+    public string $vipFilter = '';
+
     public array $selected = [];
 
     public array $paginationOptions;
@@ -72,6 +74,10 @@ class Index extends Component
             'order_column'    => $this->sortBy,
             'order_direction' => $this->sortDirection,
         ]);
+
+        if ($this->vipFilter !== '') {
+            $query->where('is_vip', $this->vipFilter === '1' ? 1 : 0);
+        }
 
         $users = $query->paginate($this->perPage);
 

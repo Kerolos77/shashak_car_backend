@@ -129,8 +129,12 @@
         <!-- Filter Tabs -->
         <div class="d-flex flex-wrap gap-2">
             <a href="{{ route('admin.drivers.index') }}" 
-               class="btn btn-sm {{ !request('status') ? 'btn-primary' : 'btn-light' }} px-4 py-2">
+               class="btn btn-sm {{ !request('status') && !request('is_vip') ? 'btn-primary' : 'btn-light' }} px-4 py-2">
                 {{ __('admin.show_all') }}
+            </a>
+            <a href="{{ route('admin.drivers.index', ['is_vip' => '1']) }}" 
+               class="btn btn-sm {{ request('is_vip') == '1' ? 'btn-warning text-dark fw-bold' : 'btn-light-warning' }} px-4 py-2" title="كباتن VIP فقط">
+                ⭐ كباتن VIP ({{ $vipDriversCount ?? 0 }})
             </a>
             <a href="{{ route('admin.drivers.index', ['status' => 'active']) }}" 
                class="btn btn-sm {{ request('status') == 'active' ? 'btn-success text-white' : 'btn-light-success' }} px-4 py-2">
@@ -171,9 +175,17 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="col-md-2 col-12">
+                    <label class="form-label fs-7 fw-bold text-gray-700">فئة VIP</label>
+                    <select name="is_vip" class="form-select form-select-solid fs-7">
+                        <option value="">جميع الفئات</option>
+                        <option value="1" {{ request('is_vip') == '1' ? 'selected' : '' }}>كباتن VIP ⭐</option>
+                        <option value="0" {{ request('is_vip') == '0' ? 'selected' : '' }}>كباتن عاديون</option>
+                    </select>
+                </div>
                 <div class="col-md-3 col-12 d-flex gap-2">
                     <button type="submit" class="btn btn-primary btn-sm px-5 py-3">{{ __('admin.search_btn') }}</button>
-                    @if(request('search') || request('service_id'))
+                    @if(request('search') || request('service_id') || request('is_vip'))
                         <a href="{{ route('admin.drivers.index', request('status') ? ['status' => request('status')] : []) }}" class="btn btn-light btn-sm px-5 py-3">{{ __('admin.reset_filter') }}</a>
                     @endif
                 </div>

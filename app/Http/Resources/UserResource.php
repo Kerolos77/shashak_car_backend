@@ -30,6 +30,14 @@ class UserResource extends JsonResource
             'service_id'    => $this->profile != null ? $this->profile->service_id : 0 ,
             'reward_points' => $this->points ?? 0,
             'cash_restriction_seconds_remaining' => $this->cash_restriction_seconds_remaining ?? 0,
+            'is_vip' => (bool)($this->is_vip ?? false),
+            'vip_theme' => [
+                'is_vip' => (bool)($this->is_vip ?? false),
+                'badge_title' => ($this->is_vip ?? false) ? ($this->profile ? '⭐ كابتن VIP مميز' : '⭐ عميل VIP مميز') : null,
+                'primary_color' => '#D4AF37',
+                'gradient_colors' => ['#1A1A1A', '#D4AF37'],
+                'show_gold_frame' => (bool)($this->is_vip ?? false),
+            ],
             'active_package' => $this->active_purchase ? [
                 'id' => $this->active_purchase->package->id,
                 'name' => $this->active_purchase->package->name,

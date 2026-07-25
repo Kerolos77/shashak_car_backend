@@ -140,7 +140,9 @@ class EligibleDriverService
             }
 
             return true;
-        });
+        })->sortByDesc(function ($driver) {
+            return $driver->is_vip ? 1 : 0;
+        })->values();
 
         return $eligibleDrivers;
     }
