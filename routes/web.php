@@ -136,6 +136,11 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth:admi
     // Shipping Orders
     Route::get('shipping-orders', [App\Http\Controllers\Admin\ShippingOrderController::class, 'index'])->name('shipping-orders.index');
 
+    // SMS System Settings & Testing & Logs
+    Route::get('sms-settings', [App\Http\Controllers\Admin\SmsSettingController::class, 'index'])->name('sms-settings.index');
+    Route::post('sms-settings', [App\Http\Controllers\Admin\SmsSettingController::class, 'update'])->name('sms-settings.update');
+    Route::post('sms-settings/test', [App\Http\Controllers\Admin\SmsSettingController::class, 'sendTest'])->name('sms-settings.send-test');
+
 
     // Service
     Route::resource('services', ServiceController::class);

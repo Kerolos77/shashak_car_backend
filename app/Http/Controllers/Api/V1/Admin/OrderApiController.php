@@ -90,18 +90,18 @@ class OrderApiController extends Controller
     private function sendShippingSmsToReceiver(Order $order)
     {
         if ($order->is_shipping_order && $order->receiver_phone) {
-            $driverName = $order->driver ? $order->driver->full_name : ($order->driver_name ?? 'سائق شقشق');
+            $driverName = $order->driver ? ($order->driver->full_name ?? $order->driver->name) : ($order->driver_name ?? 'سائق شقشق');
             $otp = $order->delivery_otp;
             $trackingLink = "https://shakshak.net/track/" . $order->id;
             
-            $message = "أهلاً بك، شحنتك رقم #{$order->id} مع السائق {$driverName} في الطريق إليك. للتتبع المباشر وتسجيل الدخول استخدم الرابط التالي: {$trackingLink} وكود التسليم الخاص بك هو: {$otp}";
+            $message = "أهلاً بك، شحنتك رقم #{$order->id} مع السائق {$driverName} في الطريق إليك. للتتبع المباشر استخدم الرابط: {$trackingLink} وكود الاستلام هو: {$otp}";
             
             try {
                 $smsHelper = new \App\Helpers\SmsHelper();
-                $smsHelper->sendCustomSms($order->receiver_phone, $message);
-                \Log::info("Shipping SMS sent to receiver {$order->receiver_phone} for order {$order->id}");
+                $result = $smsHelper->sendCustomSms($order->receiver_phone, $message);
+                \Log::info("Shipping SMS result for order #{$order->id} to {$order->receiver_phone}:", ['result' => $result]);
             } catch (\Exception $e) {
-                \Log::error("Failed to send shipping SMS: " . $e->getMessage());
+                \Log::error("Failed to send shipping SMS for order #{$order->id}: " . $e->getMessage());
             }
         }
     }
@@ -774,6 +774,7 @@ class OrderApiController extends Controller
             $order->user->sendPushNotification("بدء الرحلة", "تم بدء الرحلة، نتمنى لك رحلة آمنة.", ['order_id' => $order->id, 'type' => 'trip_update']);
         }
 
+        $this->sendShippingSmsToReceiver($order->fresh());
         TripStatusUpdated::dispatch($order);
         return Resp(new OrderResource($order), 'success');
     }
@@ -787,8 +788,8 @@ class OrderApiController extends Controller
             'driver_id' => $request->driver_id
         ]);
         $data = ['status' => 'accept'];
-        // Commission deduction moved to endorder
-
+        
+        $this->sendShippingSmsToReceiver($order->fresh());
         TripStatusUpdated::dispatch($order);
         return Resp($order, 'success');
     }

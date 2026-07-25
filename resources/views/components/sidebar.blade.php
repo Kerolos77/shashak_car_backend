@@ -252,6 +252,16 @@
                         </a>
                     </div>
 
+                    <!-- SMS Settings & Logs -->
+                    <div class="menu-item {{ request()->is('admin/sms-settings*') ? 'here show' : '' }}">
+                        <a class="menu-link" href="{{ route('admin.sms-settings.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-outline ki-sms fs-2"></i>
+                            </span>
+                            <span class="menu-title">إدارة ورسائل SMS</span>
+                        </a>
+                    </div>
+
                     <!-- Gamification -->
                     <div class="menu-item {{ request()->is('admin/gamification*') ? 'here show' : '' }}">
                         <a class="menu-link" href="{{ route('admin.gamification.index') }}">

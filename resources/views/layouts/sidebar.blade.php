@@ -307,6 +307,19 @@
                     </a>
                 </div>
 
+                <!-- SMS Settings & Logs -->
+                <div class="menu-item">
+                    <a class="menu-link {{ request()->is('admin/sms-settings*') ? 'active' : '' }}" href="{{ route('admin.sms-settings.index') }}">
+                        <span class="menu-icon">
+                            <i class="ki-duotone ki-sms fs-2">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                        </span>
+                        <span class="menu-title">إدارة ورسائل SMS</span>
+                    </a>
+                </div>
+
 
                 <!-- Countries -->
                 <div class="menu-item">

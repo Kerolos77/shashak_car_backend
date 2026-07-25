@@ -30,5 +30,6 @@ class Setting extends Model
         'min_driver_rating_for_cash' => 'decimal:2',
         'dispatch_priority_strategy' => 'string',
         'city_override_settings' => 'array',
+        'sms_enabled' => 'boolean',
     ];
 }
