@@ -65,8 +65,8 @@ class EligibleDriverService
                 if ($settings->max_driver_cash_debt_limit > 0) {
                     $maxDebt = $settings->max_driver_cash_debt_limit;
                     $driversQuery->where(function($q) use ($maxDebt) {
-                        $q->whereNull('balance')
-                          ->orWhere('balance', '>=', -$maxDebt);
+                        $q->whereNull('wallet_amount')
+                          ->orWhere('wallet_amount', '>=', -$maxDebt);
                     });
                 }
             }
