@@ -530,7 +530,9 @@ class OrderApiController extends Controller
             return Resp(null, 'Service not found', 404, false);
         }
 
-        if ($service->service_type === 'shipping') {
+        $isShippingOrder = ($service->service_type === 'shipping') || $request->filled('receiver_phone') || $request->filled('receiver_name');
+
+        if ($isShippingOrder) {
             $request->validate([
                 'receiver_name' => 'required|string|max:255',
                 'receiver_phone' => 'required|string',
@@ -571,7 +573,7 @@ class OrderApiController extends Controller
             'pickup_otp' => $pickupOtp,
         ];
 
-        if ($service->service_type === 'shipping') {
+        if ($isShippingOrder) {
             $baseData['is_shipping_order'] = true;
             $baseData['receiver_name'] = $request->receiver_name;
             $baseData['receiver_phone'] = $request->receiver_phone;
@@ -640,7 +642,7 @@ class OrderApiController extends Controller
         TripStatusUpdated::dispatch($order);
 
         // Send SMS & Push notification to Receiver upon shipping order creation
-        if ($order->is_shipping_order && $order->receiver_phone) {
+        if (($order->is_shipping_order || !empty($order->receiver_phone)) && !empty($order->receiver_phone)) {
             $smsHelper = new \App\Helpers\SmsHelper();
             $senderName = $order->user->name ?? 'العميل';
             $message = "أهلاً بك، تم إنشاء طلب شحن جديد موجه إليك برقم #{$order->id} من العميل {$senderName}. كود التأكيد الخاص بالطلب هو: {$order->receiver_verification_otp}. يرجى تزويده للمرسل لتأكيد الطلب.";
