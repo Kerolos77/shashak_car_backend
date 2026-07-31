@@ -297,7 +297,7 @@
             @endif
         </div>
 
-        <a href="shakshak://track/{{ $order->id }}" class="btn-primary">
+        <a href="shakshak://track/{{ $order->id }}" id="app-track-btn" class="btn-primary">
             <i class="fa-solid fa-location-arrow"></i>
             <span>تتبع في التطبيق الآن</span>
         </a>
@@ -334,13 +334,31 @@
 </div>
 
 <script>
-    // Automatic redirection attempt if order exists
     @if($order)
+        function triggerAppOpen() {
+            var orderId = "{{ $order->id }}";
+            var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            if (/android/i.test(userAgent)) {
+                window.location.href = "intent://track/" + orderId + "#Intent;scheme=shakshak;package=com.example.shakshak;end;";
+            } else {
+                window.location.href = "shakshak://track/" + orderId;
+            }
+        }
+
+        var btn = document.getElementById('app-track-btn');
+        if (btn) {
+            btn.addEventListener('click', function(e) {
+                var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+                if (/android/i.test(userAgent)) {
+                    e.preventDefault();
+                    window.location.href = "intent://track/{{ $order->id }}#Intent;scheme=shakshak;package=com.example.shakshak;end;";
+                }
+            });
+        }
+
+        // Automatic redirection attempt if user has the app installed
         window.addEventListener('DOMContentLoaded', () => {
-            // Attempt to trigger the deep link
-            setTimeout(() => {
-                window.location.href = "shakshak://track/{{ $order->id }}";
-            }, 500);
+            setTimeout(triggerAppOpen, 400);
         });
     @endif
 </script>
