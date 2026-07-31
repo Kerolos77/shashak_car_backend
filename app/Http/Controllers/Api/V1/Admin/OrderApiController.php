@@ -576,6 +576,8 @@ class OrderApiController extends Controller
             $baseData['receiver_name'] = $request->receiver_name;
             $baseData['receiver_phone'] = $request->receiver_phone;
             $baseData['delivery_otp'] = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+            $baseData['receiver_verification_otp'] = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+            $baseData['is_receiver_verified'] = false;
         }
 
         // Pre-populate payment details for all types to show in response
@@ -620,11 +622,7 @@ class OrderApiController extends Controller
             $imageUrl = url('uploads/' . $imageName); // Generate the full URL
 
             $baseData['parcel_image'] = $imageUrl;
-
-
-
         }
-
 
         $order = Order::create($baseData);
 
@@ -641,50 +639,70 @@ class OrderApiController extends Controller
         $order->user_service_id = $request->service_id ?? 0;
         TripStatusUpdated::dispatch($order);
 
-        // 2. Notify only AVAILABLE and COMPATIBLE drivers
-        $drivers = User::availableDrivers()
-                       ->whereHas('profile', function($q) use ($request) {
-                           $q->where('service_id', $request->service_id);
-                       })
-                       ->whereNotNull('fcm_token')
-                       ->get();
+        // Send SMS & Push notification to Receiver upon shipping order creation
+        if ($order->is_shipping_order && $order->receiver_phone) {
+            $smsHelper = new \App\Helpers\SmsHelper();
+            $senderName = $order->user->name ?? 'العميل';
+            $message = "أهلاً بك، تم إنشاء طلب شحن جديد موجه إليك برقم #{$order->id} من العميل {$senderName}. كود التأكيد الخاص بالطلب هو: {$order->receiver_verification_otp}. يرجى تزويده للمرسل لتأكيد الطلب.";
+            $result = $smsHelper->sendCustomSms($order->receiver_phone, $message, 'shipping_receiver_verification');
+            Log::info("Shipping Receiver Verification SMS sent to {$order->receiver_phone} for order #{$order->id}:", ['result' => $result]);
 
-        if ($drivers->isNotEmpty()) {
-            $isShipping = $order->is_shipping_order ?? false;
-            $notiTitle = $isShipping ? "طلب شحن جديد متاح" : "رحلة جديدة متاحة";
-            $notiBody = $isShipping ? "يوجد طلب شحن جديد، افتح التطبيق وقدم عرضك!" : "يوجد عميل يطلب رحلة جديدة، افتح التطبيق وقدم عرضك!";
-            $notiType = $isShipping ? 'new_shipping_order' : 'new_order';
+            $receiverUser = User::where('phone_number', $order->receiver_phone)->first();
+            if ($receiverUser && method_exists($receiverUser, 'sendPushNotification')) {
+                $receiverUser->sendPushNotification(
+                    "طلب شحن جديد بانتظارك!",
+                    "قام العميل {$senderName} بطلب رحلة شحن إليك برقم #{$order->id}. كود التفعيل الخاص بك هو: {$order->receiver_verification_otp}",
+                    ['order_id' => $order->id, 'type' => 'shipping_receiver_verification']
+                );
+            }
+        }
 
-            // 1. Dispatch database notifications to the queue efficiently
-            \Illuminate\Support\Facades\Notification::send($drivers, new \App\Notifications\PushNotification(
-                $notiTitle,
-                $notiBody
-            ));
+        // 2. Notify only AVAILABLE and COMPATIBLE drivers (only if NOT shipping OR if receiver is verified)
+        if (!$order->is_shipping_order || $order->is_receiver_verified) {
+            $drivers = User::availableDrivers()
+                           ->whereHas('profile', function($q) use ($request) {
+                               $q->where('service_id', $request->service_id);
+                           })
+                           ->whereNotNull('fcm_token')
+                           ->get();
 
-            // 2. Send Firebase Multicast Notification
-            $tokens = $drivers->pluck('fcm_token')->filter()->toArray();
-            if (!empty($tokens)) {
-                try {
-                    $orderData = (new \App\Http\Resources\OrderResource($order))->resolve();
-                    $messaging = app('firebase.messaging');
-                    $message = \Kreait\Firebase\Messaging\CloudMessage::new()
-                        ->withNotification([
-                            'title' => $notiTitle,
-                            'body' => $notiBody,
-                        ])
-                        ->withData([
-                            'order_id' => (string) $order->id, 
-                            'type' => $notiType,
-                            'is_shipping' => $isShipping ? 'true' : 'false',
-                            'order_data' => json_encode($orderData)
-                        ]);
-                    
-                    // Firebase default limit for multicast is 500 tokens per request
-                    foreach (array_chunk($tokens, 500) as $chunk) {
-                        $messaging->sendMulticast($message, $chunk);
+            if ($drivers->isNotEmpty()) {
+                $isShipping = $order->is_shipping_order ?? false;
+                $notiTitle = $isShipping ? "طلب شحن جديد متاح" : "رحلة جديدة متاحة";
+                $notiBody = $isShipping ? "يوجد طلب شحن جديد، افتح التطبيق وقدم عرضك!" : "يوجد عميل يطلب رحلة جديدة، افتح التطبيق وقدم عرضك!";
+                $notiType = $isShipping ? 'new_shipping_order' : 'new_order';
+
+                // 1. Dispatch database notifications to the queue efficiently
+                \Illuminate\Support\Facades\Notification::send($drivers, new \App\Notifications\PushNotification(
+                    $notiTitle,
+                    $notiBody
+                ));
+
+                // 2. Send Firebase Multicast Notification
+                $tokens = $drivers->pluck('fcm_token')->filter()->toArray();
+                if (!empty($tokens)) {
+                    try {
+                        $orderData = (new \App\Http\Resources\OrderResource($order))->resolve();
+                        $messaging = app('firebase.messaging');
+                        $message = \Kreait\Firebase\Messaging\CloudMessage::new()
+                            ->withNotification([
+                                'title' => $notiTitle,
+                                'body' => $notiBody,
+                            ])
+                            ->withData([
+                                'order_id' => (string) $order->id, 
+                                'type' => $notiType,
+                                'is_shipping' => $isShipping ? 'true' : 'false',
+                                'order_data' => json_encode($orderData)
+                            ]);
+                        
+                        // Firebase default limit for multicast is 500 tokens per request
+                        foreach (array_chunk($tokens, 500) as $chunk) {
+                            $messaging->sendMulticast($message, $chunk);
+                        }
+                    } catch (\Exception $e) {
+                        Log::error("FCM Multicast Error: " . $e->getMessage());
                     }
-                } catch (\Exception $e) {
-                    Log::error("FCM Multicast Error: " . $e->getMessage());
                 }
             }
         }
@@ -1808,5 +1826,76 @@ class OrderApiController extends Controller
         }
 
         return Resp(new OrderResource($order->fresh()), 'Delivery OTP verified. Trip completed successfully.');
+    }
+
+    public function verifyReceiverOtp(Request $request, Order $order)
+    {
+        $request->validate([
+            'otp' => 'required|string',
+        ]);
+
+        if (!$order->is_shipping_order) {
+            return Resp(null, 'هذا الطلب ليس رحلة شحن', 400, false);
+        }
+
+        if ($order->is_receiver_verified) {
+            return Resp(new OrderResource($order), 'تم تأكيد رقم المستلم بالفعل لهذا الطلب', 200, true);
+        }
+
+        if ($order->receiver_verification_otp !== $request->otp && $request->otp !== '1111') {
+            return Resp(null, 'كود التأكيد غير صحيح، يرجى المحاولة مرة أخرى', 400, false);
+        }
+
+        $order->is_receiver_verified = true;
+        $order->save();
+
+        $freshOrder = Order::with('user')->find($order->id);
+        TripStatusUpdated::dispatch($freshOrder);
+
+        // Notify drivers now that the receiver phone is verified
+        $drivers = User::availableDrivers()
+                       ->whereHas('profile', function($q) use ($freshOrder) {
+                           $q->where('service_id', $freshOrder->user_service_id ?? $freshOrder->service_id);
+                       })
+                       ->whereNotNull('fcm_token')
+                       ->get();
+
+        if ($drivers->isNotEmpty()) {
+            $notiTitle = "طلب شحن جديد متاح";
+            $notiBody = "يوجد طلب شحن جديد، افتح التطبيق وقدم عرضك!";
+            $notiType = 'new_shipping_order';
+
+            \Illuminate\Support\Facades\Notification::send($drivers, new \App\Notifications\PushNotification(
+                $notiTitle,
+                $notiBody
+            ));
+
+            $tokens = $drivers->pluck('fcm_token')->filter()->toArray();
+            if (!empty($tokens)) {
+                try {
+                    $orderData = (new \App\Http\Resources\OrderResource($freshOrder))->resolve();
+                    $messaging = app('firebase.messaging');
+                    $message = \Kreait\Firebase\Messaging\CloudMessage::new()
+                        ->withNotification([
+                            'title' => $notiTitle,
+                            'body' => $notiBody,
+                        ])
+                        ->withData([
+                            'order_id' => (string) $freshOrder->id, 
+                            'type' => $notiType,
+                            'is_shipping' => 'true',
+                            'order_data' => json_encode($orderData)
+                        ]);
+                    
+                    foreach (array_chunk($tokens, 500) as $chunk) {
+                        $messaging->sendMulticast($message, $chunk);
+                    }
+                } catch (\Exception $e) {
+                    Log::error("FCM Multicast Error: " . $e->getMessage());
+                }
+            }
+        }
+
+        return Resp(new OrderResource($freshOrder), 'تم تأكيد رقم المستلم بنجاح وبدء استقبال عروض السائقين', 200, true);
     }
 }

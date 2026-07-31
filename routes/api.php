@@ -159,6 +159,7 @@ Route::group(['prefix' => 'v1', 'as' => 'api.', 'middleware' => ['auth:sanctum']
         Route::post('/{order}/verify-pickup-otp', [OrderApiController::class, 'verifyPickupOtp']);
         Route::post('/{order}/driver-arrive-receiver', [OrderApiController::class, 'driverArriveReceiver']);
         Route::post('/{order}/verify-delivery-otp', [OrderApiController::class, 'verifyDeliveryOtp']);
+        Route::post('/{order}/verify-receiver-otp', [OrderApiController::class, 'verifyReceiverOtp']);
 
         // Test Realtime Updates (Inside Auth for production)
         Route::get('/test-status/{order}/{status}', [OrderApiController::class, 'updateTestStatus']);

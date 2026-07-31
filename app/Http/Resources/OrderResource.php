@@ -76,6 +76,8 @@ class OrderResource extends JsonResource
             'delivery_otp' => (auth()->id() == $this->user_id || (auth()->user() && auth()->user()->phone_number === $this->receiver_phone)) ? ($this->delivery_otp ?? '') : '',
             'receiver_name' => $this->receiver_name ?? '',
             'receiver_phone' => $this->receiver_phone ?? '',
+            'receiver_verification_otp' => (auth()->id() == $this->user_id || (auth()->user() && auth()->user()->phone_number === $this->receiver_phone)) ? ($this->receiver_verification_otp ?? '') : '',
+            'is_receiver_verified' => $this->is_receiver_verified ? 1 : 0,
             'driver_arrived_at_sender_at' => $this->driver_arrived_at_sender_at ? $this->driver_arrived_at_sender_at->toDateTimeString() : '',
             'sender_confirmed_handover_at' => $this->sender_confirmed_handover_at ? $this->sender_confirmed_handover_at->toDateTimeString() : '',
             'driver_confirmed_pickup_at' => $this->driver_confirmed_pickup_at ? $this->driver_confirmed_pickup_at->toDateTimeString() : '',
