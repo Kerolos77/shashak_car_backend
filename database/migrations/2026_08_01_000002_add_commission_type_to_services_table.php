@@ -9,12 +9,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('services', function (Blueprint $table) {
-            if (!Schema::hasColumn('services', 'price_tiers')) {
-                $table->json('price_tiers')->nullable()->after('km_charge');
-            }
-            if (!Schema::hasColumn('services', 'tier_pricing_type')) {
-                $table->string('tier_pricing_type')->default('flat')->after('price_tiers'); // flat | cumulative
-            }
             if (!Schema::hasColumn('services', 'commission_type')) {
                 $table->string('commission_type')->nullable()->after('admin_commission');
             }
@@ -24,12 +18,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('services', function (Blueprint $table) {
-            if (Schema::hasColumn('services', 'price_tiers')) {
-                $table->dropColumn('price_tiers');
-            }
-            if (Schema::hasColumn('services', 'tier_pricing_type')) {
-                $table->dropColumn('tier_pricing_type');
-            }
             if (Schema::hasColumn('services', 'commission_type')) {
                 $table->dropColumn('commission_type');
             }
