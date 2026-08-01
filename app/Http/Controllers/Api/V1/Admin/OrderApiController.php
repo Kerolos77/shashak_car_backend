@@ -90,15 +90,9 @@ class OrderApiController extends Controller
     private function sendShippingSmsToReceiver(Order $order)
     {
         if ($order->is_shipping_order && $order->receiver_phone) {
-            $driverName = $order->driver ? ($order->driver->full_name ?? $order->driver->name) : ($order->driver_name ?? 'سائق شقشق');
-            $otp = $order->delivery_otp;
-            $trackingLink = "https://shakshak.net/track/" . $order->id;
-            
-            $message = "أهلاً بك، شحنتك رقم #{$order->id} مع السائق {$driverName} في الطريق إليك. للتتبع المباشر استخدم الرابط: {$trackingLink} وكود الاستلام هو: {$otp}";
-            
             try {
                 $smsHelper = new \App\Helpers\SmsHelper();
-                $result = $smsHelper->sendCustomSms($order->receiver_phone, $message);
+                $result = $smsHelper->sendShippingDeliverySms($order->receiver_phone, $order);
                 \Log::info("Shipping SMS result for order #{$order->id} to {$order->receiver_phone}:", ['result' => $result]);
             } catch (\Exception $e) {
                 \Log::error("Failed to send shipping SMS for order #{$order->id}: " . $e->getMessage());
@@ -645,8 +639,7 @@ class OrderApiController extends Controller
         if (($order->is_shipping_order || !empty($order->receiver_phone)) && !empty($order->receiver_phone)) {
             $smsHelper = new \App\Helpers\SmsHelper();
             $senderName = $order->user->name ?? 'العميل';
-            $message = "أهلاً بك، تم إنشاء طلب شحن جديد موجه إليك برقم #{$order->id} من العميل {$senderName}. كود التأكيد الخاص بالطلب هو: {$order->receiver_verification_otp}. يرجى تزويده للمرسل لتأكيد الطلب.";
-            $result = $smsHelper->sendCustomSms($order->receiver_phone, $message, 'shipping_receiver_verification');
+            $result = $smsHelper->sendShippingVerificationSms($order->receiver_phone, $order);
             Log::info("Shipping Receiver Verification SMS sent to {$order->receiver_phone} for order #{$order->id}:", ['result' => $result]);
 
             $receiverUser = User::where('phone_number', $order->receiver_phone)->first();

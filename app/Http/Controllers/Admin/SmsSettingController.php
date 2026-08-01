@@ -38,10 +38,11 @@ class SmsSettingController extends Controller
             'sms_sender' => $request->sms_sender,
             'sms_message_template' => $request->sms_message_template,
             'sms_shipping_template' => $request->sms_shipping_template,
+            'sms_shipping_verification_template' => $request->sms_shipping_verification_template,
         ]);
         $setting->save();
 
-        return redirect()->back()->with('success', 'تم حفظ إعدادات نظام الرسائل SMS النصية بنجاح!');
+        return redirect()->back()->with('success', 'تم حفظ إعدادات وقوالب نظام الرسائل SMS النصية بنجاح!');
     }
 
     public function sendTest(Request $request)

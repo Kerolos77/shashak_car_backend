@@ -14,6 +14,8 @@ class SmsHelper
     protected $password;
     protected $sender;
     protected $messageTemplate;
+    protected $shippingTemplate;
+    protected $shippingVerificationTemplate;
     protected $isEnabled;
 
     public function __construct()
@@ -39,7 +41,15 @@ class SmsHelper
 
         $this->messageTemplate = ($settings && !empty($settings->sms_message_template)) 
             ? $settings->sms_message_template 
-            : config('sms.message_template', env('SMS_MESSAGE_TEMPLATE', 'كود التفعيل الخاص بك هو: :otp'));
+            : config('sms.message_template', env('SMS_MESSAGE_TEMPLATE', 'كود تفعيل حسابك في شقشق هو: :otp'));
+
+        $this->shippingTemplate = ($settings && !empty($settings->sms_shipping_template)) 
+            ? $settings->sms_shipping_template 
+            : 'أهلاً بك، شحنتك رقم #:order_id مع السائق :driver_name في الطريق إليك. للتتبع المباشر استخدم الرابط: :tracking_link وكود الاستلام هو: :otp';
+
+        $this->shippingVerificationTemplate = ($settings && !empty($settings->sms_shipping_verification_template)) 
+            ? $settings->sms_shipping_verification_template 
+            : 'أهلاً بك، تم إنشاء طلب شحن جديد موجه إليك برقم #:order_id من العميل :sender_name. كود التأكيد الخاص بالطلب هو: :otp. يرجى تزويده للمرسل لتأكيد الطلب.';
     }
 
     /**
@@ -54,11 +64,49 @@ class SmsHelper
         return $cleanPhone;
     }
 
+    /**
+     * Send OTP SMS
+     */
     public function sendSms($mobile, $otp)
     {
         $formattedMobile = $this->formatPhone($mobile);
         $message = str_replace(':otp', $otp, $this->messageTemplate);
         return $this->sendCustomSms($formattedMobile, $message, 'otp');
+    }
+
+    /**
+     * Send Shipping Order Delivery SMS to Receiver
+     */
+    public function sendShippingDeliverySms($mobile, $order)
+    {
+        $driverName = $order->driver ? ($order->driver->full_name ?? $order->driver->name) : ($order->driver_name ?? 'سائق شقشق');
+        $trackingLink = "https://shakshak.net/track/" . $order->id;
+        $otp = $order->delivery_otp;
+
+        $message = str_replace(
+            [':order_id', ':driver_name', ':tracking_link', ':otp'],
+            [$order->id, $driverName, $trackingLink, $otp],
+            $this->shippingTemplate
+        );
+
+        return $this->sendCustomSms($mobile, $message, 'shipping_delivery');
+    }
+
+    /**
+     * Send Shipping Order Verification SMS to Receiver
+     */
+    public function sendShippingVerificationSms($mobile, $order)
+    {
+        $senderName = $order->user->name ?? 'العميل';
+        $otp = $order->receiver_verification_otp;
+
+        $message = str_replace(
+            [':order_id', ':sender_name', ':otp'],
+            [$order->id, $senderName, $otp],
+            $this->shippingVerificationTemplate
+        );
+
+        return $this->sendCustomSms($mobile, $message, 'shipping_receiver_verification');
     }
 
     public function sendCustomSms($mobile, $message, $type = 'shipping')
