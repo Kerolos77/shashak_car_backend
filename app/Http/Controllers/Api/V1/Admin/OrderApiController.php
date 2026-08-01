@@ -311,8 +311,21 @@ class OrderApiController extends Controller
     {
         $Service = Service::find($request->service_id);
 
-        if (!$Service) {
-            return Resp(null, 'Service not found', 404, false);
+        if (!$Service || !$Service->enable) {
+            return Resp(null, 'هذه الخدمة معطلة حالياً في النظام', 404, false);
+        }
+
+        $setting = Setting::first();
+        if ($setting) {
+            if ($Service->service_type === 'shipping' && isset($setting->shipping_enabled) && !$setting->shipping_enabled) {
+                return Resp(null, 'نظام شحن البضائع معطل حالياً بقرار من الإدارة', 400, false);
+            }
+            if ($Service->service_type === 'ride' && isset($setting->ride_enabled) && !$setting->ride_enabled) {
+                return Resp(null, 'نظام رحلات التوصيل معطل حالياً بقرار من الإدارة', 400, false);
+            }
+            if ($Service->service_type === 'travel' && isset($setting->travel_enabled) && !$setting->travel_enabled) {
+                return Resp(null, 'نظام رحلات السفر معطل حالياً بقرار من الإدارة', 400, false);
+            }
         }
 
         $response = distancematrix($request->origin, $request->destination);

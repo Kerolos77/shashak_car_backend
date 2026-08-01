@@ -88,9 +88,14 @@
                                     @endif
                                 </td>
                                 <td class="text-center">
-                                    <span class="badge {{ $item->enable ? 'badge-light-success' : 'badge-light-danger' }}">
-                                        {{ $item->enable ? trans('global.active') : trans('global.inactive') }}
-                                    </span>
+                                    <div class="form-check form-switch form-check-custom form-check-solid justify-content-center">
+                                        <input class="form-check-input h-25px w-45px service-status-toggle" 
+                                               type="checkbox" 
+                                               data-id="{{ $item->id }}" 
+                                               data-url="{{ route('admin.services.toggle-status', $item->id) }}" 
+                                               {{ $item->enable ? 'checked' : '' }} 
+                                               title="{{ $item->enable ? 'مفعل (ON)' : 'معطل (OFF)' }}" />
+                                    </div>
                                 </td>
                                 <td class="text-center">
                                     <span class="badge {{ $item->intercity_type ? 'badge-light-primary' : 'badge-light-info' }}">
@@ -222,6 +227,46 @@ $(document).ready(function() {
         
         var modal = new bootstrap.Modal(document.getElementById('modelsModal'));
         modal.show();
+    });
+
+    // Instant AJAX Toggle for Service Status Switch
+    $('.service-status-toggle').on('change', function () {
+        var $self = $(this);
+        var url = $self.attr('data-url');
+        
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}'
+            },
+            success: function (res) {
+                if (res.success) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: res.message || 'تم تحديث حالة الخدمة بنجاح',
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+                    }
+                } else {
+                    $self.prop('checked', !$self.prop('checked'));
+                }
+            },
+            error: function () {
+                $self.prop('checked', !$self.prop('checked'));
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'خطأ',
+                        text: 'فشل التوصيل بالسيرفر لتعديل الحالة'
+                    });
+                }
+            }
+        });
     });
 });
 </script>

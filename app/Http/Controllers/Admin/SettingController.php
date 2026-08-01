@@ -19,6 +19,10 @@ class SettingController extends BaseController
         $data['increase'] = $request->increase ?? [];
         $data['percentage_increase'] = $request->percentage_increase ?? [];
         $data['active_type'] = $request->active_type;
+        $data['shipping_enabled'] = $request->has('shipping_enabled') ? true : false;
+        $data['ride_enabled'] = $request->has('ride_enabled') ? true : false;
+        $data['travel_enabled'] = $request->has('travel_enabled') ? true : false;
+        $data['intercity_enabled'] = $request->has('intercity_enabled') ? true : false;
 
         \Illuminate\Support\Facades\Log::info('--- SETTINGS UPDATE DEBUG ---');
         \Illuminate\Support\Facades\Log::info('Request active_type: ' . json_encode($request->active_type));

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use Gate;
 use App\Models\Service;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Http\Controllers\Controller;
@@ -16,72 +17,71 @@ class ServiceApiController extends Controller
 {
     public function incity()
     {
-        return  ServicesResource::Collection(Service::type(0)->get());
+        $setting = Setting::first();
+        if ($setting && isset($setting->ride_enabled) && !$setting->ride_enabled) {
+            return ServicesResource::Collection(collect());
+        }
+        return ServicesResource::Collection(Service::type(0)->where('enable', true)->get());
     }
+
     public function outcity()
     {
-        return  ServicesResource::Collection(Service::type(1)->get());
+        $setting = Setting::first();
+        if ($setting && isset($setting->intercity_enabled) && !$setting->intercity_enabled) {
+            return ServicesResource::Collection(collect());
+        }
+        return ServicesResource::Collection(Service::type(1)->where('enable', true)->get());
     }
+
     public function all()
-     
     {
-        return  ServicesResource::Collection(Service::get());
-
+        return ServicesResource::Collection(Service::where('enable', true)->get());
     }
-  public function index()
-{
-    $services = Service::with('models')->get();
 
-    return Resp($services, 'Services fetched successfully');
-}
+    public function index()
+    {
+        $setting = Setting::first();
+        $query = Service::with('models')->where('enable', true);
+
+        if ($setting && isset($setting->shipping_enabled) && !$setting->shipping_enabled) {
+            $query->where('service_type', '!=', 'shipping');
+        }
+        if ($setting && isset($setting->ride_enabled) && !$setting->ride_enabled) {
+            $query->where('service_type', '!=', 'ride');
+        }
+        if ($setting && isset($setting->travel_enabled) && !$setting->travel_enabled) {
+            $query->where('service_type', '!=', 'travel');
+        }
+
+        $services = $query->get();
+
+        return Resp($services, 'Services fetched successfully');
+    }
 
     public function rides()
     {
-        return ServicesResource::Collection(Service::serviceType('ride')->get());
+        $setting = Setting::first();
+        if ($setting && isset($setting->ride_enabled) && !$setting->ride_enabled) {
+            return ServicesResource::Collection(collect());
+        }
+        return ServicesResource::Collection(Service::where('enable', true)->serviceType('ride')->get());
     }
 
     public function travels()
     {
-        return ServicesResource::Collection(Service::serviceType('travel')->get());
+        $setting = Setting::first();
+        if ($setting && isset($setting->travel_enabled) && !$setting->travel_enabled) {
+            return ServicesResource::Collection(collect());
+        }
+        return ServicesResource::Collection(Service::where('enable', true)->serviceType('travel')->get());
     }
 
     public function shipping()
     {
-        return ServicesResource::Collection(Service::serviceType('shipping')->get());
+        $setting = Setting::first();
+        if ($setting && isset($setting->shipping_enabled) && !$setting->shipping_enabled) {
+            return ServicesResource::Collection(collect());
+        }
+        return ServicesResource::Collection(Service::where('enable', true)->serviceType('shipping')->get());
     }
-
-
-    // public function store(StoreServiceRequest $request)
-    // {
-    //     $service = Service::create($request->validated());
-
-    //     return (new ServiceResource($service))
-    //         ->response()
-    //         ->setStatusCode(Response::HTTP_CREATED);
-    // }
-
-    // public function show(Service $service)
-    // {
-    //     abort_if(Gate::denies('service_show'), Response::HTTP_FORBIDDEN, '403 Forbidden');
-
-    //     return new ServiceResource($service);
-    // }
-
-    // public function update(UpdateServiceRequest $request, Service $service)
-    // {
-    //     $service->update($request->validated());
-
-    //     return (new ServiceResource($service))
-    //         ->response()
-    //         ->setStatusCode(Response::HTTP_ACCEPTED);
-    // }
-
-    // public function destroy(Service $service)
-    // {
-    //     abort_if(Gate::denies('service_delete'), Response::HTTP_FORBIDDEN, '403 Forbidden');
-
-    //     $service->delete();
-
-    //     return response(null, Response::HTTP_NO_CONTENT);
-    // }
 }

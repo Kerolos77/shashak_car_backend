@@ -127,7 +127,23 @@ class ServiceController extends BaseController
                  $row->models()->delete(); 
             }
             
-            // FileUploader::upload($row, $request->images, 'service_images', 'multiple_image');
             return redirect()->route('admin.services.index');
         }
+
+    public function toggleStatus($id)
+    {
+        $service = Service::findOrFail($id);
+        $service->enable = !$service->enable;
+        $service->save();
+
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'enable' => (bool)$service->enable,
+                'message' => $service->enable ? 'تم تفعيل الخدمة بنجاح' : 'تم تعطيل الخدمة بنجاح'
+            ]);
+        }
+
+        return redirect()->back()->with('success', $service->enable ? 'تم تفعيل الخدمة بنجاح' : 'تم تعطيل الخدمة بنجاح');
+    }
 }

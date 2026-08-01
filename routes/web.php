@@ -143,6 +143,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth:admi
 
 
     // Service
+    Route::post('services/{id}/toggle-status', [ServiceController::class, 'toggleStatus'])->name('services.toggle-status');
     Route::resource('services', ServiceController::class);
 
     // Wallet Transaction

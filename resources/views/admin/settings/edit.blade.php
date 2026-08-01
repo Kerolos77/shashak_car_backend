@@ -143,6 +143,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#tab_feature_toggles">
+                                <i class="ki-outline ki-toggle-on fs-4 me-2"></i>تفعيل وتعطيل الأنظمة (ON / OFF)
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" data-bs-toggle="tab" href="#tab_cloud_expenses">
                                 <i class="ki-outline ki-chart-line-down fs-4 me-2"></i>إعدادات السحابة والمصروفات
                             </a>
@@ -417,7 +422,76 @@
 
                         </div>
 
-                        <!-- TAB 4: Cloud & Expenses -->
+                        <!-- TAB 4: System Feature ON/OFF Toggles -->
+                        <div class="tab-pane fade" id="tab_feature_toggles">
+                            <div class="card border border-gray-300 shadow-none">
+                                <div class="card-header bg-light py-4">
+                                    <h4 class="card-title fw-bolder mb-0 text-gray-800">
+                                        <i class="ki-outline ki-toggle-on fs-3 me-2 text-primary"></i> التحكم الفوري في تفعيل وتعطيل الموديولات والأنظمة (ON / OFF)
+                                    </h4>
+                                </div>
+                                <div class="card-body p-5">
+                                    <div class="alert alert-light-primary d-flex align-items-center p-4 mb-6 rounded">
+                                        <i class="ki-outline ki-information-5 fs-2x text-primary me-3"></i>
+                                        <div class="fs-6 text-gray-800">
+                                            يمكنك من هنا إيقاف أو تشغيل أي موديول في النظام بالكامل. عند تعطيل أي موديول، يتم حجب خياراته فورياً من تطبيق العميل والسائق والـ APIs.
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-6">
+                                        <div class="col-md-6">
+                                            <div class="form-check form-switch form-check-custom form-check-solid p-4 border rounded bg-light d-flex align-items-center justify-content-between">
+                                                <div>
+                                                    <label class="form-check-label fw-bolder text-gray-800 fs-5 d-block" for="shipping_enabled">
+                                                        🚚 نظام شحن البضائع (Shipping System)
+                                                    </label>
+                                                    <span class="text-muted fs-7">إمكانية إنشاء وإدارة طلبات الشحن ونقل البضائع</span>
+                                                </div>
+                                                <input class="form-check-input h-30px w-50px" type="checkbox" name="shipping_enabled" value="1" id="shipping_enabled" {{ ($row->shipping_enabled ?? true) ? 'checked' : '' }} />
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-check form-switch form-check-custom form-check-solid p-4 border rounded bg-light d-flex align-items-center justify-content-between">
+                                                <div>
+                                                    <label class="form-check-label fw-bolder text-gray-800 fs-5 d-block" for="ride_enabled">
+                                                        🚗 نظام رحلات التوصيل (Ride System)
+                                                    </label>
+                                                    <span class="text-muted fs-7">إمكانية طلب رحلات توصيل الأشخاص داخل المدينة</span>
+                                                </div>
+                                                <input class="form-check-input h-30px w-50px" type="checkbox" name="ride_enabled" value="1" id="ride_enabled" {{ ($row->ride_enabled ?? true) ? 'checked' : '' }} />
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-check form-switch form-check-custom form-check-solid p-4 border rounded bg-light d-flex align-items-center justify-content-between">
+                                                <div>
+                                                    <label class="form-check-label fw-bolder text-gray-800 fs-5 d-block" for="travel_enabled">
+                                                        🚌 نظام رحلات السفر والتنقل (Travel System)
+                                                    </label>
+                                                    <span class="text-muted fs-7">إمكانية طلب رحلات السفر والتنقل بين المدن</span>
+                                                </div>
+                                                <input class="form-check-input h-30px w-50px" type="checkbox" name="travel_enabled" value="1" id="travel_enabled" {{ ($row->travel_enabled ?? true) ? 'checked' : '' }} />
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-check form-switch form-check-custom form-check-solid p-4 border rounded bg-light d-flex align-items-center justify-content-between">
+                                                <div>
+                                                    <label class="form-check-label fw-bolder text-gray-800 fs-5 d-block" for="intercity_enabled">
+                                                        🏙️ الرحلات بين المحافظات (Intercity System)
+                                                    </label>
+                                                    <span class="text-muted fs-7">إمكانية حجز وتأكيد الرحلات الخارجية بين المحافظات</span>
+                                                </div>
+                                                <input class="form-check-input h-30px w-50px" type="checkbox" name="intercity_enabled" value="1" id="intercity_enabled" {{ ($row->intercity_enabled ?? true) ? 'checked' : '' }} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 5: Cloud & Expenses -->
                         <div class="tab-pane fade" id="tab_cloud_expenses">
                             
                             <div class="card border border-gray-300 shadow-none">
