@@ -31,7 +31,50 @@ class AuthenticationController extends Controller
     }
     public function settings()
     {
-        return Resp(Setting::first(), 'success');
+        $setting = Setting::first();
+        if (!$setting) {
+            return Resp(null, 'No settings found', 404, false);
+        }
+
+        $data = [
+            'id' => $setting->id,
+            // Feature Toggles (ON / OFF)
+            'shipping_enabled' => (bool) ($setting->shipping_enabled ?? true),
+            'ride_enabled' => (bool) ($setting->ride_enabled ?? true),
+            'travel_enabled' => (bool) ($setting->travel_enabled ?? true),
+            'intercity_enabled' => (bool) ($setting->intercity_enabled ?? true),
+            'sms_enabled' => (bool) ($setting->sms_enabled ?? true),
+
+            // Store & Social Links
+            'play_store_url' => $setting->play_store_url,
+            'app_store_url' => $setting->app_store_url,
+            'facebook' => $setting->facebook,
+            'youtube' => $setting->youtube,
+            'linkedin' => $setting->linkedin,
+            'twitter' => $setting->twitter,
+            'tiktok' => $setting->tiktok,
+            'link_1' => $setting->link_1,
+            'link_2' => $setting->link_2,
+            'link_3' => $setting->link_3,
+
+            // Support & Contact
+            'email_1' => $setting->email_1,
+            'email_2' => $setting->email_2,
+            'email_3' => $setting->email_3,
+            'phone' => $setting->phone,
+
+            // User limits & Prices
+            'min_order' => (float) ($setting->min_order ?? 0),
+            'min_withdraw' => (float) ($setting->min_withdraw ?? 0),
+            'min_deposit' => (float) ($setting->min_deposit ?? 0),
+            'referral_bonus' => (float) ($setting->referral_bonus ?? 0),
+            
+            // Gamification Points
+            'points_user_per_trip' => (int) ($setting->points_user_per_trip ?? 0),
+            'points_driver_per_trip' => (int) ($setting->points_driver_per_trip ?? 0),
+        ];
+
+        return Resp($data, 'success');
     }
     public function getUserIDByToken($hashedToken)
     {
