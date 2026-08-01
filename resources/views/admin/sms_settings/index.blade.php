@@ -265,7 +265,9 @@
                 </form>
 
                 <!-- Hidden Independent Form for Test SMS -->
-                <form id="test_sms_form" action="{{ route('admin.sms-settings.send-test') }}" method="POST"></form>
+                <form id="test_sms_form" action="{{ route('admin.sms-settings.send-test') }}" method="POST">
+                    @csrf
+                </form>
 
                 <!-- TAB 4: SMS Logs History -->
                 <div class="tab-pane fade" id="tab_sms_logs">
