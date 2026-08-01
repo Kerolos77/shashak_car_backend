@@ -146,6 +146,19 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth:admi
     Route::post('services/{id}/toggle-status', [ServiceController::class, 'toggleStatus'])->name('services.toggle-status');
     Route::resource('services', ServiceController::class);
 
+    // Coupons
+    Route::post('coupons/{id}/toggle-active', [\App\Http\Controllers\Admin\CouponController::class, 'toggleActive'])->name('coupons.toggle-active');
+    Route::resource('coupons', \App\Http\Controllers\Admin\CouponController::class);
+
+    // Support Tickets
+    Route::get('tickets', [\App\Http\Controllers\Admin\SupportTicketController::class, 'index'])->name('tickets.index');
+    Route::get('tickets/{id}', [\App\Http\Controllers\Admin\SupportTicketController::class, 'show'])->name('tickets.show');
+    Route::post('tickets/{id}/status', [\App\Http\Controllers\Admin\SupportTicketController::class, 'updateStatus'])->name('tickets.update-status');
+
+    // Fleet Live Map
+    Route::get('fleet-map', [\App\Http\Controllers\Admin\FleetMapController::class, 'index'])->name('fleet-map.index');
+    Route::get('fleet-map/data', [\App\Http\Controllers\Admin\FleetMapController::class, 'getDriversLocations'])->name('fleet-map.data');
+
     // Wallet Transaction
     Route::resource('wallet-transactions', WalletTransactionController::class);
     Route::post('wallet-transactions/add-amount', [WalletTransactionController::class, 'add_amount'])->name('add_amount');

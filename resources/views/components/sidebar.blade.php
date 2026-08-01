@@ -271,6 +271,35 @@
                             <span class="menu-title">{{ trans('cruds.gamification.title') }}</span>
                         </a>
                     </div>
+                    <!-- Promo Coupons -->
+                    <div class="menu-item {{ request()->is('admin/coupons*') ? 'here show' : '' }}">
+                        <a class="menu-link" href="{{ route('admin.coupons.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-outline ki-discount fs-2"></i>
+                            </span>
+                            <span class="menu-title">أكواد الكوبونات والخصومات</span>
+                        </a>
+                    </div>
+
+                    <!-- Live Fleet Driver Map -->
+                    <div class="menu-item {{ request()->is('admin/fleet-map*') ? 'here show' : '' }}">
+                        <a class="menu-link" href="{{ route('admin.fleet-map.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-outline ki-geolocation fs-2"></i>
+                            </span>
+                            <span class="menu-title">خريطة تتبع أسطول السائقين</span>
+                        </a>
+                    </div>
+
+                    <!-- Support Tickets -->
+                    <div class="menu-item {{ request()->is('admin/tickets*') ? 'here show' : '' }}">
+                        <a class="menu-link" href="{{ route('admin.tickets.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-outline ki-message-question fs-2"></i>
+                            </span>
+                            <span class="menu-title">تذاكر الشكاوى والدعم الفني</span>
+                        </a>
+                    </div>
 
                     <!-- Shop Packages -->
                     <div class="menu-item {{ request()->is('admin/packages*') ? 'here show' : '' }}">
