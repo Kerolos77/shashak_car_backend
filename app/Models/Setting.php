@@ -33,6 +33,5 @@ class Setting extends Model
         'shipping_enabled' => 'boolean',
         'ride_enabled' => 'boolean',
         'travel_enabled' => 'boolean',
-        'intercity_enabled' => 'boolean',
     ];
 }

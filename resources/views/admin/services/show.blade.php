@@ -46,14 +46,6 @@
                             </td>
                         </tr>
                         <tr>
-                            <th class="fw-semibold text-gray-700">{{ trans('cruds.service.fields.intercity_type') }}</th>
-                            <td>
-                                <span class="badge {{ $row->intercity_type ? 'badge-light-primary' : 'badge-light-info' }}">
-                                    {{ $row->intercity_type ? trans('global.out_city') : trans('global.inter_city') }}
-                                </span>
-                            </td>
-                        </tr>
-                        <tr>
                             <th class="fw-semibold text-gray-700">{{ trans('cruds.service.fields.km_charge') }}</th>
                             <td>{{ $row->km_charge ? number_format($row->km_charge, 2) . ' EGP' : 'N/A' }}</td>
                         </tr>

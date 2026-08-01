@@ -36,7 +36,6 @@ class Service extends Model implements HasMedia
 
     protected $casts = [
         'enable'            => 'boolean',
-        'intercity_type'    => 'boolean',
         'price_tiers'       => 'array',
         'tier_pricing_type' => 'string',
     ];
@@ -58,7 +57,6 @@ class Service extends Model implements HasMedia
         'admin_commission',
         'enable',
         'image',
-        'intercity_type',
         'km_charge',
         'price_tiers',
         'tier_pricing_type',

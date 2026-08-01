@@ -260,19 +260,7 @@
                         </div>
                     </div>
 
-                    <div class="row mb-6">
-                        <label class="col-lg-4 col-form-label fw-semibold fs-6">
-                            {{ __('cruds.service.fields.intercity_type') }}
-                        </label>
-                        <div class="col-lg-8 d-flex align-items-center">
-                            <div class="form-check form-switch form-check-custom form-check-solid">
-                                <input class="form-check-input" type="checkbox" id="intercity_type" name="intercity_type">
-                                <label class="form-check-label" for="intercity_type">
-                                    {{ __('cruds.service.fields.intercity_type') }}
-                                </label>
-                            </div>
-                        </div>
-                    </div>
+
 
                     <div class="row mb-6">
                         <label class="col-lg-4 col-form-label required fw-semibold fs-6">

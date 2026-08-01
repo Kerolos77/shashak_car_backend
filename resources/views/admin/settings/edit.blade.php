@@ -439,7 +439,7 @@
                                     </div>
 
                                     <div class="row g-6">
-                                        <div class="col-md-6">
+                                        <div class="col-md-4">
                                             <div class="form-check form-switch form-check-custom form-check-solid p-4 border rounded bg-light d-flex align-items-center justify-content-between">
                                                 <div>
                                                     <label class="form-check-label fw-bolder text-gray-800 fs-5 d-block" for="shipping_enabled">
@@ -451,7 +451,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="col-md-6">
+                                        <div class="col-md-4">
                                             <div class="form-check form-switch form-check-custom form-check-solid p-4 border rounded bg-light d-flex align-items-center justify-content-between">
                                                 <div>
                                                     <label class="form-check-label fw-bolder text-gray-800 fs-5 d-block" for="ride_enabled">
@@ -463,7 +463,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="col-md-6">
+                                        <div class="col-md-4">
                                             <div class="form-check form-switch form-check-custom form-check-solid p-4 border rounded bg-light d-flex align-items-center justify-content-between">
                                                 <div>
                                                     <label class="form-check-label fw-bolder text-gray-800 fs-5 d-block" for="travel_enabled">
@@ -472,18 +472,6 @@
                                                     <span class="text-muted fs-7">إمكانية طلب رحلات السفر والتنقل بين المدن</span>
                                                 </div>
                                                 <input class="form-check-input h-30px w-50px" type="checkbox" name="travel_enabled" value="1" id="travel_enabled" {{ ($row->travel_enabled ?? true) ? 'checked' : '' }} />
-                                            </div>
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <div class="form-check form-switch form-check-custom form-check-solid p-4 border rounded bg-light d-flex align-items-center justify-content-between">
-                                                <div>
-                                                    <label class="form-check-label fw-bolder text-gray-800 fs-5 d-block" for="intercity_enabled">
-                                                        🏙️ الرحلات بين المحافظات (Intercity System)
-                                                    </label>
-                                                    <span class="text-muted fs-7">إمكانية حجز وتأكيد الرحلات الخارجية بين المحافظات</span>
-                                                </div>
-                                                <input class="form-check-input h-30px w-50px" type="checkbox" name="intercity_enabled" value="1" id="intercity_enabled" {{ ($row->intercity_enabled ?? true) ? 'checked' : '' }} />
                                             </div>
                                         </div>
                                     </div>

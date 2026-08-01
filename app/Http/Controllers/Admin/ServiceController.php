@@ -37,7 +37,6 @@ class ServiceController extends BaseController
             'tier_pricing_type' => $request->tier_pricing_type ?? 'flat',
             'enable' => $request->enable != null ? 1 : 0,
             'offer_rate' => $request->offer_rate != null ? 1 : 0,
-            'intercity_type' => $request->intercity_type != null ? 1 : 0,
             'commission_type' => $request->has('commission_type') ? ($request->commission_type ? 1 : 0) : null,
             'service_type' => $request->service_type,
             'weight' => $request->weight,

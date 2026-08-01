@@ -56,7 +56,6 @@
                             <th class="text-center">{{ trans('global.title') }}</th>
                             <th class="text-center">{{ trans('global.admin_commission') }}</th>
                             <th class="text-center">{{ trans('global.enable') }}</th>
-                            <th class="text-center">{{ trans('global.intercity_type') }}</th>
                             <th class="text-center">نوع الخدمة (Type)</th>
                             <th class="text-center">{{ trans('global.km_charge') }}</th>
                             <th class="text-center">{{ trans('global.offer_rate') }}</th>
@@ -96,11 +95,6 @@
                                                {{ $item->enable ? 'checked' : '' }} 
                                                title="{{ $item->enable ? 'مفعل (ON)' : 'معطل (OFF)' }}" />
                                     </div>
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge {{ $item->intercity_type ? 'badge-light-primary' : 'badge-light-info' }}">
-                                        {{ $item->intercity_type ? trans('global.out_city') : trans('global.inter_city') }}
-                                    </span>
                                 </td>
                                 <td class="text-center">
                                     @if ($item->service_type === 'ride')
