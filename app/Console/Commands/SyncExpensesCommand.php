@@ -65,6 +65,19 @@ class SyncExpensesCommand extends Command
             $this->error('Google Cloud sync failed: ' . $e->getMessage());
         }
 
+        // 4. Calculate SMS Expenses
+        $this->info('Calculating SMS expenses...');
+        try {
+            $smsResult = (new \App\Services\SmsBillingService())->syncSmsExpenses();
+            if ($smsResult['success']) {
+                $this->info($smsResult['message']);
+            } else {
+                $this->warn('SMS sync: ' . $smsResult['message']);
+            }
+        } catch (\Exception $e) {
+            $this->error('SMS sync failed: ' . $e->getMessage());
+        }
+
         $this->info('Automated expenses sync completed!');
         return Command::SUCCESS;
     }

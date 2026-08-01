@@ -101,6 +101,11 @@
                                     <label class="form-label fw-bold">كلمة المرور لدى بوابة SMS (Password)</label>
                                     <input type="password" name="sms_password" class="form-control form-control-solid" placeholder="أدخل كلمة المرور" value="{{ old('sms_password', $setting->sms_password ?? env('SMS_PASSWORD', '')) }}" />
                                 </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">تكلفة الرسالة الواحدة لحساب المصروفات (بالجنيـه EGP)</label>
+                                    <input type="number" step="0.0001" name="sms_cost_per_message" class="form-control form-control-solid" placeholder="0.2500" value="{{ old('sms_cost_per_message', $setting->sms_cost_per_message ?? 0.2500) }}" />
+                                    <div class="form-text fs-8 text-muted">تُستخدم لحساب مصروفات الـ SMS التلقائية شهرياً بناءً على عدد الرسائل المرسلة.</div>
+                                </div>
                             </div>
 
                             <div class="d-flex justify-content-end">

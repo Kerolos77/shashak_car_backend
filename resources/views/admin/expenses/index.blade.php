@@ -147,6 +147,8 @@
                                     <span class="badge bg-light-warning text-warning fs-7">ديجيتال أوشن (سيرفر)</span>
                                 @elseif($item->category === 'google_cloud')
                                     <span class="badge bg-light-danger text-danger fs-7">جوجل كلاود (Firebase/Gemini)</span>
+                                @elseif($item->category === 'sms')
+                                    <span class="badge bg-light-success text-success fs-7">رسائل SMS</span>
                                 @elseif($item->category === 'domain')
                                     <span class="badge bg-light-info text-info fs-7">تجديد الدومين</span>
                                 @else

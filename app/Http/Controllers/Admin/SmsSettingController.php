@@ -39,6 +39,7 @@ class SmsSettingController extends Controller
             'sms_message_template' => $request->sms_message_template,
             'sms_shipping_template' => $request->sms_shipping_template,
             'sms_shipping_verification_template' => $request->sms_shipping_verification_template,
+            'sms_cost_per_message' => $request->filled('sms_cost_per_message') ? floatval($request->sms_cost_per_message) : 0.2500,
         ]);
         $setting->save();
 
