@@ -58,6 +58,38 @@
                             <td>{{ $row->km_charge ? number_format($row->km_charge, 2) . ' EGP' : 'N/A' }}</td>
                         </tr>
                         <tr>
+                            <th class="fw-semibold text-gray-700">شرائح التسعير بالكيلومتر</th>
+                            <td>
+                                @if(!empty($row->price_tiers) && is_array($row->price_tiers) && count($row->price_tiers) > 0)
+                                    <div class="mb-2">
+                                        <span class="badge bg-light-primary text-primary fw-bold">
+                                            طريقة الحساب: {{ $row->tier_pricing_type === 'cumulative' ? 'تراكمي تدرجي' : 'سعر الشريحة المطبقة' }}
+                                        </span>
+                                    </div>
+                                    <table class="table table-sm table-bordered max-w-400px border rounded">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>من (كم)</th>
+                                                <th>إلى (كم)</th>
+                                                <th>سعر الكيلو (ج.م)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($row->price_tiers as $tier)
+                                                <tr>
+                                                    <td>{{ $tier['from_km'] ?? 0 }} كم</td>
+                                                    <td>{{ isset($tier['to_km']) && $tier['to_km'] !== '' ? $tier['to_km'] . ' كم' : 'مفتوح (أعلى من)' }}</td>
+                                                    <td class="fw-bold text-success">{{ number_format($tier['price_per_km'] ?? 0, 2) }} ج.م</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                @else
+                                    <span class="text-muted">غير مخصص (يعتمد على سعر الكيلومتر الافتراضي)</span>
+                                @endif
+                            </td>
+                        </tr>
+                        <tr>
                             <th class="fw-semibold text-gray-700">{{ trans('cruds.service.fields.offer_rate') }}</th>
                             <td>
                                 <span class="badge {{ $row->offer_rate ? 'badge-light-warning' : 'badge-light-secondary' }}">

@@ -107,8 +107,19 @@
                                     @else
                                         <span class="badge badge-light-secondary">{{ $item->service_type }}</span>
                                     @endif
+                                <td class="text-center">
+                                    @if(!empty($item->price_tiers) && is_array($item->price_tiers) && count($item->price_tiers) > 0)
+                                        <span class="badge bg-light-primary text-primary fw-bold" title="مخصص بشرائح مسافات">
+                                            <i class="ki-outline ki-calculator fs-7 me-1 text-primary"></i>
+                                            {{ count($item->price_tiers) }} شرائح مسافات
+                                        </span>
+                                        <div class="fs-8 text-muted mt-1">
+                                            ({{ $item->tier_pricing_type === 'cumulative' ? 'تراكمي' : 'سعر الشريحة' }})
+                                        </div>
+                                    @else
+                                        <span class="fw-bold">{{ $item->km_charge ? number_format($item->km_charge, 2) . ' EGP' : 'N/A' }}</span>
+                                    @endif
                                 </td>
-                                <td class="text-center">{{ $item->km_charge ? number_format($item->km_charge, 2) . ' EGP' : 'N/A' }}</td>
                                 <td class="text-center">
                                     <span class="badge {{ $item->offer_rate ? 'badge-light-warning' : 'badge-light-secondary' }}">
                                         {{ $item->offer_rate ? trans('global.yes') : trans('global.no') }}

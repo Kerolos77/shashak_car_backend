@@ -327,7 +327,8 @@ class OrderApiController extends Controller
         }
 
         $km = $response['rows'][0]['elements'][0]['distance']['value'] / 1000;
-        $price = number_format($km * $Service->km_charge, 2);
+        $calculatedPrice = method_exists($Service, 'calculatePrice') ? $Service->calculatePrice($km) : ($km * $Service->km_charge);
+        $price = number_format($calculatedPrice, 2);
         $min = number_format(($response['rows'][0]['elements'][0]['duration']['value'] / 60));
 
         $result['km'] = $km;

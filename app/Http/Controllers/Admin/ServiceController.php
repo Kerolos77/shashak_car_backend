@@ -17,9 +17,24 @@ class ServiceController extends BaseController
         parent::__construct($model);
     }
     public function dataHandler($request) {
+        $priceTiers = [];
+        if ($request->has('price_tiers') && is_array($request->price_tiers)) {
+            foreach ($request->price_tiers as $tier) {
+                if (isset($tier['price_per_km']) && $tier['price_per_km'] !== '') {
+                    $priceTiers[] = [
+                        'from_km' => floatval($tier['from_km'] ?? 0),
+                        'to_km' => (isset($tier['to_km']) && $tier['to_km'] !== '') ? floatval($tier['to_km']) : null,
+                        'price_per_km' => floatval($tier['price_per_km']),
+                    ];
+                }
+            }
+        }
+
         return [
             'title' => $request->title,
             'km_charge' => $request->km_charge,
+            'price_tiers' => $priceTiers,
+            'tier_pricing_type' => $request->tier_pricing_type ?? 'flat',
             'enable' => $request->enable != null ? 1 : 0,
             'offer_rate' => $request->offer_rate != null ? 1 : 0,
             'intercity_type' => $request->intercity_type != null ? 1 : 0,

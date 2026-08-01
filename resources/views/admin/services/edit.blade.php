@@ -163,6 +163,70 @@
                         </div>
                     </div>
 
+                    <!-- Price Tiers Card Section -->
+                    <div class="card border border-gray-300 shadow-none mb-6">
+                        <div class="card-header bg-light py-4">
+                            <h4 class="card-title fw-bolder mb-0 text-gray-800">
+                                <i class="ki-outline ki-calculator fs-3 text-primary me-2"></i> شرائح تسعير المسافات (Distance Price Tiers)
+                            </h4>
+                        </div>
+                        <div class="card-body p-5">
+                            <div class="alert alert-light-primary d-flex align-items-center p-4 mb-5 rounded">
+                                <i class="ki-outline ki-information-5 fs-2 text-primary me-3"></i>
+                                <div class="fs-7 text-gray-800">
+                                    يمكنك تخصيص أكثر من شريحة سعرية بالكيلومتر لهذه الخدمة (مثلاً من 0 إلى 5 كم بسعر 20 ج، ومن 5 إلى 20 كم بسعر 15 ج). في حالة عدم تحديد شرائح، سيتم اعتماد سعر الكيلومتر الافتراضي المعرف أعلاه (<code>{{ __('cruds.service.fields.km_charge') }}</code>).
+                                </div>
+                            </div>
+
+                            <div class="row mb-5">
+                                <label class="col-lg-4 col-form-label fw-bold fs-6">طريقة حساب الشرائح:</label>
+                                <div class="col-lg-8">
+                                    <select name="tier_pricing_type" class="form-select form-select-solid">
+                                        <option value="flat" {{ (old('tier_pricing_type', $row->tier_pricing_type ?? 'flat') == 'flat') ? 'selected' : '' }}>
+                                            سعر الشريحة المطبقة على الرحلة بالكامل (Flat Rate Tier)
+                                        </option>
+                                        <option value="cumulative" {{ (old('tier_pricing_type', $row->tier_pricing_type ?? '') == 'cumulative') ? 'selected' : '' }}>
+                                            الحساب التراكمي التدرجي للشرائح (Cumulative Brackets)
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div id="price-tiers-container">
+                                @php
+                                    $tiers = old('price_tiers', $row->price_tiers ?? []);
+                                @endphp
+                                @if(!empty($tiers) && is_array($tiers))
+                                    @foreach($tiers as $index => $tier)
+                                        <div class="row align-items-center g-3 mb-3 tier-row border-bottom pb-3">
+                                            <div class="col-md-3">
+                                                <label class="form-label fs-8 fw-bold text-gray-700">من كم (From Km):</label>
+                                                <input type="number" step="0.1" name="price_tiers[{{ $index }}][from_km]" value="{{ $tier['from_km'] ?? 0 }}" class="form-control form-control-solid" placeholder="0" required />
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label fs-8 fw-bold text-gray-700">إلى كم (To Km):</label>
+                                                <input type="number" step="0.1" name="price_tiers[{{ $index }}][to_km]" value="{{ $tier['to_km'] ?? '' }}" class="form-control form-control-solid" placeholder="مفتوح (أعلى من)" />
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label fs-8 fw-bold text-gray-700">سعر الكيلومتر (ج.م/كم):</label>
+                                                <input type="number" step="0.5" name="price_tiers[{{ $index }}][price_per_km]" value="{{ $tier['price_per_km'] ?? '' }}" class="form-control form-control-solid" placeholder="مثال: 15" required />
+                                            </div>
+                                            <div class="col-md-2 mt-4 text-end">
+                                                <button type="button" class="btn btn-sm btn-icon btn-light-danger remove-tier-btn">
+                                                    <i class="ki-outline ki-trash fs-4"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @endif
+                            </div>
+
+                            <button type="button" class="btn btn-sm btn-light-primary fw-bold mt-2" id="add-price-tier-btn">
+                                <i class="ki-outline ki-plus fs-4 me-1"></i> إضافة شريحة أسعار جديدة
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="row mb-6">
                         <label class="col-lg-4 col-form-label fw-semibold fs-6">
                             {{ __('cruds.service.fields.status') }}
@@ -384,3 +448,81 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    let tierIndex = {{ count(old('price_tiers', $row->price_tiers ?? [])) }};
+    const addTierBtn = document.getElementById('add-price-tier-btn');
+    const tiersContainer = document.getElementById('price-tiers-container');
+
+    if (addTierBtn && tiersContainer) {
+        addTierBtn.addEventListener('click', function () {
+            const row = document.createElement('div');
+            row.className = 'row align-items-center g-3 mb-3 tier-row border-bottom pb-3';
+            row.innerHTML = `
+                <div class="col-md-3">
+                    <label class="form-label fs-8 fw-bold text-gray-700">من كم (From Km):</label>
+                    <input type="number" step="0.1" name="price_tiers[${tierIndex}][from_km]" value="0" class="form-control form-control-solid" placeholder="0" required />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fs-8 fw-bold text-gray-700">إلى كم (To Km):</label>
+                    <input type="number" step="0.1" name="price_tiers[${tierIndex}][to_km]" value="" class="form-control form-control-solid" placeholder="مفتوح (أعلى من)" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fs-8 fw-bold text-gray-700">سعر الكيلومتر (ج.م/كم):</label>
+                    <input type="number" step="0.5" name="price_tiers[${tierIndex}][price_per_km]" value="" class="form-control form-control-solid" placeholder="مثال: 15" required />
+                </div>
+                <div class="col-md-2 mt-4 text-end">
+                    <button type="button" class="btn btn-sm btn-icon btn-light-danger remove-tier-btn">
+                        <i class="ki-outline ki-trash fs-4"></i>
+                    </button>
+                </div>
+            `;
+            tiersContainer.appendChild(row);
+            tierIndex++;
+        });
+
+        tiersContainer.addEventListener('click', function (e) {
+            const btn = e.target.closest('.remove-tier-btn');
+            if (btn) {
+                btn.closest('.tier-row').remove();
+            }
+        });
+    }
+
+    // Models Repeater JS
+    const addModelBtn = document.getElementById('add-model-btn');
+    const modelsContainer = document.getElementById('models-container');
+    if (addModelBtn && modelsContainer) {
+        addModelBtn.addEventListener('click', function () {
+            const div = document.createElement('div');
+            div.className = 'model-row mb-3';
+            div.innerHTML = `
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <input type="text" name="models[]" class="form-control form-control-solid" placeholder="Model Name">
+                    </div>
+                    <div class="col-md-5">
+                        <input type="number" name="min_years[]" class="form-control form-control-solid" placeholder="Minimum Year" min="1900" max="2100">
+                    </div>
+                    <div class="col-md-1">
+                        <button class="btn btn-light-danger w-100 remove-model-btn" type="button">
+                            <i class="ki-outline ki-trash fs-5"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            modelsContainer.appendChild(div);
+        });
+
+        modelsContainer.addEventListener('click', function (e) {
+            const btn = e.target.closest('.remove-model-btn');
+            if (btn) {
+                btn.closest('.model-row').remove();
+            }
+        });
+    }
+});
+</script>
+@endpush
