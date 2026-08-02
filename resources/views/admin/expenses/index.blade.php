@@ -110,13 +110,13 @@
         <form action="{{ route('admin.expenses.sync') }}" method="POST" class="m-0">
             @csrf
             <button type="submit" class="btn btn-light-primary btn-active-light-primary me-2">
-                <i class="ti ti-refresh fs-4 me-2"></i> تحديث المصروفات التلقائية
+                <i class="ki-outline ki-arrows-loop fs-4 me-1"></i> تحديث المصروفات التلقائية
             </button>
         </form>
 
         <!-- Create Button -->
         <a href="{{ route('admin.expenses.create') }}" class="btn btn-primary">
-            <i class="ti ti-plus fs-4 me-2"></i> إضافة مصروف يدوي
+            <i class="ki-outline ki-plus fs-4 me-1"></i> إضافة مصروف يدوي
         </a>
     </div>
 </div>
@@ -148,11 +148,11 @@
                 </div>
                 <div class="col-md-2 d-flex align-items-center gap-2 mt-7">
                     <button type="submit" class="btn btn-primary fw-bold w-100">
-                        <i class="ti ti-filter me-1"></i> تصفية
+                        <i class="ki-outline ki-filter me-1"></i> تصفية
                     </button>
                     @if(request()->hasAny(['category', 'month', 'keyword']))
                         <a href="{{ route('admin.expenses.index') }}" class="btn btn-light-danger fw-bold" title="إعادة تعيين">
-                            <i class="ti ti-x"></i>
+                            <i class="ki-outline ki-cross fs-4"></i>
                         </a>
                     @endif
                 </div>
@@ -228,7 +228,7 @@
                             <td>
                                 @if($item->invoice_path)
                                     <a href="{{ asset('storage/' . $item->invoice_path) }}" target="_blank" class="btn btn-sm btn-icon btn-light-primary" title="عرض الفاتورة المرفقة">
-                                        <i class="ti ti-file-description fs-5"></i>
+                                        <i class="ki-outline ki-file fs-4"></i>
                                     </a>
                                 @else
                                     <span class="text-gray-400">-</span>
@@ -239,7 +239,7 @@
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-icon btn-light-danger" title="حذف">
-                                        <i class="ti ti-trash fs-5"></i>
+                                        <i class="ki-outline ki-trash fs-4"></i>
                                     </button>
                                 </form>
                             </td>
