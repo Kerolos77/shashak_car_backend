@@ -97,8 +97,12 @@
 <!-- Controls & Actions -->
 <div class="d-flex flex-stack justify-content-between mb-5">
     <div class="d-flex align-items-center position-relative my-1">
-        <!-- Optional Search or description -->
         <span class="fs-4 fw-semibold text-gray-700">قائمة تفاصيل كافة المصروفات</span>
+        @if(request()->hasAny(['category', 'month', 'keyword']))
+            <span class="badge bg-light-primary text-primary ms-3">
+                مجموع النتائج المفلترة: {{ number_format($filteredTotalEgp ?? 0, 2) }} ج.م
+            </span>
+        @endif
     </div>
     
     <div class="d-flex align-items-center gap-2">
@@ -114,6 +118,46 @@
         <a href="{{ route('admin.expenses.create') }}" class="btn btn-primary">
             <i class="ti ti-plus fs-4 me-2"></i> إضافة مصروف يدوي
         </a>
+    </div>
+</div>
+
+<!-- Filter Form Card -->
+<div class="card mb-5 border-0 shadow-sm">
+    <div class="card-body p-4">
+        <form method="GET" action="{{ route('admin.expenses.index') }}">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold fs-7 mb-1">تصفية بحسب التصنيف</label>
+                    <select name="category" class="form-select form-select-solid">
+                        <option value="">جميع التصنيفات</option>
+                        <option value="digitalocean" {{ request('category') === 'digitalocean' ? 'selected' : '' }}>ديجيتال أوشن (سيرفر)</option>
+                        <option value="google_cloud" {{ request('category') === 'google_cloud' ? 'selected' : '' }}>جوجل كلاود (Firebase/Gemini)</option>
+                        <option value="sms" {{ request('category') === 'sms' ? 'selected' : '' }}>رسائل SMS النصية</option>
+                        <option value="domain" {{ request('category') === 'domain' ? 'selected' : '' }}>تجديد الدومين</option>
+                        <option value="paymob" {{ request('category') === 'paymob' ? 'selected' : '' }}>عمولات Paymob</option>
+                        <option value="other" {{ request('category') === 'other' ? 'selected' : '' }}>مصاريف أخرى</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold fs-7 mb-1">تصفية بحسب الشهر والسنة</label>
+                    <input type="month" name="month" class="form-control form-control-solid" value="{{ request('month') }}" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold fs-7 mb-1">بحث في التفاصيل / الوصف</label>
+                    <input type="text" name="keyword" class="form-control form-control-solid" placeholder="ابحث برقم الفاتورة أو الوصف..." value="{{ request('keyword') }}" />
+                </div>
+                <div class="col-md-2 d-flex align-items-center gap-2 mt-7">
+                    <button type="submit" class="btn btn-primary fw-bold w-100">
+                        <i class="ti ti-filter me-1"></i> تصفية
+                    </button>
+                    @if(request()->hasAny(['category', 'month', 'keyword']))
+                        <a href="{{ route('admin.expenses.index') }}" class="btn btn-light-danger fw-bold" title="إعادة تعيين">
+                            <i class="ti ti-x"></i>
+                        </a>
+                    @endif
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 

@@ -14,24 +14,44 @@ class ExpenseController extends BaseController
         parent::__construct($model);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $rows = $this->model->orderBy('expense_date', 'DESC')->paginate(15);
+        $query = Expense::query();
 
-        // Calculate statistics in EGP
-        $todayExpenses = $this->model->whereDate('expense_date', today())->sum('amount_egp');
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
 
-        $monthExpenses = $this->model->whereBetween('expense_date', [
+        if ($request->filled('month')) {
+            $parts = explode('-', $request->month);
+            if (count($parts) == 2) {
+                $query->whereYear('expense_date', $parts[0])
+                      ->whereMonth('expense_date', $parts[1]);
+            }
+        }
+
+        if ($request->filled('keyword')) {
+            $query->where('description', 'like', '%' . $request->keyword . '%');
+        }
+
+        $rows = $query->orderBy('expense_date', 'DESC')->paginate(15)->appends($request->all());
+
+        // Stats
+        $filteredTotalEgp = (clone $query)->sum('amount_egp');
+
+        $todayExpenses = Expense::whereDate('expense_date', today())->sum('amount_egp');
+
+        $monthExpenses = Expense::whereBetween('expense_date', [
             now()->startOfMonth()->toDateString(), 
             now()->endOfMonth()->toDateString()
         ])->sum('amount_egp');
 
-        $yearExpenses = $this->model->whereBetween('expense_date', [
+        $yearExpenses = Expense::whereBetween('expense_date', [
             now()->startOfYear()->toDateString(), 
             now()->endOfYear()->toDateString()
         ])->sum('amount_egp');
 
-        // Net income (profit/loss) for this month: sum(incomes.amount) - sum(expenses.amount_egp)
+        // Net income for this month
         $monthIncomes = DB::table('incomes')
             ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
             ->sum('amount');
@@ -39,7 +59,7 @@ class ExpenseController extends BaseController
         $netProfit = $monthIncomes - $monthExpenses;
 
         $pageTitle = 'إدارة المصروفات';
-        $pageDes = 'هنا يمكنك عرض المصروفات التشغيلية للمشروع وإدخال المصروفات اليدوية';
+        $pageDes = 'تصفية وعرض المصروفات التشغيلية للمشروع وإدخال المصروفات اليدوية';
 
         return view('admin.expenses.index', compact(
             'rows',
@@ -48,6 +68,7 @@ class ExpenseController extends BaseController
             'yearExpenses',
             'monthIncomes',
             'netProfit',
+            'filteredTotalEgp',
             'pageTitle',
             'pageDes'
         ));
