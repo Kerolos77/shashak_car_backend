@@ -97,27 +97,31 @@ class GoogleCloudBillingService
                 $description = "تكلفة استهلاك جوجل كلاود ({$serviceName}) لشهـر {$invoiceMonth} (القيمة: \${$cost})";
                 $expenseDate = date('Y-m-t', strtotime($invoiceMonth . '-01')); // End of month
 
-                $expense = Expense::updateOrCreate([
-                    'category' => 'google_cloud',
-                    'reference_id' => $refId,
-                ], [
-                    'amount' => $cost,
-                    'currency' => $currency,
-                    'exchange_rate' => $exchangeRate,
-                    'amount_egp' => $cost * $exchangeRate,
-                    'description' => $description,
-                    'expense_date' => $expenseDate,
-                    'created_at' => $expenseDate . ' 12:00:00',
-                    'is_automated' => true,
-                ]);
+                $expense = Expense::where('category', 'google_cloud')
+                    ->where('reference_id', $refId)
+                    ->first();
 
-                // Always force update the expense_date and created_at
-                $expense->expense_date = $expenseDate;
-                $expense->created_at = $expenseDate . ' 12:00:00';
-                $expense->save();
-
-                if ($expense->wasRecentlyCreated) {
+                if (!$expense) {
+                    Expense::create([
+                        'category' => 'google_cloud',
+                        'reference_id' => $refId,
+                        'amount' => $cost,
+                        'currency' => $currency,
+                        'exchange_rate' => $exchangeRate,
+                        'amount_egp' => $cost * $exchangeRate,
+                        'description' => $description,
+                        'expense_date' => $expenseDate,
+                        'created_at' => $expenseDate . ' 12:00:00',
+                        'is_automated' => true,
+                    ]);
                     $importedCount++;
+                } else {
+                    // Preserve existing historical exchange_rate & amount_egp! Only update date if needed.
+                    $expense->expense_date = $expenseDate;
+                    if ($expense->created_at->format('Y-m-d') === now()->format('Y-m-d')) {
+                        $expense->created_at = $expenseDate . ' 12:00:00';
+                    }
+                    $expense->save();
                 }
             }
 

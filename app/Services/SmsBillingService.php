@@ -49,27 +49,31 @@ class SmsBillingService
                 $refId = "sms_cost_{$year}_{$month}";
                 $description = "تكلفة إرسال رسائل SMS لشهـر {$monthKey} (إجمالي الرسائل: {$totalSms} رسالة بسعر {$costPerSms} ج.م/رسالة)";
 
-                $expense = Expense::updateOrCreate([
-                    'category' => 'sms',
-                    'reference_id' => $refId,
-                ], [
-                    'amount' => $totalCostEgp,
-                    'currency' => 'EGP',
-                    'exchange_rate' => 1.00,
-                    'amount_egp' => $totalCostEgp,
-                    'description' => $description,
-                    'expense_date' => $expenseDate,
-                    'created_at' => $expenseDate . ' 23:59:59',
-                    'is_automated' => true,
-                ]);
+                $expense = Expense::where('category', 'sms')
+                    ->where('reference_id', $refId)
+                    ->first();
 
-                // Always force update the expense_date and created_at
-                $expense->expense_date = $expenseDate;
-                $expense->created_at = $expenseDate . ' 23:59:59';
-                $expense->save();
-
-                if ($expense->wasRecentlyCreated) {
+                if (!$expense) {
+                    Expense::create([
+                        'category' => 'sms',
+                        'reference_id' => $refId,
+                        'amount' => $totalCostEgp,
+                        'currency' => 'EGP',
+                        'exchange_rate' => 1.00,
+                        'amount_egp' => $totalCostEgp,
+                        'description' => $description,
+                        'expense_date' => $expenseDate,
+                        'created_at' => $expenseDate . ' 23:59:59',
+                        'is_automated' => true,
+                    ]);
                     $importedCount++;
+                } else {
+                    // Preserve existing historical SMS cost! Only update date if needed.
+                    $expense->expense_date = $expenseDate;
+                    if ($expense->created_at->format('Y-m-d') === now()->format('Y-m-d')) {
+                        $expense->created_at = $expenseDate . ' 23:59:59';
+                    }
+                    $expense->save();
                 }
             }
 

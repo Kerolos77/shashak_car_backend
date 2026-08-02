@@ -72,27 +72,31 @@ class DigitalOceanBillingService
                 $description = "فاتورة سيرفر ديجيتال أوشن للفترة {$period} (رقم الفاتورة: #{$invoiceId}، القيمة: \${$amountUsd})";
 
                 // Unique key: category + reference_id
-                $expense = Expense::updateOrCreate([
-                    'category' => 'digitalocean',
-                    'reference_id' => $invoiceId,
-                ], [
-                    'amount' => $amountUsd,
-                    'currency' => 'USD',
-                    'exchange_rate' => $exchangeRate,
-                    'amount_egp' => $amountUsd * $exchangeRate,
-                    'description' => $description,
-                    'expense_date' => $invoiceDate,
-                    'created_at' => $invoiceDate . ' 12:00:00',
-                    'is_automated' => true,
-                ]);
+                $expense = Expense::where('category', 'digitalocean')
+                    ->where('reference_id', $invoiceId)
+                    ->first();
 
-                // Always force update the expense_date and created_at
-                $expense->expense_date = $invoiceDate;
-                $expense->created_at = $invoiceDate . ' 12:00:00';
-                $expense->save();
-
-                if ($expense->wasRecentlyCreated) {
+                if (!$expense) {
+                    Expense::create([
+                        'category' => 'digitalocean',
+                        'reference_id' => $invoiceId,
+                        'amount' => $amountUsd,
+                        'currency' => 'USD',
+                        'exchange_rate' => $exchangeRate,
+                        'amount_egp' => $amountUsd * $exchangeRate,
+                        'description' => $description,
+                        'expense_date' => $invoiceDate,
+                        'created_at' => $invoiceDate . ' 12:00:00',
+                        'is_automated' => true,
+                    ]);
                     $importedCount++;
+                } else {
+                    // Preserve existing historical exchange_rate & amount_egp! Only update date if needed.
+                    $expense->expense_date = $invoiceDate;
+                    if ($expense->created_at->format('Y-m-d') === now()->format('Y-m-d')) {
+                        $expense->created_at = $invoiceDate . ' 12:00:00';
+                    }
+                    $expense->save();
                 }
             }
 
