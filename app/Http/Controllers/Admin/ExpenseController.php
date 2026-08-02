@@ -14,8 +14,9 @@ class ExpenseController extends BaseController
         parent::__construct($model);
     }
 
-    public function index(Request $request)
+    public function index()
     {
+        $request = request();
         $query = Expense::query();
 
         if ($request->filled('category')) {
