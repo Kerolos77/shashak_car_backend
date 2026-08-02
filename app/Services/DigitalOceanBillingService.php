@@ -48,12 +48,27 @@ class DigitalOceanBillingService
                 $amountUsd = floatval($invoice['amount'] ?? 0);
                 if ($amountUsd <= 0) continue; // Skip $0 or unpaid/empty invoices
 
-                // Date when the invoice was created
-                $invoiceDate = isset($invoice['invoice_date']) 
-                    ? date('Y-m-d', strtotime($invoice['invoice_date'])) 
-                    : now()->toDateString();
-
                 $period = $invoice['invoice_period'] ?? '';
+                $invoiceDate = null;
+
+                if (!empty($period)) {
+                    $periodParts = explode('-', $period);
+                    if (count($periodParts) == 2) {
+                        $year = intval($periodParts[0]);
+                        $month = intval($periodParts[1]);
+                        $invoiceDate = \Carbon\Carbon::createFromDate($year, $month, 1)->endOfMonth()->toDateString();
+                    }
+                }
+
+                if (!$invoiceDate) {
+                    $rawDate = $invoice['invoice_date'] ?? $invoice['updated_at'] ?? $invoice['created_at'] ?? null;
+                    if ($rawDate) {
+                        $invoiceDate = date('Y-m-d', strtotime($rawDate));
+                    } else {
+                        $invoiceDate = now()->toDateString();
+                    }
+                }
+
                 $description = "فاتورة سيرفر ديجيتال أوشن للفترة {$period} (رقم الفاتورة: #{$invoiceId}، القيمة: \${$amountUsd})";
 
                 // Unique key: category + reference_id
@@ -67,8 +82,14 @@ class DigitalOceanBillingService
                     'amount_egp' => $amountUsd * $exchangeRate,
                     'description' => $description,
                     'expense_date' => $invoiceDate,
+                    'created_at' => $invoiceDate . ' 12:00:00',
                     'is_automated' => true,
                 ]);
+
+                // Always force update the expense_date and created_at
+                $expense->expense_date = $invoiceDate;
+                $expense->created_at = $invoiceDate . ' 12:00:00';
+                $expense->save();
 
                 if ($expense->wasRecentlyCreated) {
                     $importedCount++;

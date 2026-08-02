@@ -63,6 +63,11 @@ class SmsBillingService
                     'is_automated' => true,
                 ]);
 
+                // Always force update the expense_date and created_at
+                $expense->expense_date = $expenseDate;
+                $expense->created_at = $expenseDate . ' 23:59:59';
+                $expense->save();
+
                 if ($expense->wasRecentlyCreated) {
                     $importedCount++;
                 }
