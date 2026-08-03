@@ -10,10 +10,31 @@ class CouponApiController extends Controller
 {
     public function index(Request $request)
     {
+        // Auto-create user_coupons table if missing
+        if (!\Illuminate\Support\Facades\Schema::hasTable('user_coupons')) {
+            try {
+                \Illuminate\Support\Facades\Schema::create('user_coupons', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->id();
+                    $table->foreignId('coupon_id')->constrained('coupons')->onDelete('cascade');
+                    $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+                    $table->boolean('is_used')->default(false);
+                    $table->timestamps();
+
+                    $table->unique(['coupon_id', 'user_id']);
+                });
+            } catch (\Exception $e) {
+                \Log::error("Failed to auto-create user_coupons table: " . $e->getMessage());
+            }
+        }
+
         $user = auth()->user();
         $userId = $user ? $user->id : null;
 
-        $coupons = Coupon::where('is_active', true)
+        $coupons = Coupon::where(function ($q) {
+                $q->where('is_active', 1)
+                  ->orWhere('is_active', true)
+                  ->orWhere('is_active', '1');
+            })
             ->where(function ($q) {
                 $q->whereNull('expires_at')
                   ->orWhere('expires_at', '>', now());
@@ -23,7 +44,9 @@ class CouponApiController extends Controller
                   ->orWhereColumn('used_count', '<', 'usage_limit');
             })
             ->where(function ($q) use ($userId) {
-                $q->where('is_public', true);
+                $q->where('is_public', 1)
+                  ->orWhere('is_public', true)
+                  ->orWhereNull('is_public');
                 if ($userId) {
                     $q->orWhereHas('userCoupons', function ($uq) use ($userId) {
                         $uq->where('user_id', $userId)->where('is_used', false);
@@ -36,23 +59,23 @@ class CouponApiController extends Controller
             ->filter(function ($coupon) use ($user) {
                 if (!$user) return true;
                 $userUsageCount = $coupon->usages()->where('user_id', $user->id)->count();
-                return $userUsageCount < $coupon->user_limit;
+                return $userUsageCount < ($coupon->user_limit ?? 1);
             })
             ->values()
             ->map(function ($coupon) {
                 return [
                     'id' => $coupon->id,
                     'code' => $coupon->code,
-                    'title' => $coupon->title ?? 'خصم مميز',
-                    'type' => $coupon->type,
+                    'title' => $coupon->title ?? 'كوبون خصم',
+                    'type' => $coupon->type ?? 'percentage',
                     'value' => floatval($coupon->value),
                     'max_discount' => floatval($coupon->max_discount ?? 0),
                     'min_order' => floatval($coupon->min_order ?? 0),
-                    'user_limit' => intval($coupon->user_limit),
+                    'user_limit' => intval($coupon->user_limit ?? 1),
                     'expires_at' => $coupon->expires_at ? $coupon->expires_at->toDateTimeString() : null,
                     'service_id' => $coupon->service_id,
                     'service_name' => $coupon->service->name ?? null,
-                    'is_public' => (bool) $coupon->is_public,
+                    'is_public' => (bool) ($coupon->is_public ?? true),
                 ];
             });
 

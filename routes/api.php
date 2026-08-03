@@ -86,6 +86,10 @@ Route::group(['prefix' => 'v1', 'as' => 'api.', 'middleware' => ['auth:sanctum']
     Route::post('packages/buy', [\App\Http\Controllers\Api\V1\PackageApiController::class, 'buy']);
     Route::get('packages/status', [\App\Http\Controllers\Api\V1\PackageApiController::class, 'status']);
 
+    // Unified Coupons (Both for /coupons and /user/coupons)
+    Route::get('coupons', [\App\Http\Controllers\Api\V1\CouponApiController::class, 'index']);
+    Route::post('coupons/validate', [\App\Http\Controllers\Api\V1\CouponApiController::class, 'validateCoupon']);
+
     Route::post('driver/registration', [DriverApiController::class, 'driver_registration']);
     Route::post('driver/update-service', [DriverApiController::class, 'change_service']);
 
