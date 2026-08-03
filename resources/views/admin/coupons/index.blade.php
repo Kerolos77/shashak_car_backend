@@ -182,11 +182,39 @@
                         </select>
                     </div>
 
-                    <div class="mb-5 d-none" id="specificUserWrapper">
-                        <label class="form-label fw-semibold fs-6">اختر العميل المستهدف <span class="text-danger">*</span></label>
-                        <select name="user_id" id="fcmUserSelect" class="form-select form-select-solid">
-                            <option value="">اختر العميل...</option>
+                    <div class="mb-5 d-none p-4 bg-light rounded-3 border" id="specificUserWrapper">
+                        <label class="form-label fw-bolder fs-6 mb-2 text-dark">
+                            <i class="ki-outline ki-user me-1 text-primary"></i> البحث واختيار العميل المستهدف <span class="text-danger">*</span>
+                        </label>
+                        
+                        <!-- Search Box Input -->
+                        <div class="position-relative mb-3">
+                            <input type="text" 
+                                   id="userSearchInput" 
+                                   class="form-control form-control-solid pe-10" 
+                                   placeholder="🔍 اكتب للبحث بالاسم، رقم الموبايل، أو البريد الإلكتروني..." 
+                                   autocomplete="off" />
+                            <span id="userSearchSpinner" class="spinner-border spinner-border-sm position-absolute top-50 end-0 translate-middle-y me-3 d-none text-primary"></span>
+                        </div>
+
+                        <!-- User Select Dropdown -->
+                        <select name="user_id" id="fcmUserSelect" class="form-select form-select-solid fw-semibold" size="5" style="max-height: 180px;">
+                            <option value="" disabled class="text-muted p-2">جاري تحميل العملاء...</option>
                         </select>
+
+                        <!-- Selected User Info Card -->
+                        <div id="selectedUserInfo" class="mt-3 p-3 bg-white rounded border d-none">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <div class="fw-bolder fs-6 text-dark" id="infoUserName">-</div>
+                                    <div class="text-muted fs-7 mt-1">
+                                        <span id="infoUserPhone" class="me-3"><i class="ki-outline ki-phone fs-7 me-1"></i> -</span>
+                                        <span id="infoUserEmail"><i class="ki-outline ki-sms fs-7 me-1"></i> -</span>
+                                    </div>
+                                </div>
+                                <div id="infoFcmBadge"></div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mb-5">
@@ -222,6 +250,7 @@
 $(document).ready(function() {
     let currentCouponData = {};
     let currentFcmUrl = '';
+    let searchTimer = null;
 
     $('.coupon-status-toggle').on('change', function () {
         var $self = $(this);
@@ -307,27 +336,81 @@ $(document).ready(function() {
     $('#fcmTargetSelect').on('change', function() {
         if ($(this).val() === 'specific_user') {
             $('#specificUserWrapper').removeClass('d-none');
-            loadUsersForSelect();
+            loadUsersForSelect('');
         } else {
             $('#specificUserWrapper').addClass('d-none');
         }
     });
 
-    function loadUsersForSelect() {
+    $('#userSearchInput').on('keyup input', function() {
+        clearTimeout(searchTimer);
+        const query = $(this).val();
+        $('#userSearchSpinner').removeClass('d-none');
+        searchTimer = setTimeout(function() {
+            loadUsersForSelect(query);
+        }, 300);
+    });
+
+    function loadUsersForSelect(query = '') {
         const $select = $('#fcmUserSelect');
-        if ($select.children('option').length <= 1) {
-            $.ajax({
-                url: '{{ route("admin.coupons.search-users") }}',
-                type: 'GET',
-                success: function(users) {
-                    $select.empty().append('<option value="">اختر العميل...</option>');
+        $('#userSearchSpinner').removeClass('d-none');
+
+        $.ajax({
+            url: '{{ route("admin.coupons.search-users") }}',
+            type: 'GET',
+            data: { q: query },
+            success: function(users) {
+                $select.empty();
+                if (users.length === 0) {
+                    $select.append('<option value="" disabled class="text-danger p-2">❌ لم يتم العثور على عملاء يطابقون البحث</option>');
+                } else {
                     users.forEach(function(u) {
-                        $select.append(`<option value="${u.id}">${u.name} - ${u.phone_number ?? 'بدون رقم'}</option>`);
+                        const phone = u.phone_number ? u.phone_number : 'بدون رقم هاتف';
+                        const email = u.email ? u.email : 'بدون إيميل';
+                        const fcmTag = u.fcm_token ? '🟢 يمتلك FCM' : '🔴 بدون FCM';
+                        $select.append(`
+                            <option value="${u.id}" 
+                                    data-name="${u.name}" 
+                                    data-phone="${phone}" 
+                                    data-email="${email}" 
+                                    data-fcm="${u.fcm_token ? 1 : 0}" 
+                                    class="p-2 border-bottom">
+                                👤 ${u.name} | 📱 ${phone} | ✉️ ${email} (${fcmTag})
+                            </option>
+                        `);
                     });
                 }
-            });
-        }
+            },
+            error: function() {
+                $select.empty().append('<option value="" disabled class="text-danger p-2">حدث خطأ أثناء تحميل العملاء</option>');
+            },
+            complete: function() {
+                $('#userSearchSpinner').addClass('d-none');
+            }
+        });
     }
+
+    $('#fcmUserSelect').on('change', function() {
+        const $selected = $(this).find('option:selected');
+        if ($selected.val()) {
+            const name = $selected.data('name');
+            const phone = $selected.data('phone');
+            const email = $selected.data('email');
+            const hasFcm = $selected.data('fcm') == 1;
+
+            $('#infoUserName').text(name);
+            $('#infoUserPhone').html('<i class="ki-outline ki-phone fs-7 me-1"></i> ' + phone);
+            $('#infoUserEmail').html('<i class="ki-outline ki-sms fs-7 me-1"></i> ' + email);
+
+            if (hasFcm) {
+                $('#infoFcmBadge').html('<span class="badge bg-light-success text-success fw-bold">🟢 يستقبل الإشعارات (FCM)</span>');
+            } else {
+                $('#infoFcmBadge').html('<span class="badge bg-light-danger text-danger fw-bold">🔴 لا يمتلك رمز FCM</span>');
+            }
+
+            $('#selectedUserInfo').removeClass('d-none');
+        }
+    });
 
     $('#sendFcmForm').on('submit', function(e) {
         e.preventDefault();

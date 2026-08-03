@@ -177,8 +177,9 @@ class CouponController extends Controller
                         ->orWhere('email', 'like', "%{$q}%");
                 });
             })
-            ->select('id', 'name', 'phone_number')
-            ->limit(20)
+            ->select('id', 'name', 'phone_number', 'email', 'fcm_token')
+            ->orderBy('id', 'desc')
+            ->limit(50)
             ->get();
 
         return response()->json($users);
