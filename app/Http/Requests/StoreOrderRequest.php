@@ -27,9 +27,15 @@ class StoreOrderRequest extends FormRequest
                 'nullable',
             ],
             'coupon_id' => [
-                'string',
+                'integer',
                 'nullable',
             ],
+            'coupon_code' => [
+                'string',
+                'nullable',
+                'max:50',
+            ],
+
             'distance' => [
                 'string',
                 'nullable',

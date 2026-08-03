@@ -63,6 +63,9 @@ class Order extends Model
         'wallet_paid' => 'decimal:2',
         'card_paid' => 'decimal:2',
         'cash_paid' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
+        'original_amount' => 'decimal:2',
+
         'assigned_at' => 'datetime',
         'arrived_at' => 'datetime',
         'on_trip_at' => 'datetime',
@@ -109,6 +112,16 @@ class Order extends Model
     public function reviews()
     {
         return $this->hasMany(Review::class);
+    }
+
+    public function coupon()
+    {
+        return $this->belongsTo(Coupon::class);
+    }
+
+    public function couponUsage()
+    {
+        return $this->hasOne(CouponUsage::class);
     }
 
     public function getCreatedAtAttribute($value)

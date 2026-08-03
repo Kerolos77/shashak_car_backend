@@ -636,7 +636,56 @@ class OrderApiController extends Controller
 
         $order = Order::create($baseData);
 
-        // For 'wallet' payment type, just validate they have enough balance. 
+        // ── Apply coupon if provided ─────────────────────────────────────────
+        if ($request->filled('coupon_code') || $request->filled('coupon_id')) {
+            $coupon = null;
+
+            if ($request->filled('coupon_id')) {
+                $coupon = \App\Models\Coupon::find($request->coupon_id);
+            }
+
+            if (!$coupon && $request->filled('coupon_code')) {
+                $coupon = \App\Models\Coupon::where('code', trim($request->coupon_code))->first();
+            }
+
+            if ($coupon) {
+                $orderAmount    = floatval($request->offer_rate ?? 0);
+                $check          = $coupon->isValidForUser($user->id, $request->service_id, $orderAmount);
+
+                if ($check['valid']) {
+                    $discountAmount  = $coupon->calculateDiscount($orderAmount);
+                    $discountedRate  = max(0, $orderAmount - $discountAmount);
+
+                    // Update the order with coupon info
+                    $order->update([
+                        'coupon_id'       => $coupon->id,
+                        'coupon_code'     => $coupon->code,
+                        'discount_amount' => round($discountAmount, 2),
+                        'original_amount' => $orderAmount,
+                        'offer_rate'      => $discountedRate,
+                        'final_rate'      => $discountedRate,
+                    ]);
+
+                    // Record coupon usage
+                    \App\Models\CouponUsage::create([
+                        'coupon_id'       => $coupon->id,
+                        'user_id'         => $user->id,
+                        'order_id'        => $order->id,
+                        'discount_amount' => round($discountAmount, 2),
+                    ]);
+
+                    // Increment global used count
+                    $coupon->increment('used_count');
+
+                    \Log::info("Coupon '{$coupon->code}' applied to order #{$order->id}. Discount: {$discountAmount} EGP.");
+                } else {
+                    \Log::warning("Coupon '{$coupon->code}' failed validation for order #{$order->id}: {$check['message']}");
+                }
+            }
+        }
+        // ────────────────────────────────────────────────────────────────────
+
+        // For 'wallet' payment type, just validate they have enough balance.
         // Actual deduction happens at acceptOffer/driverAcceptUserPrice.
         if ($request->payment_type == 'wallet') {
             $user = User::find(Auth::user()->id);
@@ -646,6 +695,7 @@ class OrderApiController extends Controller
         }
 
         $order = Order::with('user')->find($order->id);
+
         $order->user_service_id = $request->service_id ?? 0;
         TripStatusUpdated::dispatch($order);
 
