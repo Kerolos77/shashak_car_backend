@@ -97,6 +97,12 @@
                                                 class="btn btn-icon btn-light-primary btn-sm me-1 btn-send-fcm" 
                                                 data-id="{{ $row->id }}" 
                                                 data-code="{{ $row->code }}"
+                                                data-type="{{ $row->type }}"
+                                                data-value="{{ floatval($row->value) }}"
+                                                data-max-discount="{{ $row->max_discount ? floatval($row->max_discount) : 0 }}"
+                                                data-min-order="{{ $row->min_order ? floatval($row->min_order) : 0 }}"
+                                                data-user-limit="{{ $row->user_limit }}"
+                                                data-expires-at="{{ $row->expires_at ? $row->expires_at->format('Y-m-d H:i') : '' }}"
                                                 data-url="{{ route('admin.coupons.send-fcm', $row->id) }}"
                                                 title="إرسال إشعار FCM للمستخدمين">
                                             <i class="ki-outline ki-send fs-4"></i>
@@ -130,7 +136,7 @@
 
 <!-- Modal: Send FCM Coupon Notification -->
 <div class="modal fade" id="sendCouponFcmModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered mw-650px">
+    <div class="modal-dialog modal-dialog-centered mw-700px">
         <div class="modal-content rounded-4 border-0 shadow">
             <div class="modal-header border-0 pb-0">
                 <div class="d-flex align-items-center gap-3">
@@ -147,6 +153,24 @@
             <form id="sendFcmForm">
                 @csrf
                 <div class="modal-body p-6">
+
+                    <!-- Template Selector for Marketing -->
+                    <div class="mb-5 bg-light-primary p-4 rounded-3 border border-primary border-opacity-25">
+                        <label class="form-label fw-bolder fs-6 text-primary d-flex align-items-center justify-content-between mb-2">
+                            <span><i class="ki-outline ki-element-plus me-1 fs-5"></i> اختر قالب الإشعار (Marketing Template)</span>
+                            <span class="badge bg-primary text-white fs-9">فريق التسويق</span>
+                        </label>
+                        <select id="fcmTemplateSelect" class="form-select form-select-solid border-primary border-opacity-25 fw-bold">
+                            <option value="detailed">🎉 قالب شامل (يتضمن كود الخصم، النسبة/المبلغ، الحد الأقصى، الصلاحية، وعدد الاستخدامات)</option>
+                            <option value="urgent">⏳ قالب عاجل (تذكير باقتراب انتهاء الكوبون)</option>
+                            <option value="vip">⭐ قالب عميل مميز (مكافأة ولاء وحصرية)</option>
+                            <option value="simple">🚗 قالب سريع مبسط</option>
+                            <option value="custom">✏️ قالب مخصص (إدخال وتعديل حر)</option>
+                        </select>
+                        <div class="fs-8 text-muted mt-2">يتم تجهيز تفاصيل الكوبون (الخصم، الحد الأقصى، الصلاحية، الاستخدامات) تلقائياً بناءً على بيانات الكوبون.</div>
+                    </div>
+
+                    <!-- Target Segment -->
                     <div class="mb-5">
                         <label class="form-label fw-semibold fs-6">الفئة المستهدفة للإرسال <span class="text-danger">*</span></label>
                         <select name="target" id="fcmTargetSelect" class="form-select form-select-solid" required>
@@ -172,7 +196,7 @@
 
                     <div class="mb-5">
                         <label class="form-label fw-semibold fs-6">نص الرسالة (Notification Body) <span class="text-danger">*</span></label>
-                        <textarea name="body" id="fcmBody" class="form-control form-control-solid" rows="3" required placeholder="مثال: استخدم الكوبون واحصل على خصم مميز في رحلتك القادمة!"></textarea>
+                        <textarea name="body" id="fcmBody" class="form-control form-control-solid" rows="4" required placeholder="مثال: استخدم الكوبون واحصل على خصم مميز في رحلتك القادمة!"></textarea>
                     </div>
 
                     <div class="mb-3">
@@ -196,6 +220,7 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
+    let currentCouponData = {};
     let currentFcmUrl = '';
 
     $('.coupon-status-toggle').on('change', function () {
@@ -221,16 +246,62 @@ $(document).ready(function() {
     });
 
     $('.btn-send-fcm').on('click', function() {
-        const couponCode = $(this).data('code');
-        currentFcmUrl = $(this).data('url');
+        const $btn = $(this);
+        currentFcmUrl = $btn.data('url');
 
-        $('#modalCouponCode').text(couponCode);
-        $('#fcmTitle').val('خصم خاص لك من شقشق! 🎉');
-        $('#fcmBody').val(`استخدم الكوبون (${couponCode}) الآن واحصل على خصم مميز في رحلتك القادمة! 🚗💨`);
+        currentCouponData = {
+            code: $btn.data('code'),
+            type: $btn.data('type'),
+            value: $btn.data('value'),
+            maxDiscount: $btn.data('max-discount'),
+            minOrder: $btn.data('min-order'),
+            userLimit: $btn.data('user-limit'),
+            expiresAt: $btn.data('expires-at')
+        };
+
+        $('#modalCouponCode').text(currentCouponData.code);
         $('#fcmTargetSelect').val('all_users').trigger('change');
+        $('#fcmTemplateSelect').val('detailed').trigger('change');
 
         const modal = new bootstrap.Modal(document.getElementById('sendCouponFcmModal'));
         modal.show();
+    });
+
+    $('#fcmTemplateSelect').on('change', function() {
+        const templateKey = $(this).val();
+        if (templateKey === 'custom') return;
+
+        const code = currentCouponData.code || '';
+        const type = currentCouponData.type || 'percentage';
+        const val = currentCouponData.value || 0;
+        const maxDiscount = currentCouponData.maxDiscount || 0;
+        const userLimit = currentCouponData.userLimit || 1;
+        const expiresAt = currentCouponData.expiresAt || '';
+
+        const valueStr = (type === 'percentage') ? `${val}%` : `${val} ج.م`;
+        const maxDiscountStr = (maxDiscount > 0) ? `${maxDiscount} ج.م` : 'بدون حد أقصى';
+        const expiresStr = expiresAt ? `حتى ${expiresAt}` : 'صالح لفترة مفتوحة';
+        const limitStr = `${userLimit} استخدامات لكل عميل`;
+
+        let title = '';
+        let body = '';
+
+        if (templateKey === 'detailed') {
+            title = `خصم ${valueStr} بكود (${code}) على رحلتك! 🎉`;
+            body = `احصل على خصم ${valueStr} (حد أقصى ${maxDiscountStr}) عند استخدام كود الخصم (${code}). الكوبون متاح ${expiresStr} وبحد مسموح ${limitStr}. احجز رحلتك الآن! 🚗💨`;
+        } else if (templateKey === 'urgent') {
+            title = `⏳ سارع بالاستفادة! خصم ${valueStr} ينتهي قريباً`;
+            body = `فرصة لا تعوض! كود الخصم (${code}) يعطيك خصم ${valueStr} (حتى ${maxDiscountStr}). العرض ${expiresStr}. استعمله قبل الانتهاء! ⏰`;
+        } else if (templateKey === 'vip') {
+            title = `⭐ خصم حصري لعملاء شقشق بقيمة ${valueStr}!`;
+            body = `لأنك عميل خاص، استخدم كود الخصم (${code}) للحصول على خصم ${valueStr} في رحلتك القادمة. الأقصى للخصم ${maxDiscountStr} متاح لـ ${limitStr}. 🚀`;
+        } else if (templateKey === 'simple') {
+            title = `خصم خاص لك من شقشق! 🎉`;
+            body = `استخدم الكوبون (${code}) الآن واحصل على خصم ${valueStr} في رحلتك القادمة! 🚗💨`;
+        }
+
+        $('#fcmTitle').val(title);
+        $('#fcmBody').val(body);
     });
 
     $('#fcmTargetSelect').on('change', function() {
