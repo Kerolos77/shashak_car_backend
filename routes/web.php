@@ -147,7 +147,9 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth:admi
     Route::resource('services', ServiceController::class);
 
     // Coupons
+    Route::get('coupons/search-users', [\App\Http\Controllers\Admin\CouponController::class, 'searchUsers'])->name('coupons.search-users');
     Route::post('coupons/{id}/toggle-active', [\App\Http\Controllers\Admin\CouponController::class, 'toggleActive'])->name('coupons.toggle-active');
+    Route::post('coupons/{id}/send-fcm', [\App\Http\Controllers\Admin\CouponController::class, 'sendFcmNotification'])->name('coupons.send-fcm');
     Route::resource('coupons', \App\Http\Controllers\Admin\CouponController::class);
 
     // Support Tickets

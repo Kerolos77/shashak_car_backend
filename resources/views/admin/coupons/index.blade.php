@@ -93,10 +93,18 @@
                                         </div>
                                     </td>
                                     <td>
+                                        <button type="button" 
+                                                class="btn btn-icon btn-light-primary btn-sm me-1 btn-send-fcm" 
+                                                data-id="{{ $row->id }}" 
+                                                data-code="{{ $row->code }}"
+                                                data-url="{{ route('admin.coupons.send-fcm', $row->id) }}"
+                                                title="إرسال إشعار FCM للمستخدمين">
+                                            <i class="ki-outline ki-send fs-4"></i>
+                                        </button>
                                         <form action="{{ route('admin.coupons.destroy', $row->id) }}" method="POST" class="d-inline" onsubmit="return confirm('هل أنت تأكد من حذف هذا الكوبون؟');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-icon btn-light-danger btn-sm">
+                                            <button type="submit" class="btn btn-icon btn-light-danger btn-sm" title="حذف الكوبون">
                                                 <i class="ki-outline ki-trash fs-4"></i>
                                             </button>
                                         </form>
@@ -119,11 +127,77 @@
 
     </div>
 </div>
+
+<!-- Modal: Send FCM Coupon Notification -->
+<div class="modal fade" id="sendCouponFcmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered mw-650px">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-light-primary p-3 rounded-circle">
+                        <i class="ki-outline ki-send fs-2 text-primary"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-0">إرسال كوبون خصم عبر إشعار (FCM)</h4>
+                        <span class="text-muted fs-7">الكوبون المستهدف: <strong id="modalCouponCode" class="text-primary fs-6"></strong></span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="sendFcmForm">
+                @csrf
+                <div class="modal-body p-6">
+                    <div class="mb-5">
+                        <label class="form-label fw-semibold fs-6">الفئة المستهدفة للإرسال <span class="text-danger">*</span></label>
+                        <select name="target" id="fcmTargetSelect" class="form-select form-select-solid" required>
+                            <option value="all_users">جميع العملاء النشطين (All Users)</option>
+                            <option value="inactive_users">العملاء الخاملين (بدون رحلات خلال آخر 30 يوماً)</option>
+                            <option value="active_vip">العملاء الأكثر نشاطاً وولاءً (5+ رحلات مكتملة)</option>
+                            <option value="all_drivers">جميع السائقين (All Drivers)</option>
+                            <option value="specific_user">عميل محدد (Specific User)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-5 d-none" id="specificUserWrapper">
+                        <label class="form-label fw-semibold fs-6">اختر العميل المستهدف <span class="text-danger">*</span></label>
+                        <select name="user_id" id="fcmUserSelect" class="form-select form-select-solid">
+                            <option value="">اختر العميل...</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-5">
+                        <label class="form-label fw-semibold fs-6">عنوان الإشعار (Notification Title) <span class="text-danger">*</span></label>
+                        <input type="text" name="title" id="fcmTitle" class="form-control form-control-solid" required placeholder="مثال: خصم خاص لك من شقشق!" />
+                    </div>
+
+                    <div class="mb-5">
+                        <label class="form-label fw-semibold fs-6">نص الرسالة (Notification Body) <span class="text-danger">*</span></label>
+                        <textarea name="body" id="fcmBody" class="form-control form-control-solid" rows="3" required placeholder="مثال: استخدم الكوبون واحصل على خصم مميز في رحلتك القادمة!"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-6">رابط صورة الإشعار (اختياري)</label>
+                        <input type="url" name="image_url" class="form-control form-control-solid" placeholder="https://example.com/banner.jpg" />
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary" id="btnSubmitFcm">
+                        <span class="indicator-label"><i class="ki-outline ki-send fs-4 me-1"></i> إرسال الإشعار الآن</span>
+                        <span class="indicator-progress d-none">جاري الإرسال... <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
 <script>
 $(document).ready(function() {
+    let currentFcmUrl = '';
+
     $('.coupon-status-toggle').on('change', function () {
         var $self = $(this);
         var url = $self.attr('data-url');
@@ -142,6 +216,79 @@ $(document).ready(function() {
             error: function () {
                 $self.prop('checked', !$self.prop('checked'));
                 toastr.error('حدث خطأ أثناء تعديل حالة الكوبون');
+            }
+        });
+    });
+
+    $('.btn-send-fcm').on('click', function() {
+        const couponCode = $(this).data('code');
+        currentFcmUrl = $(this).data('url');
+
+        $('#modalCouponCode').text(couponCode);
+        $('#fcmTitle').val('خصم خاص لك من شقشق! 🎉');
+        $('#fcmBody').val(`استخدم الكوبون (${couponCode}) الآن واحصل على خصم مميز في رحلتك القادمة! 🚗💨`);
+        $('#fcmTargetSelect').val('all_users').trigger('change');
+
+        const modal = new bootstrap.Modal(document.getElementById('sendCouponFcmModal'));
+        modal.show();
+    });
+
+    $('#fcmTargetSelect').on('change', function() {
+        if ($(this).val() === 'specific_user') {
+            $('#specificUserWrapper').removeClass('d-none');
+            loadUsersForSelect();
+        } else {
+            $('#specificUserWrapper').addClass('d-none');
+        }
+    });
+
+    function loadUsersForSelect() {
+        const $select = $('#fcmUserSelect');
+        if ($select.children('option').length <= 1) {
+            $.ajax({
+                url: '{{ route("admin.coupons.search-users") }}',
+                type: 'GET',
+                success: function(users) {
+                    $select.empty().append('<option value="">اختر العميل...</option>');
+                    users.forEach(function(u) {
+                        $select.append(`<option value="${u.id}">${u.name} - ${u.phone_number ?? 'بدون رقم'}</option>`);
+                    });
+                }
+            });
+        }
+    }
+
+    $('#sendFcmForm').on('submit', function(e) {
+        e.preventDefault();
+        if (!currentFcmUrl) return;
+
+        const $btn = $('#btnSubmitFcm');
+        $btn.find('.indicator-label').addClass('d-none');
+        $btn.find('.indicator-progress').removeClass('d-none');
+        $btn.prop('disabled', true);
+
+        $.ajax({
+            url: currentFcmUrl,
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function(res) {
+                if (res.success) {
+                    toastr.success(res.message);
+                    const modalEl = document.getElementById('sendCouponFcmModal');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
+                } else {
+                    toastr.error(res.message || 'حدث خطأ أثناء الإرسال');
+                }
+            },
+            error: function(err) {
+                const msg = err.responseJSON ? err.responseJSON.message : 'حدث خطأ أثناء الاتصال بالسيرفر';
+                toastr.error(msg);
+            },
+            complete: function() {
+                $btn.find('.indicator-label').removeClass('d-none');
+                $btn.find('.indicator-progress').addClass('d-none');
+                $btn.prop('disabled', false);
             }
         });
     });

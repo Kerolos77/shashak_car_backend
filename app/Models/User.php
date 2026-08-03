@@ -144,6 +144,11 @@ class User extends Authenticatable implements HasLocalePreference
         return $this->hasMany(Order::class, 'driver_id');
     }
 
+    public function userOrders()
+    {
+        return $this->hasMany(Order::class, 'user_id');
+    }
+
     public function isAvailableDriver()
     {
         if (!$this->is_active) return false;
