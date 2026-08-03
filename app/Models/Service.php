@@ -63,6 +63,7 @@ class Service extends Model implements HasMedia
         'offer_rate',
         'title',
         'service_type',
+        'vehicle_type',
         'commission_type',
         'weight',
         'height',

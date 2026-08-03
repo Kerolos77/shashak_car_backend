@@ -30,6 +30,16 @@ class Coupon extends Model
         return $this->hasMany(CouponUsage::class);
     }
 
+    public function userCoupons()
+    {
+        return $this->hasMany(UserCoupon::class);
+    }
+
+    public function assignedUsers()
+    {
+        return $this->belongsToMany(User::class, 'user_coupons');
+    }
+
     public function calculateDiscount($orderAmount)
     {
         if ($this->type === 'fixed') {

@@ -56,6 +56,11 @@ class UpdateServiceRequest extends FormRequest
                 'nullable',
                 'in:ride,travel,shipping'
             ],
+            'vehicle_type' => [
+                'string',
+                'nullable',
+                'in:car,motorcycle,scooter,truck'
+            ],
             'weight' => [
                 'required_if:service_type,shipping',
                 'nullable',

@@ -19,6 +19,7 @@ class ServicesResource extends JsonResource
 'image' => isset($this->thumbnail[0]) ? $this->thumbnail[0]['url'] : null,
             'offer_rate'    => $this->offer_rate,
             'service_type'  => $this->service_type,
+            'vehicle_type'  => $this->vehicle_type ?? 'car',
             'weight'        => $this->weight,
             'height'        => $this->height,
             'width'         => $this->width,

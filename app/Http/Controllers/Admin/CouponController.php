@@ -41,6 +41,7 @@ class CouponController extends Controller
 
         Coupon::create([
             'code' => strtoupper(trim($request->code)),
+            'title' => $request->title ?? ('خصم ' . ($request->type == 'percentage' ? $request->value . '%' : $request->value . ' ج.م')),
             'type' => $request->type,
             'value' => $request->value,
             'max_discount' => $request->max_discount,
@@ -49,7 +50,8 @@ class CouponController extends Controller
             'user_limit' => $request->user_limit ?? 1,
             'service_id' => $request->service_id,
             'expires_at' => $request->expires_at,
-            'is_active' => $request->has('is_active') ? 1 : 0,
+            'is_active' => $request->has('is_active') ? ($request->is_active ? 1 : 0) : 1,
+            'is_public' => 1,
         ]);
 
         return redirect()->route('admin.coupons.index')->with('success', 'تم إنشاء كود الخصم بنجاح');
@@ -87,82 +89,96 @@ class CouponController extends Controller
             'image_url' => 'nullable|url'
         ]);
 
-        $users = collect();
+        $targetUsers = collect();
 
         if ($request->target === 'all_users') {
-            $users = User::whereHas('roles', fn($q) => $q->where('title', 'User'))
-                         ->whereNotNull('fcm_token')
-                         ->get();
+            $targetUsers = User::whereHas('roles', fn($q) => $q->where('title', 'User'))->get();
         } elseif ($request->target === 'all_drivers') {
-            $users = User::drivers()->whereNotNull('fcm_token')->get();
+            $targetUsers = User::drivers()->get();
         } elseif ($request->target === 'inactive_users') {
             $thirtyDaysAgo = now()->subDays(30);
-            $users = User::whereHas('roles', fn($q) => $q->where('title', 'User'))
-                         ->whereNotNull('fcm_token')
+            $targetUsers = User::whereHas('roles', fn($q) => $q->where('title', 'User'))
                          ->whereDoesntHave('userOrders', function ($q) use ($thirtyDaysAgo) {
                              $q->where('created_at', '>=', $thirtyDaysAgo);
                          })
                          ->get();
         } elseif ($request->target === 'active_vip') {
-            $users = User::whereHas('roles', fn($q) => $q->where('title', 'User'))
-                         ->whereNotNull('fcm_token')
+            $targetUsers = User::whereHas('roles', fn($q) => $q->where('title', 'User'))
                          ->whereHas('userOrders', function ($q) {
                              $q->where('status', Order::STATUS_COMPLETED);
                          }, '>=', 5)
                          ->get();
         } elseif ($request->target === 'specific_user') {
             $user = User::find($request->user_id);
-            if ($user && $user->fcm_token) {
-                $users->push($user);
+            if ($user) {
+                $targetUsers->push($user);
             }
         }
 
-        if ($users->isEmpty()) {
+        if ($targetUsers->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'لم يتم العثور على مستخدمين يمتلكون رمز FCM للإرسال ضمن الفئة المحددة.',
+                'message' => 'لم يتم العثور على مستخدمين ضمن الفئة المحددة.',
             ], 422);
         }
 
-        try {
-            Notification::send($users, new PushNotification(
-                $request->title,
-                $request->body,
-                $request->image_url
-            ));
-        } catch (\Exception $e) {
-            \Log::error("Database Notification Error: " . $e->getMessage());
+        // Activate coupon and persist user assignment in database
+        $coupon->is_active = true;
+        if (in_array($request->target, ['all_users', 'all_drivers'])) {
+            $coupon->is_public = true;
+        }
+        $coupon->save();
+
+        foreach ($targetUsers as $u) {
+            \App\Models\UserCoupon::firstOrCreate([
+                'coupon_id' => $coupon->id,
+                'user_id' => $u->id,
+            ]);
         }
 
-        $tokens = $users->pluck('fcm_token')->filter()->unique()->values()->toArray();
+        $fcmUsers = $targetUsers->filter(fn($u) => !empty($u->fcm_token));
 
-        if (!empty($tokens)) {
+        if ($fcmUsers->isNotEmpty()) {
             try {
-                $messaging = app('firebase.messaging');
-                $message = \Kreait\Firebase\Messaging\CloudMessage::new()
-                    ->withNotification([
-                        'title' => $request->title,
-                        'body' => $request->body,
-                        'image' => $request->image_url,
-                    ])
-                    ->withData([
-                        'type' => 'coupon',
-                        'coupon_code' => (string)$coupon->code,
-                        'coupon_id' => (string)$coupon->id,
-                    ]);
-
-                foreach (array_chunk($tokens, 500) as $chunk) {
-                    $messaging->sendMulticast($message, $chunk);
-                }
+                Notification::send($fcmUsers, new PushNotification(
+                    $request->title,
+                    $request->body,
+                    $request->image_url
+                ));
             } catch (\Exception $e) {
-                \Log::error("FCM Send Error for Coupon: " . $e->getMessage());
+                \Log::error("Database Notification Error: " . $e->getMessage());
+            }
+
+            $tokens = $fcmUsers->pluck('fcm_token')->filter()->unique()->values()->toArray();
+
+            if (!empty($tokens)) {
+                try {
+                    $messaging = app('firebase.messaging');
+                    $message = \Kreait\Firebase\Messaging\CloudMessage::new()
+                        ->withNotification([
+                            'title' => $request->title,
+                            'body' => $request->body,
+                            'image' => $request->image_url,
+                        ])
+                        ->withData([
+                            'type' => 'coupon',
+                            'coupon_code' => (string)$coupon->code,
+                            'coupon_id' => (string)$coupon->id,
+                        ]);
+
+                    foreach (array_chunk($tokens, 500) as $chunk) {
+                        $messaging->sendMulticast($message, $chunk);
+                    }
+                } catch (\Exception $e) {
+                    \Log::error("FCM Send Error for Coupon: " . $e->getMessage());
+                }
             }
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'تم إرسال إشعار الكوبون بنجاح إلى ' . $users->count() . ' مستخدم.',
-            'sent_count' => $users->count()
+            'message' => 'تم حفظ الكوبون للمستخدمين وإرسال الإشعار بنجاح إلى ' . $fcmUsers->count() . ' مستخدم.',
+            'sent_count' => $fcmUsers->count()
         ]);
     }
 

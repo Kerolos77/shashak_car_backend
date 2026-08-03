@@ -59,6 +59,7 @@ class OrderResource extends JsonResource
             'canceled_by' => $this->canceled_by ?? '',
             'comment' => $this->comment ?? '',
             'service_type' => $this->service != null ? $this->service->service_type : '',
+            'vehicle_type' => $this->service != null ? ($this->service->vehicle_type ?? 'car') : 'car',
             'reviews_count' => $this->reviews ? $this->reviews->count() : 0,
             'has_review' => $this->reviews ? $this->reviews->count() > 0 : false,
             'payment_details' => [

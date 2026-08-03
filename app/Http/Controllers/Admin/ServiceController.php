@@ -39,6 +39,7 @@ class ServiceController extends BaseController
             'offer_rate' => $request->offer_rate != null ? 1 : 0,
             'commission_type' => $request->has('commission_type') ? ($request->commission_type ? 1 : 0) : null,
             'service_type' => $request->service_type,
+            'vehicle_type' => $request->vehicle_type ?? 'car',
             'weight' => $request->weight,
             'height' => $request->height,
             'width' => $request->width,

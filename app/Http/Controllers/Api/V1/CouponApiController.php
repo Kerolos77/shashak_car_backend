@@ -11,6 +11,7 @@ class CouponApiController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
+        $userId = $user ? $user->id : null;
 
         $coupons = Coupon::where('is_active', true)
             ->where(function ($q) {
@@ -20,6 +21,14 @@ class CouponApiController extends Controller
             ->where(function ($q) {
                 $q->whereNull('usage_limit')
                   ->orWhereColumn('used_count', '<', 'usage_limit');
+            })
+            ->where(function ($q) use ($userId) {
+                $q->where('is_public', true);
+                if ($userId) {
+                    $q->orWhereHas('userCoupons', function ($uq) use ($userId) {
+                        $uq->where('user_id', $userId)->where('is_used', false);
+                    });
+                }
             })
             ->with('service:id,name')
             ->orderBy('id', 'desc')
