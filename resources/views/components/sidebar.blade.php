@@ -32,6 +32,7 @@
                     </div>
 
                     <!-- Shipping Orders -->
+                    @can('order_access')
                     <div class="menu-item {{ request()->is('admin/shipping-orders*') ? 'here show' : '' }}">
                         <a class="menu-link" href="{{ route('admin.shipping-orders.index') }}">
                             <span class="menu-icon">
@@ -40,6 +41,7 @@
                             <span class="menu-title">{{ __('admin.shipping_orders') }}</span>
                         </a>
                     </div>
+                    @endcan
                     
                     <!-- Wallet Transactions -->
                     {{-- <div class="menu-item {{ request()->is('admin/wallet-transactions') ? 'here show' : '' }}">
@@ -52,6 +54,7 @@
                     </div> --}}
                     
                     <!-- Notifications -->
+                    @can('user_access')
                     <div class="menu-item {{ request()->is('admin/notifications*') ? 'here show' : '' }}">
                         <a class="menu-link" href="{{ route('admin.notifications.send') }}">
                             <span class="menu-icon">
@@ -60,8 +63,10 @@
                             <span class="menu-title">{{ trans('global.notification_page.notifications') }}</span>
                         </a>
                     </div>
+                    @endcan
                     
                     <!-- Captions -->
+                    @can('setting_access')
                     <div class="menu-item {{ request()->is('admin/captions') ? 'here show' : '' }}">
                         <a class="menu-link" href="{{ route('admin.captions.index') }}">
                             <span class="menu-icon">
@@ -70,8 +75,10 @@
                             <span class="menu-title">{{ trans('global.captions') }}</span>
                         </a>
                     </div>
+                    @endcan
                     
                     <!-- Admin Section -->
+                    @can('role_access')
                     <div data-kt-menu-trigger="click" class="menu-item menu-accordion {{ request()->is('admin/admins*') || request()->is('admin/roles*') || request()->is('admin/audit-logs*') ? 'here show' : '' }}">
                         <span class="menu-link">
                             <span class="menu-icon">
@@ -97,7 +104,6 @@
                                     <span class="menu-title">{{ __('global.create') }}</span>
                                 </a>
                             </div>
-                            @can('role_access')
                             <div class="menu-item {{ request()->is('admin/roles*') ? 'here' : '' }}">
                                 <a class="menu-link" href="{{ route('admin.roles.index') }}">
                                     <span class="menu-bullet">
@@ -106,11 +112,12 @@
                                     <span class="menu-title">{{ trans('cruds.role.title') }}</span>
                                 </a>
                             </div>
-                            @endcan
                         </div>
                     </div>
+                    @endcan
                     
                     <!-- Users Section -->
+                    @can('user_access')
                     <div data-kt-menu-trigger="click" class="menu-item menu-accordion {{ request()->is('admin/users*') ? 'here show' : '' }}">
                         <span class="menu-link">
                             <span class="menu-icon">
@@ -138,8 +145,10 @@
                             </div>
                         </div>
                     </div>
+                    @endcan
                     
                     <!-- Drivers Section -->
+                    @can('driver_user_access')
                     <div data-kt-menu-trigger="click" class="menu-item menu-accordion {{ request()->is('admin/drivers*') ? 'here show' : '' }}">
                         <span class="menu-link">
                             <span class="menu-icon">
@@ -159,8 +168,10 @@
                             </div>
                         </div>
                     </div>
+                    @endcan
 
                     <!-- Manual Trip Assignment Section -->
+                    @can('order_access')
                     <div class="menu-item {{ request()->is('admin/manual-assign*') ? 'here show' : '' }}">
                         <a class="menu-link" href="{{ route('admin.orders.manual_index') }}">
                             <span class="menu-icon">
@@ -169,6 +180,17 @@
                             <span class="menu-title">{{ __('admin.manual_assignment') }}</span>
                         </a>
                     </div>
+
+                    <!-- Live Fleet Driver Map -->
+                    <div class="menu-item {{ request()->is('admin/fleet-map*') ? 'here show' : '' }}">
+                        <a class="menu-link" href="{{ route('admin.fleet-map.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-outline ki-geolocation fs-2"></i>
+                            </span>
+                            <span class="menu-title">خريطة تتبع أسطول السائقين</span>
+                        </a>
+                    </div>
+                    @endcan
                     
                     <!-- Services Section -->
                     @can('service_access')
@@ -202,6 +224,7 @@
                     @endcan
                     
                     <!-- Payments Section -->
+                    @can('payment_access')
                     <div data-kt-menu-trigger="click" class="menu-item menu-accordion {{ request()->is('admin/payments*') ? 'here show' : '' }}">
                         <span class="menu-link">
                             <span class="menu-icon">
@@ -229,6 +252,7 @@
                             </div>
                         </div>
                     </div>
+                    @endcan
                     
                     <!-- Settings -->
                     @can('setting_access')
@@ -240,7 +264,6 @@
                             <span class="menu-title">{{ trans('global.settings') }}</span>
                         </a>
                     </div>
-                    @endcan
 
                     <!-- Dispatch & Ban Settings -->
                     <div class="menu-item {{ request()->is('admin/dispatch-settings*') ? 'here show' : '' }}">
@@ -261,8 +284,10 @@
                             <span class="menu-title">إدارة ورسائل SMS</span>
                         </a>
                     </div>
+                    @endcan
 
                     <!-- Gamification -->
+                    @can('gamification_access')
                     <div class="menu-item {{ request()->is('admin/gamification*') ? 'here show' : '' }}">
                         <a class="menu-link" href="{{ route('admin.gamification.index') }}">
                             <span class="menu-icon">
@@ -271,7 +296,10 @@
                             <span class="menu-title">{{ trans('cruds.gamification.title') }}</span>
                         </a>
                     </div>
+                    @endcan
+                    
                     <!-- Promo Coupons -->
+                    @can('coupon_access')
                     <div class="menu-item {{ request()->is('admin/coupons*') ? 'here show' : '' }}">
                         <a class="menu-link" href="{{ route('admin.coupons.index') }}">
                             <span class="menu-icon">
@@ -280,18 +308,10 @@
                             <span class="menu-title">أكواد الكوبونات والخصومات</span>
                         </a>
                     </div>
-
-                    <!-- Live Fleet Driver Map -->
-                    <div class="menu-item {{ request()->is('admin/fleet-map*') ? 'here show' : '' }}">
-                        <a class="menu-link" href="{{ route('admin.fleet-map.index') }}">
-                            <span class="menu-icon">
-                                <i class="ki-outline ki-geolocation fs-2"></i>
-                            </span>
-                            <span class="menu-title">خريطة تتبع أسطول السائقين</span>
-                        </a>
-                    </div>
+                    @endcan
 
                     <!-- Support Tickets -->
+                    @can('faq_access')
                     <div class="menu-item {{ request()->is('admin/tickets*') ? 'here show' : '' }}">
                         <a class="menu-link" href="{{ route('admin.tickets.index') }}">
                             <span class="menu-icon">
@@ -300,8 +320,10 @@
                             <span class="menu-title">تذاكر الشكاوى والدعم الفني</span>
                         </a>
                     </div>
+                    @endcan
 
                     <!-- Shop Packages -->
+                    @can('package_access')
                     <div class="menu-item {{ request()->is('admin/packages*') ? 'here show' : '' }}">
                         <a class="menu-link" href="{{ route('admin.packages.index') }}">
                             <span class="menu-icon">
@@ -310,8 +332,10 @@
                             <span class="menu-title">{{ trans('cruds.package.title') }}</span>
                         </a>
                     </div>
+                    @endcan
                     
-                    <!-- Countries -->
+                    <!-- Countries & Cities -->
+                    @can('setting_access')
                     <div class="menu-item {{ request()->is('admin/countries*') ? 'here show' : '' }}">
                         <a class="menu-link" href="{{ route('admin.countries.index') }}">
                             <span class="menu-icon">
@@ -321,15 +345,15 @@
                         </a>
                     </div>
                     
-                    <!-- Cities -->
                     <div class="menu-item {{ request()->is('admin/cities*') ? 'here show' : '' }}">
                         <a class="menu-link" href="{{ route('admin.cities.index') }}">
                             <span class="menu-icon">
-<i class="ki-outline ki-geolocation fs-2"></i>
+                                <i class="ki-outline ki-geolocation fs-2"></i>
                             </span>
                             <span class="menu-title">{{ trans('app.cities') }}</span>
                         </a>
                     </div>
+                    @endcan
                     
                     <!-- Payment Methods -->
                     <div class="menu-item {{ request()->is('admin/payment-methods*') ? 'here show' : '' }}">
@@ -344,6 +368,7 @@
 
                     
                     <!-- Incomes -->
+                    @can('income_access')
                     <div class="menu-item {{ request()->is('admin/incomes*') ? 'here show' : '' }}">
                         <a class="menu-link" href="{{ route('admin.incomes.index') }}">
                             <span class="menu-icon">
@@ -352,8 +377,10 @@
                             <span class="menu-title">{{ trans('global.incomes') }}</span>
                         </a>
                     </div>
+                    @endcan
                     
                     <!-- Expenses -->
+                    @can('expense_access')
                     <div class="menu-item {{ request()->is('admin/expenses*') ? 'here show' : '' }}">
                         <a class="menu-link" href="{{ route('admin.expenses.index') }}">
                             <span class="menu-icon">
@@ -362,8 +389,10 @@
                             <span class="menu-title">{{ trans('global.expenses') }}</span>
                         </a>
                     </div>
+                    @endcan
                     
                     <!-- Chats -->
+                    @can('chat_access')
                     <div class="menu-item {{ request()->is('admin/chats*') ? 'here show' : '' }}">
                         <a class="menu-link" href="{{ route('admin.chats.index') }}">
                             <span class="menu-icon">
@@ -372,6 +401,7 @@
                             <span class="menu-title">{{ trans('global.chats') }}</span>
                         </a>
                     </div>
+                    @endcan
                     
 
                     
