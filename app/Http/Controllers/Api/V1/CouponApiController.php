@@ -8,6 +8,48 @@ use Illuminate\Http\Request;
 
 class CouponApiController extends Controller
 {
+    public function index(Request $request)
+    {
+        $user = auth()->user();
+
+        $coupons = Coupon::where('is_active', true)
+            ->where(function ($q) {
+                $q->whereNull('expires_at')
+                  ->orWhere('expires_at', '>', now());
+            })
+            ->where(function ($q) {
+                $q->whereNull('usage_limit')
+                  ->orWhereColumn('used_count', '<', 'usage_limit');
+            })
+            ->with('service:id,name')
+            ->orderBy('id', 'desc')
+            ->get()
+            ->filter(function ($coupon) use ($user) {
+                if (!$user) return true;
+                $userUsageCount = $coupon->usages()->where('user_id', $user->id)->count();
+                return $userUsageCount < $coupon->user_limit;
+            })
+            ->values()
+            ->map(function ($coupon) {
+                return [
+                    'id' => $coupon->id,
+                    'code' => $coupon->code,
+                    'title' => $coupon->title ?? 'خصم مميز',
+                    'type' => $coupon->type,
+                    'value' => floatval($coupon->value),
+                    'max_discount' => floatval($coupon->max_discount ?? 0),
+                    'min_order' => floatval($coupon->min_order ?? 0),
+                    'user_limit' => intval($coupon->user_limit),
+                    'expires_at' => $coupon->expires_at ? $coupon->expires_at->toDateTimeString() : null,
+                    'service_id' => $coupon->service_id,
+                    'service_name' => $coupon->service->name ?? null,
+                    'is_public' => (bool) $coupon->is_public,
+                ];
+            });
+
+        return Resp($coupons, 'تم جلب الكوبونات المتاحة بنجاح');
+    }
+
     public function validateCoupon(Request $request)
     {
         $request->validate([

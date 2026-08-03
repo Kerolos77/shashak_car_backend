@@ -123,6 +123,7 @@ Route::group(['prefix' => 'v1', 'as' => 'api.', 'middleware' => ['auth:sanctum']
         Route::get('identity-status', [\App\Http\Controllers\Api\V1\UserIdentityApiController::class, 'identityStatus']);
 
         // Coupons & Support Tickets
+        Route::get('coupons', [\App\Http\Controllers\Api\V1\CouponApiController::class, 'index']);
         Route::post('coupons/validate', [\App\Http\Controllers\Api\V1\CouponApiController::class, 'validateCoupon']);
         Route::post('tickets/create', [\App\Http\Controllers\Api\V1\SupportTicketApiController::class, 'createTicket']);
         Route::get('tickets/my-tickets', [\App\Http\Controllers\Api\V1\SupportTicketApiController::class, 'myTickets']);
