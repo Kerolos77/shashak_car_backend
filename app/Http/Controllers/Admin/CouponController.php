@@ -169,7 +169,7 @@ class CouponController extends Controller
     public function searchUsers(Request $request)
     {
         $q = trim($request->get('q', ''));
-        $users = User::whereHas('roles', fn($query) => $query->where('title', 'User'))
+        $users = User::query()
             ->when($q, function ($query) use ($q) {
                 $query->where(function ($sub) use ($q) {
                     $sub->where('name', 'like', "%{$q}%")

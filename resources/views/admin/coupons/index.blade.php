@@ -187,6 +187,9 @@
                             <i class="ki-outline ki-user me-1 text-primary"></i> البحث واختيار العميل المستهدف <span class="text-danger">*</span>
                         </label>
                         
+                        <!-- Hidden input for selected user_id -->
+                        <input type="hidden" name="user_id" id="fcmSelectedUserId" value="" />
+
                         <!-- Search Box Input -->
                         <div class="position-relative mb-3">
                             <input type="text" 
@@ -197,22 +200,25 @@
                             <span id="userSearchSpinner" class="spinner-border spinner-border-sm position-absolute top-50 end-0 translate-middle-y me-3 d-none text-primary"></span>
                         </div>
 
-                        <!-- User Select Dropdown -->
-                        <select name="user_id" id="fcmUserSelect" class="form-select form-select-solid fw-semibold" size="5" style="max-height: 180px;">
-                            <option value="" disabled class="text-muted p-2">جاري تحميل العملاء...</option>
-                        </select>
+                        <!-- Results List Box -->
+                        <div id="userResultsList" class="bg-white rounded border shadow-sm p-2 mb-3" style="max-height: 240px; overflow-y: auto;">
+                            <div class="text-muted p-3 text-center fs-7" id="userListPlaceholder">
+                                <span class="spinner-border spinner-border-sm me-2"></span> جاري تحميل العملاء...
+                            </div>
+                        </div>
 
-                        <!-- Selected User Info Card -->
-                        <div id="selectedUserInfo" class="mt-3 p-3 bg-white rounded border d-none">
+                        <!-- Selected User Banner -->
+                        <div id="selectedUserBanner" class="p-3 bg-light-primary rounded border border-primary border-opacity-25 d-none">
                             <div class="d-flex align-items-center justify-content-between">
                                 <div>
-                                    <div class="fw-bolder fs-6 text-dark" id="infoUserName">-</div>
+                                    <div class="fs-9 text-primary fw-bold text-uppercase mb-1">✓ العميل المختار للإرسال:</div>
+                                    <div class="fw-bolder fs-6 text-dark" id="bannerUserName">-</div>
                                     <div class="text-muted fs-7 mt-1">
-                                        <span id="infoUserPhone" class="me-3"><i class="ki-outline ki-phone fs-7 me-1"></i> -</span>
-                                        <span id="infoUserEmail"><i class="ki-outline ki-sms fs-7 me-1"></i> -</span>
+                                        <span id="bannerUserPhone" class="me-3"><i class="ki-outline ki-phone me-1"></i> -</span>
+                                        <span id="bannerUserEmail"><i class="ki-outline ki-sms me-1"></i> -</span>
                                     </div>
                                 </div>
-                                <div id="infoFcmBadge"></div>
+                                <div id="bannerFcmBadge"></div>
                             </div>
                         </div>
                     </div>
@@ -336,9 +342,13 @@ $(document).ready(function() {
     $('#fcmTargetSelect').on('change', function() {
         if ($(this).val() === 'specific_user') {
             $('#specificUserWrapper').removeClass('d-none');
+            $('#userSearchInput').val('');
+            $('#fcmSelectedUserId').val('');
+            $('#selectedUserBanner').addClass('d-none');
             loadUsersForSelect('');
         } else {
             $('#specificUserWrapper').addClass('d-none');
+            $('#fcmSelectedUserId').val('');
         }
     });
 
@@ -352,7 +362,7 @@ $(document).ready(function() {
     });
 
     function loadUsersForSelect(query = '') {
-        const $select = $('#fcmUserSelect');
+        const $list = $('#userResultsList');
         $('#userSearchSpinner').removeClass('d-none');
 
         $.ajax({
@@ -360,29 +370,52 @@ $(document).ready(function() {
             type: 'GET',
             data: { q: query },
             success: function(users) {
-                $select.empty();
+                $list.empty();
                 if (users.length === 0) {
-                    $select.append('<option value="" disabled class="text-danger p-2">❌ لم يتم العثور على عملاء يطابقون البحث</option>');
+                    $list.html('<div class="text-danger p-3 text-center fs-7">❌ لم يتم العثور على عملاء يطابقون البحث</div>');
                 } else {
+                    const currentSelectedId = $('#fcmSelectedUserId').val();
                     users.forEach(function(u) {
-                        const phone = u.phone_number ? u.phone_number : 'بدون رقم هاتف';
+                        const phone = u.phone_number ? u.phone_number : 'بدون رقم';
                         const email = u.email ? u.email : 'بدون إيميل';
-                        const fcmTag = u.fcm_token ? '🟢 يمتلك FCM' : '🔴 بدون FCM';
-                        $select.append(`
-                            <option value="${u.id}" 
-                                    data-name="${u.name}" 
-                                    data-phone="${phone}" 
-                                    data-email="${email}" 
-                                    data-fcm="${u.fcm_token ? 1 : 0}" 
-                                    class="p-2 border-bottom">
-                                👤 ${u.name} | 📱 ${phone} | ✉️ ${email} (${fcmTag})
-                            </option>
+                        const hasFcm = u.fcm_token ? true : false;
+                        const isSelected = u.id == currentSelectedId;
+
+                        const fcmBadgeHtml = hasFcm 
+                            ? '<span class="badge bg-light-success text-success fw-bold fs-8">🟢 يستقبل FCM</span>'
+                            : '<span class="badge bg-light-danger text-danger fw-bold fs-8">🔴 بدون FCM</span>';
+
+                        const itemClass = isSelected ? 'user-item-card p-3 rounded mb-2 border cursor-pointer bg-light-primary border-primary shadow-sm' : 'user-item-card p-3 rounded mb-2 border cursor-pointer hover-bg-light';
+
+                        $list.append(`
+                            <div class="${itemClass}" 
+                                 data-id="${u.id}" 
+                                 data-name="${u.name}" 
+                                 data-phone="${phone}" 
+                                 data-email="${email}" 
+                                 data-fcm="${hasFcm ? 1 : 0}">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <div class="fw-bolder text-dark fs-6">👤 ${u.name} <span class="text-muted fs-8">(ID: ${u.id})</span></div>
+                                        <div class="text-muted fs-7 mt-1">
+                                            <span class="me-3"><i class="ki-outline ki-phone me-1"></i>${phone}</span>
+                                            <span><i class="ki-outline ki-sms me-1"></i>${email}</span>
+                                        </div>
+                                    </div>
+                                    <div>${fcmBadgeHtml}</div>
+                                </div>
+                            </div>
                         `);
                     });
+
+                    // Auto select first match if user typed search query and only 1 result returned
+                    if (users.length === 1 && query.length > 0) {
+                        $list.find('.user-item-card').first().trigger('click');
+                    }
                 }
             },
             error: function() {
-                $select.empty().append('<option value="" disabled class="text-danger p-2">حدث خطأ أثناء تحميل العملاء</option>');
+                $list.html('<div class="text-danger p-3 text-center fs-7">حدث خطأ أثناء تحميل العملاء</div>');
             },
             complete: function() {
                 $('#userSearchSpinner').addClass('d-none');
@@ -390,31 +423,39 @@ $(document).ready(function() {
         });
     }
 
-    $('#fcmUserSelect').on('change', function() {
-        const $selected = $(this).find('option:selected');
-        if ($selected.val()) {
-            const name = $selected.data('name');
-            const phone = $selected.data('phone');
-            const email = $selected.data('email');
-            const hasFcm = $selected.data('fcm') == 1;
+    $(document).on('click', '.user-item-card', function() {
+        $('.user-item-card').removeClass('bg-light-primary border-primary shadow-sm');
+        $(this).addClass('bg-light-primary border-primary shadow-sm');
 
-            $('#infoUserName').text(name);
-            $('#infoUserPhone').html('<i class="ki-outline ki-phone fs-7 me-1"></i> ' + phone);
-            $('#infoUserEmail').html('<i class="ki-outline ki-sms fs-7 me-1"></i> ' + email);
+        const userId = $(this).data('id');
+        const name = $(this).data('name');
+        const phone = $(this).data('phone');
+        const email = $(this).data('email');
+        const hasFcm = $(this).data('fcm') == 1;
 
-            if (hasFcm) {
-                $('#infoFcmBadge').html('<span class="badge bg-light-success text-success fw-bold">🟢 يستقبل الإشعارات (FCM)</span>');
-            } else {
-                $('#infoFcmBadge').html('<span class="badge bg-light-danger text-danger fw-bold">🔴 لا يمتلك رمز FCM</span>');
-            }
+        $('#fcmSelectedUserId').val(userId);
 
-            $('#selectedUserInfo').removeClass('d-none');
+        $('#bannerUserName').text(`👤 ${name} (ID: ${userId})`);
+        $('#bannerUserPhone').html('<i class="ki-outline ki-phone me-1"></i> ' + phone);
+        $('#bannerUserEmail').html('<i class="ki-outline ki-sms me-1"></i> ' + email);
+
+        if (hasFcm) {
+            $('#bannerFcmBadge').html('<span class="badge bg-success text-white fw-bold fs-7">🟢 جاهز لاستقبال الإشعارات</span>');
+        } else {
+            $('#bannerFcmBadge').html('<span class="badge bg-danger text-white fw-bold fs-7">🔴 هذا العميل لا يملك FCM</span>');
         }
+
+        $('#selectedUserBanner').removeClass('d-none');
     });
 
     $('#sendFcmForm').on('submit', function(e) {
         e.preventDefault();
         if (!currentFcmUrl) return;
+
+        if ($('#fcmTargetSelect').val() === 'specific_user' && !$('#fcmSelectedUserId').val()) {
+            toastr.error('يرجى اختيار عميل من القائمة بالضغط عليه أولاً!');
+            return false;
+        }
 
         const $btn = $('#btnSubmitFcm');
         $btn.find('.indicator-label').addClass('d-none');
