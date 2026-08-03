@@ -1851,7 +1851,8 @@ class OrderApiController extends Controller
             return Resp(new OrderResource($order), 'تم تأكيد رقم المستلم بالفعل لهذا الطلب', 200, true);
         }
 
-        if ($order->receiver_verification_otp !== $request->otp && $request->otp !== '1111') {
+        $inputOtp = trim((string) $request->otp);
+        if ((string) $order->receiver_verification_otp !== $inputOtp) {
             return Resp(null, 'كود التأكيد غير صحيح، يرجى المحاولة مرة أخرى', 400, false);
         }
 
