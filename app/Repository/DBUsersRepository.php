@@ -39,51 +39,75 @@ $this->request = $request;
 public function verify_otp()
 {
 try {
-$otp = Otp::where('otp', $this->request->code)
-->orderBy('created_at', 'desc')
-->first();
+    $phone = $this->request->phone;
+    $code  = $this->request->code;
 
-// Case 1: OTP not found
-if (!$otp) {
-return Resp(null, __('messages.code_not_correct'), 400, false);
-}
+    if (!$phone || !$code) {
+        return Resp(null, __('messages.code_not_correct'), 400, false);
+    }
 
-// Case 2: OTP already verified
-if ($otp->verify == 1) {
-return Resp(null, __('messages.code_already_used'), 400, false);
-}
+    // ── Lockout check: max 5 failed attempts per phone per 10 minutes ────
+    $lockKey      = 'otp_fails:' . $phone;
+    $failedCount  = \Illuminate\Support\Facades\Cache::get($lockKey, 0);
+    if ($failedCount >= 5) {
+        return Resp(null, 'تم تجاوز الحد الأقصى لمحاولات التحقق. يرجى المحاولة بعد 10 دقائق.', 429, false);
+    }
 
-// Case 3: OTP expired (if 5 minutes passed)
-if ($otp->created_at->addMinutes(5)->isPast()) {
-return Resp(null, __('messages.code_expired'), 400, false);
-}
+    // Fetch OTP — must match BOTH phone AND code
+    $otp = Otp::where('otp', $code)
+        ->where('phone', $phone)
+        ->orderBy('created_at', 'desc')
+        ->first();
 
-// Case 4: User not found for this OTP
-$user = User::where('phone_number', $otp->phone)->with('profile')->first();
-if (!$user) {
-return Resp(null, __('messages.user notfound'), 200, false);
-}
+    // Case 1: OTP not found or wrong phone
+    if (!$otp) {
+        \Illuminate\Support\Facades\Cache::put($lockKey, $failedCount + 1, now()->addMinutes(10));
+        return Resp(null, __('messages.code_not_correct'), 400, false);
+    }
 
-// Case 5: Success
-$otp->verify = 1;
-$otp->save();
+    // Case 2: OTP already verified
+    if ($otp->verify == 1) {
+        return Resp(null, __('messages.code_already_used'), 400, false);
+    }
 
-$user->token = $user->createToken($user->name . '-AuthToken')->plainTextToken;
+    // Case 3: OTP expired (if 5 minutes passed)
+    if ($otp->created_at->addMinutes(5)->isPast()) {
+        return Resp(null, __('messages.code_expired'), 400, false);
+    }
 
-return Resp(new UserResource($user), __('messages.success_login'), 200, true);
+    // Case 4: User not found for this OTP
+    $user = User::where('phone_number', $otp->phone)->with('profile')->first();
+    if (!$user) {
+        return Resp(null, __('messages.user notfound'), 200, false);
+    }
+
+    // Case 5: Success — clear failed attempts counter
+    \Illuminate\Support\Facades\Cache::forget($lockKey);
+    $otp->verify = 1;
+    $otp->save();
+
+    $user->token = $user->createToken($user->name . '-AuthToken')->plainTextToken;
+
+    return Resp(new UserResource($user), __('messages.success_login'), 200, true);
 
 } catch (\Exception $e) {
-// Case 6: Unexpected error
-return Resp(null, __('messages.something_wrong'), 500, false);
+    return Resp(null, __('messages.something_wrong'), 500, false);
 }
 }
 
 public function send_otp()
 {
-    $otp = rand(123456, 99999);
-    $otp = '111111';
+    // Generate a real random 6-digit OTP
+    $otp = (string) rand(100000, 999999);
     Otp::create(['phone' => $this->request->phone, 'otp' => $otp]);
-    return Resp('', __('messages.success_send_otp'), 200, true);
+
+    // TODO: Uncomment to send real SMS via SmsHelper when ready
+    // $smsService = new SmsHelper();
+    // $smsService->sendSms($this->request->phone, $otp);
+
+    // For development only — remove in production:
+    $debugOtp = config('app.debug') ? $otp : null;
+    return Resp($debugOtp ? ['otp' => $debugOtp] : null, __('messages.success_send_otp'), 200, true);
 }
 
 
@@ -163,20 +187,26 @@ return Resp('', 'error', 402, true);
 
 public function country()
 {
-$country =  MarketopiaCountry::get();
-if ($country != null) {
-return Resp(CountryResource::collection($country), __('messages.success'), 200, true);
-}
-return Resp('', 'error', 402, true);
+    // Cache for 24 hours — countries rarely change
+    $country = \Illuminate\Support\Facades\Cache::remember('countries_list', 86400, function () {
+        return MarketopiaCountry::get();
+    });
+    if ($country->isNotEmpty()) {
+        return Resp(CountryResource::collection($country), __('messages.success'), 200, true);
+    }
+    return Resp('', 'error', 402, true);
 }
 
 public function city($id)
 {
-$citys =  MarketopiaCity::where('country_id',$id)->get();
-if ($citys != null) {
-return Resp(CityResource::collection($citys), __('messages.success'), 200, true);
-}
-return Resp('', 'error', 402, true);
+    // Cache per country_id for 24 hours — cities rarely change
+    $citys = \Illuminate\Support\Facades\Cache::remember("cities_country_{$id}", 86400, function () use ($id) {
+        return MarketopiaCity::where('country_id', $id)->get();
+    });
+    if ($citys->isNotEmpty()) {
+        return Resp(CityResource::collection($citys), __('messages.success'), 200, true);
+    }
+    return Resp('', 'error', 402, true);
 }
 
 

@@ -52,9 +52,14 @@ Route::prefix('v1/user')->group(function () {
 
 
 Route::prefix('v1/auth')->group(function () {
-    Route::post('signup', [AuthenticationController::class, 'signup']);
-    Route::get('verify_otp', [AuthenticationController::class, 'verify_otp']);
-    Route::post('send_otp', [AuthenticationController::class, 'send_otp']);
+    // Rate limit: 3 signup attempts per minute per IP
+    Route::post('signup', [AuthenticationController::class, 'signup'])->middleware('throttle:3,1');
+
+    // Rate limit: 5 OTP verify attempts per minute per IP (brute-force protection)
+    Route::get('verify_otp', [AuthenticationController::class, 'verify_otp'])->middleware('throttle:5,1');
+
+    // Rate limit: 2 OTP sends per minute per IP (SMS cost & spam protection)
+    Route::post('send_otp', [AuthenticationController::class, 'send_otp'])->middleware('throttle:2,1');
 });
 //'auth:sanctum'
 Route::get('v1/send/chat', [ChatApiController::class, 'send_message']);
