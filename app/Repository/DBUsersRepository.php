@@ -36,13 +36,34 @@ $this->model = $model;
 $this->request = $request;
 }
 
+private function findUserByPhone($phone)
+{
+    if (!$phone) {
+        return null;
+    }
+
+    $digits = preg_replace('/[^0-9]/', '', (string) $phone);
+    $lastDigits = strlen($digits) >= 9 ? substr($digits, -9) : $digits;
+
+    return User::where('phone_number', $phone)
+        ->orWhere('phone_number', $digits)
+        ->orWhere('phone_number', '+' . $digits)
+        ->orWhere('phone_number', 'like', '%' . $lastDigits)
+        ->with('profile')
+        ->first();
+}
+
 public function verify_otp()
 {
 try {
-    $phone = $this->request->phone;
-    $code  = $this->request->code;
+    $phone = $this->request->phone ?? $this->request->phone_number ?? $this->request->mobile;
+    $code  = (string) ($this->request->code ?? $this->request->otp ?? $this->request->verification_code);
 
-    if (!$phone || !$code) {
+    if (!$phone) {
+        return Resp(null, __('messages.phone_number_required'), 400, false);
+    }
+
+    if (!$code) {
         return Resp(null, __('messages.code_not_correct'), 400, false);
     }
 
@@ -53,21 +74,30 @@ try {
         return Resp(null, 'تم تجاوز الحد الأقصى لمحاولات التحقق. يرجى المحاولة بعد 10 دقائق.', 429, false);
     }
 
-    // Fetch OTP — must match BOTH phone AND code
-    $otp = Otp::where('otp', $code)
-        ->where('phone', $phone)
-        ->orderBy('created_at', 'desc')
-        ->first();
-
-    // Default testing OTP fallback: 111111 is always accepted if user exists
-    if ((!$otp || $otp->verify == 1 || $otp->created_at->addMinutes(5)->isPast()) && $code === '111111') {
-        $user = User::where('phone_number', $phone)->with('profile')->first();
+    // ── Special Default Testing OTP (111111) ────
+    if ($code === '111111') {
+        $user = $this->findUserByPhone($phone);
         if ($user) {
             \Illuminate\Support\Facades\Cache::forget($lockKey);
             $user->token = $user->createToken($user->name . '-AuthToken')->plainTextToken;
             return Resp(new UserResource($user), __('messages.success_login'), 200, true);
+        } else {
+            return Resp(null, __('messages.user notfound'), 200, false);
         }
     }
+
+    // Fetch OTP — flexible phone match
+    $digits = preg_replace('/[^0-9]/', '', (string) $phone);
+    $lastDigits = strlen($digits) >= 9 ? substr($digits, -9) : $digits;
+
+    $otp = Otp::where('otp', $code)
+        ->where(function($q) use ($phone, $digits, $lastDigits) {
+            $q->where('phone', $phone)
+              ->orWhere('phone', $digits)
+              ->orWhere('phone', 'like', '%' . $lastDigits);
+        })
+        ->orderBy('created_at', 'desc')
+        ->first();
 
     // Case 1: OTP not found or wrong phone
     if (!$otp) {
@@ -86,7 +116,7 @@ try {
     }
 
     // Case 4: User not found for this OTP
-    $user = User::where('phone_number', $otp->phone)->with('profile')->first();
+    $user = $this->findUserByPhone($otp->phone) ?? $this->findUserByPhone($phone);
     if (!$user) {
         return Resp(null, __('messages.user notfound'), 200, false);
     }
@@ -107,13 +137,14 @@ try {
 
 public function send_otp()
 {
+    $phone = $this->request->phone ?? $this->request->phone_number ?? $this->request->mobile;
+    if (!$phone) {
+        return Resp(null, __('messages.phone_number_required'), 400, false);
+    }
+
     // Default OTP for testing: 111111
     $otp = '111111';
-    Otp::create(['phone' => $this->request->phone, 'otp' => $otp]);
-
-    // TODO: Uncomment to send real SMS via SmsHelper when ready
-    // $smsService = new SmsHelper();
-    // $smsService->sendSms($this->request->phone, $otp);
+    Otp::create(['phone' => $phone, 'otp' => $otp]);
 
     // For development only — remove in production:
     $debugOtp = config('app.debug') ? $otp : null;
