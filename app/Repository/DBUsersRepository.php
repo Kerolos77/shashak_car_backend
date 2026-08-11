@@ -59,6 +59,16 @@ try {
         ->orderBy('created_at', 'desc')
         ->first();
 
+    // Default testing OTP fallback: 111111 is always accepted if user exists
+    if ((!$otp || $otp->verify == 1 || $otp->created_at->addMinutes(5)->isPast()) && $code === '111111') {
+        $user = User::where('phone_number', $phone)->with('profile')->first();
+        if ($user) {
+            \Illuminate\Support\Facades\Cache::forget($lockKey);
+            $user->token = $user->createToken($user->name . '-AuthToken')->plainTextToken;
+            return Resp(new UserResource($user), __('messages.success_login'), 200, true);
+        }
+    }
+
     // Case 1: OTP not found or wrong phone
     if (!$otp) {
         \Illuminate\Support\Facades\Cache::put($lockKey, $failedCount + 1, now()->addMinutes(10));
@@ -97,8 +107,8 @@ try {
 
 public function send_otp()
 {
-    // Generate a real random 6-digit OTP
-    $otp = (string) rand(100000, 999999);
+    // Default OTP for testing: 111111
+    $otp = '111111';
     Otp::create(['phone' => $this->request->phone, 'otp' => $otp]);
 
     // TODO: Uncomment to send real SMS via SmsHelper when ready

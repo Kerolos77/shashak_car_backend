@@ -4,170 +4,669 @@
 @section('pageName', __('Chat Management'))
 
 @section('breadcrumbs')
-     
-        <li class="breadcrumb-item text-muted"> المحادثات </li>
-        <span class="bullet bg-gray-300 w-5px h-2px"></span>
-        <li class="breadcrumb-item text-dark">عرض الكل</li>
-    @endsection
+    <li class="breadcrumb-item text-muted">المحادثات</li>
+    <span class="bullet bg-gray-300 w-5px h-2px"></span>
+    <li class="breadcrumb-item text-dark">عرض الكل</li>
+@endsection
 
 @section('content')
     @push('styles')
-        <link rel="stylesheet" href="{{ asset('assets/vendor/css/pages/app-chat.css') }}" />
         <style>
-            .chat-contact-list {
-                max-height: calc(100vh - 200px);
-                overflow-y: auto;
+            /* ===== Page Layout ===== */
+            .chats-page-wrapper {
+                display: flex;
+                flex-direction: column;
+                gap: 1.5rem;
             }
-            .chat-contact-list-item {
-                transition: all 0.3s ease;
-                border-radius: 0.5rem;
-                padding: 0.75rem 1rem;
+
+            /* ===== Stats Row ===== */
+            .stats-row {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1rem;
             }
-            .chat-contact-list-item:hover {
-                background-color: rgba(var(--kt-primary-rgb), 0.05);
+
+            .stat-card {
+                background: #fff;
+                border-radius: 1rem;
+                padding: 1.25rem 1.5rem;
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+                border: 1px solid #f0f0f0;
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
             }
-            .chat-contact-list-item.active {
-                background-color: rgba(var(--kt-primary-rgb), 0.1);
-                border-left: 3px solid var(--kt-primary);
+
+            .stat-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(0,0,0,0.1);
             }
-            .chat-contact-avatar {
-                width: 42px;
-                height: 42px;
-                border-radius: 50%;
-                object-fit: cover;
-            }
-            .unread-badge {
-                width: 20px;
-                height: 20px;
-                font-size: 0.7rem;
+
+            .stat-icon {
+                width: 52px;
+                height: 52px;
+                border-radius: 12px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                font-size: 1.5rem;
+                flex-shrink: 0;
             }
-            .last-message-time {
-                font-size: 0.75rem;
+
+            .stat-icon.blue   { background: rgba(0, 112, 240, 0.1); color: #0070f0; }
+            .stat-icon.green  { background: rgba(18, 183, 106, 0.1); color: #12b76a; }
+            .stat-icon.orange { background: rgba(247, 144, 9, 0.1); color: #f79009; }
+
+            .stat-info h4 {
+                font-size: 1.6rem;
+                font-weight: 700;
+                margin: 0;
+                color: #1e2334;
+                line-height: 1;
             }
-            .chat-search {
-                border-radius: 0.475rem;
-                padding: 0.65rem 1rem;
+
+            .stat-info span {
+                font-size: 0.8rem;
+                color: #6b7280;
+                margin-top: 0.2rem;
+                display: block;
             }
-            .chat-contact-name {
-                font-size: 0.95rem;
+
+            /* ===== Search & Filters Bar ===== */
+            .search-bar-card {
+                background: #fff;
+                border-radius: 1rem;
+                padding: 1.25rem 1.5rem;
+                box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+                border: 1px solid #f0f0f0;
+            }
+
+            .search-bar-inner {
+                display: flex;
+                gap: 0.75rem;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+
+            .search-input-wrapper {
+                flex: 1;
+                min-width: 200px;
+                position: relative;
+            }
+
+            .search-input-wrapper .search-icon {
+                position: absolute;
+                left: 1rem;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #9ca3af;
+                font-size: 1rem;
+                pointer-events: none;
+            }
+
+            .search-input-wrapper input {
+                width: 100%;
+                padding: 0.7rem 1rem 0.7rem 2.75rem;
+                border: 1.5px solid #e5e7eb;
+                border-radius: 0.625rem;
+                font-size: 0.9rem;
+                color: #374151;
+                background: #f9fafb;
+                transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+                outline: none;
+            }
+
+            .search-input-wrapper input:focus {
+                border-color: #0070f0;
+                background: #fff;
+                box-shadow: 0 0 0 3px rgba(0, 112, 240, 0.1);
+            }
+
+            .search-input-wrapper input::placeholder { color: #9ca3af; }
+
+            .btn-search {
+                padding: 0.7rem 1.5rem;
+                background: #0070f0;
+                color: #fff;
+                border: none;
+                border-radius: 0.625rem;
+                font-size: 0.875rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background 0.2s, transform 0.1s;
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+                white-space: nowrap;
+            }
+
+            .btn-search:hover { background: #005fcc; transform: translateY(-1px); }
+            .btn-search:active { transform: translateY(0); }
+
+            .btn-reset {
+                padding: 0.7rem 1.2rem;
+                background: #f3f4f6;
+                color: #6b7280;
+                border: 1.5px solid #e5e7eb;
+                border-radius: 0.625rem;
+                font-size: 0.875rem;
                 font-weight: 500;
+                cursor: pointer;
+                transition: background 0.2s, color 0.2s;
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+                text-decoration: none;
+                white-space: nowrap;
             }
-            .chat-contact-status {
-                font-size: 0.825rem;
-                color: var(--kt-gray-600);
+
+            .btn-reset:hover { background: #e5e7eb; color: #374151; }
+
+            .search-active-indicator {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+                font-size: 0.82rem;
+                color: #0070f0;
+                font-weight: 500;
+                background: rgba(0,112,240,0.08);
+                padding: 0.3rem 0.8rem;
+                border-radius: 999px;
+            }
+
+            /* ===== Chats Grid ===== */
+            .chats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                gap: 1rem;
+            }
+
+            /* ===== Chat Card ===== */
+            .chat-card {
+                background: #fff;
+                border-radius: 1rem;
+                border: 1.5px solid #f0f0f0;
+                overflow: hidden;
+                transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s;
+                display: flex;
+                flex-direction: column;
+                text-decoration: none;
+                color: inherit;
+            }
+
+            .chat-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                border-color: #0070f0;
+                text-decoration: none;
+                color: inherit;
+            }
+
+            .chat-card-header {
+                padding: 1rem 1.25rem;
+                background: linear-gradient(135deg, #f8faff 0%, #eef2ff 100%);
+                border-bottom: 1px solid #e8ecf5;
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+            }
+
+            .avatar-stack {
+                display: flex;
+                position: relative;
+                width: 66px;
+                height: 42px;
+                flex-shrink: 0;
+            }
+
+            .avatar-stack img, .avatar-stack .avatar-placeholder {
+                width: 42px;
+                height: 42px;
+                border-radius: 50%;
+                border: 2.5px solid #fff;
+                object-fit: cover;
+            }
+
+            .avatar-stack .avatar-placeholder {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1rem;
+                font-weight: 700;
+                color: #fff;
+                flex-shrink: 0;
+            }
+
+            .avatar-stack img:last-child,
+            .avatar-stack .avatar-placeholder:last-child {
+                position: absolute;
+                left: 24px;
+                top: 0;
+                width: 38px;
+                height: 38px;
+                border: 2px solid #fff;
+            }
+
+            .trip-info h6 {
+                margin: 0;
+                font-size: 0.9rem;
+                font-weight: 700;
+                color: #1e2334;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 180px;
+            }
+
+            .trip-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.25rem;
+                font-size: 0.72rem;
+                font-weight: 600;
+                padding: 0.2rem 0.6rem;
+                border-radius: 999px;
+                background: rgba(0, 112, 240, 0.1);
+                color: #0070f0;
+                margin-top: 0.2rem;
+            }
+
+            .chat-card-body {
+                padding: 1rem 1.25rem;
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 0.6rem;
+            }
+
+            .person-row {
+                display: flex;
+                align-items: center;
+                gap: 0.6rem;
+            }
+
+            .person-label {
+                font-size: 0.7rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                width: 45px;
+                flex-shrink: 0;
+            }
+
+            .person-label.user   { color: #12b76a; }
+            .person-label.driver { color: #f79009; }
+
+            .person-name {
+                font-size: 0.85rem;
+                font-weight: 500;
+                color: #374151;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .person-phone {
+                font-size: 0.78rem;
+                color: #9ca3af;
+                margin-left: auto;
+                flex-shrink: 0;
+            }
+
+            .divider-dashed {
+                border: none;
+                border-top: 1px dashed #e5e7eb;
+                margin: 0.25rem 0;
+            }
+
+            .last-message-row {
+                display: flex;
+                align-items: flex-start;
+                gap: 0.5rem;
+                padding: 0.5rem 0.75rem;
+                background: #f9fafb;
+                border-radius: 0.5rem;
+            }
+
+            .last-message-row i {
+                color: #9ca3af;
+                font-size: 0.85rem;
+                margin-top: 0.1rem;
+                flex-shrink: 0;
+            }
+
+            .last-message-text {
+                font-size: 0.8rem;
+                color: #6b7280;
+                overflow: hidden;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                line-height: 1.4;
+                flex: 1;
+            }
+
+            .chat-card-footer {
+                padding: 0.75rem 1.25rem;
+                border-top: 1px solid #f0f0f0;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .msg-count-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.3rem;
+                font-size: 0.78rem;
+                color: #6b7280;
+            }
+
+            .time-text {
+                font-size: 0.75rem;
+                color: #9ca3af;
+            }
+
+            .view-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.3rem;
+                font-size: 0.78rem;
+                font-weight: 600;
+                color: #0070f0;
+                padding: 0.3rem 0.75rem;
+                border-radius: 0.4rem;
+                background: rgba(0,112,240,0.08);
+                transition: background 0.2s;
+            }
+
+            .view-btn:hover { background: rgba(0,112,240,0.15); text-decoration: none; }
+
+            /* ===== Empty State ===== */
+            .empty-state {
+                text-align: center;
+                padding: 4rem 1.5rem;
+                grid-column: 1 / -1;
+                background: #fff;
+                border-radius: 1rem;
+                border: 1.5px solid #f0f0f0;
+            }
+
+            .empty-state-icon {
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 1.5rem;
+                font-size: 2.2rem;
+                color: #6366f1;
+            }
+
+            .empty-state h4 {
+                font-size: 1.15rem;
+                font-weight: 700;
+                color: #374151;
+                margin-bottom: 0.5rem;
+            }
+
+            .empty-state p {
+                color: #9ca3af;
+                font-size: 0.875rem;
+                margin: 0;
+            }
+
+            /* ===== Pagination ===== */
+            .pagination-wrapper {
+                background: #fff;
+                border-radius: 1rem;
+                padding: 1rem 1.5rem;
+                box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+                border: 1px solid #f0f0f0;
+            }
+
+            @media (max-width: 768px) {
+                .stats-row { grid-template-columns: 1fr 1fr; }
+                .chats-grid { grid-template-columns: 1fr; }
+                .search-bar-inner { flex-direction: column; align-items: stretch; }
+                .btn-search, .btn-reset { width: 100%; justify-content: center; }
+            }
+
+            @media (max-width: 480px) {
+                .stats-row { grid-template-columns: 1fr; }
             }
         </style>
     @endpush
 
-    @push('scripts')
-        <script src="{{ asset('assets/js/app-chat.js') }}"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // Initialize perfect scrollbar
-                new KTScroll(document.getElementById('chat-list'), {
-                    wheelSpeed: 0.5,
-                    suppressScrollX: true
-                });
+    <div class="chats-page-wrapper">
 
-                // Highlight active chat
-                const currentChatId = {{ request()->route('id') ?? 'null' }};
-                if (currentChatId) {
-                    document.querySelector(`a[href*="${currentChatId}"]`).closest('.chat-contact-list-item').classList.add('active');
-                }
-            });
-        </script>
-    @endpush
-
-    <div class="card">
-        <!-- Header -->
-        <div class="card-header border-0 pt-6">
-            <div class="card-title">
-                <h3 class="fw-bold m-0">{{ __('Chat Conversations') }}</h3>
+        {{-- ===== Stats Row ===== --}}
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="ki-outline ki-message-text-2 fs-1"></i></div>
+                <div class="stat-info">
+                    <h4>{{ $totalRooms }}</h4>
+                    <span>إجمالي المحادثات</span>
+                </div>
             </div>
-            <div class="card-toolbar">
-                <div class="d-flex align-items-center position-relative me-4">
-                    <span class="svg-icon svg-icon-1 position-absolute ms-4">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect opacity="0.5" x="17.0365" y="15.1223" width="8.15546" height="2" rx="1" transform="rotate(45 17.0365 15.1223)" fill="currentColor"></rect>
-                            <path d="M11 19C6.55556 19 3 15.4444 3 11C3 6.55556 6.55556 3 11 3C15.4444 3 19 6.55556 19 11C19 15.4444 15.4444 19 11 19ZM11 5C7.53333 5 5 7.53333 5 11C5 14.4667 7.53333 17 11 17C14.4667 17 17 14.4667 17 11C17 7.53333 14.4667 5 11 5Z" fill="currentColor"></path>
-                        </svg>
-                    </span>
-                    <input type="text" class="form-control form-control-solid chat-search ps-12" placeholder="{{ __('Search chats...') }}">
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="ki-outline ki-message-text fs-1"></i></div>
+                <div class="stat-info">
+                    <h4>{{ $totalMessages }}</h4>
+                    <span>إجمالي الرسائل</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon orange"><i class="ki-outline ki-calendar fs-1"></i></div>
+                <div class="stat-info">
+                    <h4>{{ $todayRooms }}</h4>
+                    <span>محادثات اليوم</span>
                 </div>
             </div>
         </div>
 
-        <!-- Body -->
-        <div class="card-body p-0">
-            <div class="app-chat overflow-hidden">
-                <ul class="list-unstyled chat-contact-list py-2 mb-0" id="chat-list">
-                    @forelse ($rooms as $room)
-                        <li class="chat-contact-list-item">
-                            <a class="d-flex align-items-center px-6 py-4" href="{{ route('admin.chats.single', $room->id) }}">
-                                <div class="position-relative">
-                                    <img src="{{ $room->trip?->user?->avatar_url ?? asset('assets/media/avatars/blank.png') }}" 
-                                         class="chat-contact-avatar" 
-                                         alt="{{ $room->trip?->user?->full_name ?? 'Unknown User' }}">
-                                    @if($room->unread_count > 0)
-                                        <span class="unread-badge badge bg-primary rounded-circle position-absolute top-0 end-0">
-                                            {{ $room->unread_count }}
-                                        </span>
-                                    @endif
-                                </div>
+        {{-- ===== Search & Filters ===== --}}
+        <div class="search-bar-card">
+            <form method="GET" action="{{ route('admin.chats.index') }}">
+                <div class="search-bar-inner">
+                    {{-- Search by driver --}}
+                    <div class="search-input-wrapper">
+                        <span class="search-icon"><i class="ki-outline ki-truck fs-5"></i></span>
+                        <input
+                            type="text"
+                            name="driver"
+                            value="{{ request('driver') }}"
+                            placeholder="اسم السائق أو رقم هاتفه..."
+                            id="search-driver"
+                        >
+                    </div>
 
-                                <div class="chat-contact-info flex-grow-1 ms-4 overflow-hidden">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <h6 class="chat-contact-name text-truncate m-0">
-                                            {{ __('Client') }}: {{ $room->trip?->user?->full_name ?? 'Unknown User' }}
-                                        </h6>
-                                        @if($room->latest_message && $room->latest_message->isNotEmpty())
-                                            <small class="text-muted last-message-time">
-                                                {{ $room->latest_message->first()->created_at->diffForHumans() }}
-                                            </small>
-                                        @endif
-                                    </div>
-                                    
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="chat-contact-status text-truncate text-muted">
-                                            {{ __('Driver') }}: {{ $room->trip?->driver?->full_name ?? 'Unknown Driver' }}
-                                        </small>
-                                        @if($room->latest_message && $room->latest_message->isNotEmpty())
-                                            <small class="last-message-preview text-muted text-truncate ms-2">
-                                                {{ Str::limit($room->latest_message->first()->message, 30) }}
-                                            </small>
-                                        @endif
-                                    </div>
-                                </div>
-                            </a>
-                        </li>
-                    @empty
-                        <li class="text-center py-8">
-                            <div class="symbol symbol-100px symbol-circle mb-5">
-                                <div class="symbol-label bg-light-primary">
-                                    <span class="svg-icon svg-icon-5x svg-icon-primary">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                            <path opacity="0.3" d="M21 18H3C2.4 18 2 17.6 2 17V7C2 6.4 2.4 6 3 6H21C21.6 6 22 6.4 22 7V17C22 17.6 21.6 18 21 18Z" fill="currentColor"></path>
-                                            <path d="M12 8C10.9 8 10 7.1 10 6C10 4.9 10.9 4 12 4C13.1 4 14 4.9 14 6C14 7.1 13.1 8 12 8ZM10 14C10 12.9 10.9 12 12 12C13.1 12 14 12.9 14 14C14 15.1 13.1 16 12 16C10.9 16 10 15.1 10 14ZM10 20C10 18.9 10.9 18 12 18C13.1 18 14 18.9 14 20C14 21.1 13.1 22 12 22C10.9 22 10 21.1 10 20Z" fill="currentColor"></path>
-                                        </svg>
-                                    </span>
-                                </div>
-                            </div>
-                            <h4 class="text-gray-600">{{ __('No chat conversations found') }}</h4>
-                            <p class="text-muted">{{ __('When customers start conversations, they will appear here') }}</p>
-                        </li>
-                    @endforelse
-                </ul>
-            </div>
+                    {{-- Search by user --}}
+                    <div class="search-input-wrapper">
+                        <span class="search-icon"><i class="ki-outline ki-user fs-5"></i></span>
+                        <input
+                            type="text"
+                            name="user"
+                            value="{{ request('user') }}"
+                            placeholder="اسم العميل أو رقم هاتفه..."
+                            id="search-user"
+                        >
+                    </div>
+
+                    {{-- Search by trip ID --}}
+                    <div class="search-input-wrapper" style="max-width: 160px;">
+                        <span class="search-icon"><i class="ki-outline ki-route fs-5"></i></span>
+                        <input
+                            type="number"
+                            name="trip"
+                            value="{{ request('trip') }}"
+                            placeholder="رقم الرحلة..."
+                            id="search-trip"
+                        >
+                    </div>
+
+                    <button type="submit" class="btn-search">
+                        <i class="ki-outline ki-magnifier fs-5"></i>
+                        بحث
+                    </button>
+
+                    @if(request('driver') || request('user') || request('trip'))
+                        <a href="{{ route('admin.chats.index') }}" class="btn-reset">
+                            <i class="ki-outline ki-cross-circle fs-5"></i>
+                            مسح
+                        </a>
+                    @endif
+                </div>
+            </form>
+
+            {{-- Active Search Indicators --}}
+            @if(request('driver') || request('user') || request('trip'))
+                <div class="mt-3 d-flex align-items-center gap-3 flex-wrap">
+                    <span class="text-muted fs-7">نتائج البحث:</span>
+                    @if(request('driver'))
+                        <span class="search-active-indicator">
+                            <i class="ki-outline ki-truck fs-7"></i>
+                            السائق: "{{ request('driver') }}"
+                        </span>
+                    @endif
+                    @if(request('user'))
+                        <span class="search-active-indicator">
+                            <i class="ki-outline ki-user fs-7"></i>
+                            العميل: "{{ request('user') }}"
+                        </span>
+                    @endif
+                    @if(request('trip'))
+                        <span class="search-active-indicator">
+                            <i class="ki-outline ki-route fs-7"></i>
+                            رحلة رقم: #{{ request('trip') }}
+                        </span>
+                    @endif
+                    <span class="text-muted fs-7">&mdash; {{ $rooms->total() }} نتيجة</span>
+                </div>
+            @endif
         </div>
 
-        <!-- Footer -->
+        {{-- ===== Chats Grid ===== --}}
+        <div class="chats-grid">
+            @forelse ($rooms as $room)
+                @php
+                    $user      = $room->trip?->user;
+                    $driver    = $room->trip?->driver;
+                    $latestMsg = $room->latest_message?->first();
+                    $msgCount  = $room->chat?->count() ?? 0;
+                @endphp
+                <a class="chat-card" href="{{ route('admin.chats.single', $room->id) }}">
+
+                    {{-- Card Header --}}
+                    <div class="chat-card-header">
+                        <div class="avatar-stack">
+                            @if($user?->avatar_url)
+                                <img src="{{ $user->avatar_url }}" alt="{{ $user->full_name }}">
+                            @else
+                                <div class="avatar-placeholder">{{ mb_substr($user?->full_name ?? 'U', 0, 1) }}</div>
+                            @endif
+                            @if($driver?->avatar_url)
+                                <img src="{{ $driver->avatar_url }}" alt="{{ $driver->full_name }}">
+                            @else
+                                <div class="avatar-placeholder" style="background: linear-gradient(135deg, #f79009 0%, #dc6803 100%);">
+                                    {{ mb_substr($driver?->full_name ?? 'D', 0, 1) }}
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="trip-info flex-grow-1 overflow-hidden">
+                            <h6>{{ $user?->full_name ?? 'عميل غير معروف' }}</h6>
+                            <span class="trip-badge">
+                                <i class="ki-outline ki-route fs-8"></i>
+                                رحلة #{{ $room->trip?->id ?? 'N/A' }}
+                            </span>
+                        </div>
+                    </div>
+
+                    {{-- Card Body --}}
+                    <div class="chat-card-body">
+                        <div class="person-row">
+                            <span class="person-label user">عميل</span>
+                            <span class="person-name">{{ $user?->full_name ?? 'غير معروف' }}</span>
+                            @if($user?->phone)
+                                <span class="person-phone">{{ $user->phone }}</span>
+                            @endif
+                        </div>
+
+                        <hr class="divider-dashed">
+
+                        <div class="person-row">
+                            <span class="person-label driver">سائق</span>
+                            <span class="person-name">{{ $driver?->full_name ?? 'غير معروف' }}</span>
+                            @if($driver?->phone)
+                                <span class="person-phone">{{ $driver->phone }}</span>
+                            @endif
+                        </div>
+
+                        @if($latestMsg)
+                            <div class="last-message-row">
+                                <i class="ki-outline ki-message-text fs-6"></i>
+                                <span class="last-message-text">{{ $latestMsg->message }}</span>
+                            </div>
+                        @endif
+                    </div>
+
+                    {{-- Card Footer --}}
+                    <div class="chat-card-footer">
+                        <div class="msg-count-badge">
+                            <i class="ki-outline ki-message-text-2"></i>
+                            {{ $msgCount }} رسالة
+                        </div>
+                        <span class="time-text">
+                            @if($latestMsg)
+                                {{ $latestMsg->created_at->diffForHumans() }}
+                            @else
+                                {{ $room->created_at->diffForHumans() }}
+                            @endif
+                        </span>
+                        <span class="view-btn">
+                            عرض
+                            <i class="ki-outline ki-arrow-left fs-7"></i>
+                        </span>
+                    </div>
+
+                </a>
+            @empty
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="ki-outline ki-message-text-2"></i>
+                    </div>
+                    <h4>
+                        @if(request('driver') || request('user') || request('trip'))
+                            لا توجد نتائج مطابقة
+                        @else
+                            لا توجد محادثات
+                        @endif
+                    </h4>
+                    <p>
+                        @if(request('driver') || request('user') || request('trip'))
+                            جرّب تغيير كلمات البحث أو <a href="{{ route('admin.chats.index') }}">عرض الكل</a>
+                        @else
+                            عندما يبدأ العملاء محادثات ستظهر هنا
+                        @endif
+                    </p>
+                </div>
+            @endforelse
+        </div>
+
+        {{-- ===== Pagination ===== --}}
         @if($rooms->hasPages())
-            <div class="card-footer d-flex justify-content-end">
-                {{ $rooms->links() }}
+            <div class="pagination-wrapper d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <span class="text-muted fs-7">
+                    عرض {{ $rooms->firstItem() }}–{{ $rooms->lastItem() }} من {{ $rooms->total() }} محادثة
+                </span>
+                {{ $rooms->appends(request()->query())->links() }}
             </div>
         @endif
+
     </div>
 @endsection
