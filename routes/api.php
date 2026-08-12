@@ -149,54 +149,56 @@ Route::group(['prefix' => 'v1', 'as' => 'api.', 'middleware' => ['auth:sanctum']
         Route::get('shipping', [ServiceApiController::class, 'shipping']);
     });
 
-    Route::prefix('order')->group(function () {
-        Route::post('/new', [OrderApiController::class, 'neworder']);
-        Route::get('/old-for-driver', [OrderApiController::class, 'get_driver_orders']);
-        Route::get('/old-for-user', [OrderApiController::class, 'get_user_orders']);
+    foreach (['order', 'orders'] as $orderPrefix) {
+        Route::prefix($orderPrefix)->group(function () {
+            Route::post('/new', [OrderApiController::class, 'neworder']);
+            Route::get('/old-for-driver', [OrderApiController::class, 'get_driver_orders']);
+            Route::get('/old-for-user', [OrderApiController::class, 'get_user_orders']);
 
-        Route::get('/get-out-city-offers/{order_id}', [OrderApiController::class, 'get_out_city_offers']);
+            Route::get('/get-out-city-offers/{order_id}', [OrderApiController::class, 'get_out_city_offers']);
 
-        Route::get('/get-driver-active-ride', [OrderApiController::class, 'get_driver_active_ride']);
-        Route::get('/get-user-active-ride', [OrderApiController::class, 'get_user_active_ride']);
-        Route::get('/show/{order}', [OrderApiController::class, 'show']);
+            Route::get('/get-driver-active-ride', [OrderApiController::class, 'get_driver_active_ride']);
+            Route::get('/get-user-active-ride', [OrderApiController::class, 'get_user_active_ride']);
+            Route::get('/show/{order}', [OrderApiController::class, 'show']);
 
 
-        Route::get('/add-out-city-offer/{order_id}/{offer_rate}', [OrderApiController::class, 'add_out_city_offer']);
-        Route::get('/current-orders-driver', [OrderApiController::class, 'current_orders_driver']);
+            Route::get('/add-out-city-offer/{order_id}/{offer_rate}', [OrderApiController::class, 'add_out_city_offer']);
+            Route::get('/current-orders-driver', [OrderApiController::class, 'current_orders_driver']);
 
-        Route::get('/accept/{order}', [OrderApiController::class, 'acceptorder']);
-        Route::get('/offer/{order}/{offer}', [OrderApiController::class, 'offerorder']);
-        Route::get('/arrived/{order}', [OrderApiController::class, 'arrivedOrder']);
-        Route::get('/start-moving/{order}', [OrderApiController::class, 'startMoving']);
-        
-        // Handover & OTP Verification APIs for Shipping & Normal Trips
-        Route::post('/{order}/driver-arrive-sender', [OrderApiController::class, 'driverArriveSender']);
-        Route::post('/{order}/verify-pickup-otp', [OrderApiController::class, 'verifyPickupOtp']);
-        Route::post('/{order}/driver-arrive-receiver', [OrderApiController::class, 'driverArriveReceiver']);
-        Route::post('/{order}/verify-delivery-otp', [OrderApiController::class, 'verifyDeliveryOtp']);
-        Route::post('/{order}/verify-receiver-otp', [OrderApiController::class, 'verifyReceiverOtp']);
+            Route::get('/accept/{order}', [OrderApiController::class, 'acceptorder']);
+            Route::get('/offer/{order}/{offer}', [OrderApiController::class, 'offerorder']);
+            Route::get('/arrived/{order}', [OrderApiController::class, 'arrivedOrder']);
+            Route::get('/start-moving/{order}', [OrderApiController::class, 'startMoving']);
+            
+            // Handover & OTP Verification APIs for Shipping & Normal Trips
+            Route::post('/{order}/driver-arrive-sender', [OrderApiController::class, 'driverArriveSender']);
+            Route::post('/{order}/verify-pickup-otp', [OrderApiController::class, 'verifyPickupOtp']);
+            Route::post('/{order}/driver-arrive-receiver', [OrderApiController::class, 'driverArriveReceiver']);
+            Route::post('/{order}/verify-delivery-otp', [OrderApiController::class, 'verifyDeliveryOtp']);
+            Route::post('/{order}/verify-receiver-otp', [OrderApiController::class, 'verifyReceiverOtp']);
 
-        // Test Realtime Updates (Inside Auth for production)
-        Route::get('/test-status/{order}/{status}', [OrderApiController::class, 'updateTestStatus']);
-        Route::post('/test-realtime-update', [OrderApiController::class, 'testRealtimeUpdate']);
+            // Test Realtime Updates (Inside Auth for production)
+            Route::get('/test-status/{order}/{status}', [OrderApiController::class, 'updateTestStatus']);
+            Route::post('/test-realtime-update', [OrderApiController::class, 'testRealtimeUpdate']);
 
-        Route::get('/start/{order}', [OrderApiController::class, 'startorder']);
-        Route::get('/end/{order}', [OrderApiController::class, 'endorder']);
-        Route::get('/cancel/{order}', [OrderApiController::class, 'cancelorder']);
-        Route::post('getprice', [OrderApiController::class, 'getprice']);
-        Route::get('my', [OrderApiController::class, 'get_my_order']);
+            Route::get('/start/{order}', [OrderApiController::class, 'startorder']);
+            Route::get('/end/{order}', [OrderApiController::class, 'endorder']);
+            Route::get('/cancel/{order}', [OrderApiController::class, 'cancelorder']);
+            Route::post('getprice', [OrderApiController::class, 'getprice']);
+            Route::get('my', [OrderApiController::class, 'get_my_order']);
 
-        // New Offer Negotiation Endpoints
-        // Flow: User creates order with offer_rate ? Driver accepts OR counter-offers ? User accepts/denies
-        Route::post('/offer/driver-counter', [OrderApiController::class, 'driverCounterOffer']);
-        Route::post('/offer/driver-accept-user-price', [OrderApiController::class, 'driverAcceptUserPrice']);
-        Route::post('/offer/{offer}/accept', [OrderApiController::class, 'acceptOffer']);
-        Route::post('/offer/{offer}/deny', [OrderApiController::class, 'denyOffer']);
-        Route::get('/{order}/offers', [OrderApiController::class, 'getOrderOffers']);
-        Route::post('/{order}/resolve-payment', [OrderApiController::class, 'resolvePayment']);
-        Route::post('/reject', [OrderApiController::class, 'rejectOrder']); // Driver reject order
-        Route::get('/suggested-places', [OrderApiController::class, 'getSuggestedPlaces']);
-    });
+            // New Offer Negotiation Endpoints
+            // Flow: User creates order with offer_rate ? Driver accepts OR counter-offers ? User accepts/denies
+            Route::post('/offer/driver-counter', [OrderApiController::class, 'driverCounterOffer']);
+            Route::post('/offer/driver-accept-user-price', [OrderApiController::class, 'driverAcceptUserPrice']);
+            Route::post('/offer/{offer}/accept', [OrderApiController::class, 'acceptOffer']);
+            Route::post('/offer/{offer}/deny', [OrderApiController::class, 'denyOffer']);
+            Route::get('/{order}/offers', [OrderApiController::class, 'getOrderOffers']);
+            Route::post('/{order}/resolve-payment', [OrderApiController::class, 'resolvePayment']);
+            Route::post('/reject', [OrderApiController::class, 'rejectOrder']); // Driver reject order
+            Route::get('/suggested-places', [OrderApiController::class, 'getSuggestedPlaces']);
+        });
+    }
     Route::prefix('payments')->group(function () {
         Route::get('/get', [PaymentsApiController::class, 'get_payments']);
         Route::get('/change/{id}', [PaymentsApiController::class, 'check_payment']);
