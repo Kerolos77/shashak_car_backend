@@ -15,7 +15,7 @@ class ChatController extends BaseController
         parent::__construct($model);
     }
 
-    public function index(Request $request)
+    public function index(Request $request = null)
     {
         $query = $this->model->with([
             'chat', 

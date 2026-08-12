@@ -22,7 +22,7 @@ class BaseController extends Controller
         $this->model = $model;
     }
 
-    public function index()
+    public function index(Request $request = null)
     {
         $rows = $this->model;
         $rows = $this->filter($rows);
