@@ -17,6 +17,7 @@ class ChatController extends BaseController
 
     public function index(Request $request = null)
     {
+        $request = $request ?? request();
         $query = $this->model->with([
             'chat', 
             'trip', 

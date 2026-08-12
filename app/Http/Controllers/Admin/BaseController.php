@@ -24,6 +24,7 @@ class BaseController extends Controller
 
     public function index(Request $request = null)
     {
+        $request = $request ?? request();
         $rows = $this->model;
         $rows = $this->filter($rows);
         $with = $this->with();
