@@ -356,17 +356,21 @@ class OrderApiController extends Controller
         $driverID = $this->getUserIDByToken(request()->bearerToken());
         $driver = User::find($driverID);
 
-        $ordersQuery = Order::with('driver', 'user');
+        $ordersQuery = Order::with('driver', 'user')->where('driver_id', $driverID);
 
-        // Female Only Logic
-        if ($driver->gender === 'male') {
-            // Male drivers cannot see female-only orders
+        if ($driver && $driver->gender === 'male') {
             $ordersQuery->where('is_female_only', false);
         }
-        // Female drivers see all orders (both female-only and normal)
 
-        $orders = $ordersQuery->get();
-        // dd($orders);
+        if ($request->has('in_city') && $request->in_city !== null) {
+            $ordersQuery->where('inter_city', $request->in_city);
+        }
+
+        $perPage = (int) $request->get('per_page', $request->get('limit', 10));
+        $page = (int) $request->get('page', 1);
+
+        $paginator = $ordersQuery->orderBy('id', 'desc')->paginate($perPage, ['*'], 'page', $page);
+
         $statusArray = array_fill_keys([
             Order::STATUS_PENDING,
             Order::STATUS_NEGOTIATING,
@@ -378,10 +382,17 @@ class OrderApiController extends Controller
             Order::STATUS_CANCELED
         ], []);
 
-        // Populate status array with orders
-        foreach ($orders as $order) {
+        foreach ($paginator->items() as $order) {
             $statusArray[$order->status][] = new OrderResource($order);
         }
+
+        $statusArray['pagination'] = [
+            'current_page' => $paginator->currentPage(),
+            'last_page'    => $paginator->lastPage(),
+            'per_page'     => $paginator->perPage(),
+            'total'        => $paginator->total(),
+            'has_more'     => $paginator->hasMorePages(),
+        ];
 
         return Resp($statusArray, 'success');
     }
@@ -393,7 +404,12 @@ class OrderApiController extends Controller
         if ($request->has('in_city') && $request->in_city !== null) {
             $ordersQuery->where('inter_city', $request->in_city);
         }
-        $orders = $ordersQuery->get();
+
+        $perPage = (int) $request->get('per_page', $request->get('limit', 10));
+        $page = (int) $request->get('page', 1);
+
+        $paginator = $ordersQuery->orderBy('id', 'desc')->paginate($perPage, ['*'], 'page', $page);
+
         $statusArray = array_fill_keys([
             Order::STATUS_PENDING,
             Order::STATUS_NEGOTIATING,
@@ -405,11 +421,17 @@ class OrderApiController extends Controller
             Order::STATUS_CANCELED
         ], []);
 
-        // Populate status array with orders
-        foreach ($orders as $order) {
+        foreach ($paginator->items() as $order) {
             $statusArray[$order->status][] = new OrderResource($order);
         }
 
+        $statusArray['pagination'] = [
+            'current_page' => $paginator->currentPage(),
+            'last_page'    => $paginator->lastPage(),
+            'per_page'     => $paginator->perPage(),
+            'total'        => $paginator->total(),
+            'has_more'     => $paginator->hasMorePages(),
+        ];
 
         return Resp($statusArray, 'success');
     }

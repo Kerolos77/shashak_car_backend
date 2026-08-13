@@ -65,6 +65,7 @@ class DriverEarningsApiController extends Controller
     {
         $driverId = Auth::id();
         $period = $request->query('period', 'today');
+        $perPage = (int) $request->query('per_page', $request->query('limit', 10));
 
         $query = Order::with(['user', 'service'])
             ->where('driver_id', $driverId)
@@ -72,7 +73,7 @@ class DriverEarningsApiController extends Controller
 
         $this->applyDateFilter($query, $period, $request);
 
-        $orders = $query->latest('completed_at')->paginate(15);
+        $orders = $query->latest('completed_at')->paginate($perPage);
 
         // Map data to include commission per trip
         $items = $orders->getCollection()->map(function ($order) {
@@ -98,6 +99,13 @@ class DriverEarningsApiController extends Controller
         return response()->json([
             'success' => true,
             'data' => $items,
+            'pagination' => [
+                'current_page' => $orders->currentPage(),
+                'last_page' => $orders->lastPage(),
+                'per_page' => $orders->perPage(),
+                'total' => $orders->total(),
+                'has_more' => $orders->hasMorePages(),
+            ],
             'meta' => [
                 'current_page' => $orders->currentPage(),
                 'last_page' => $orders->lastPage(),
