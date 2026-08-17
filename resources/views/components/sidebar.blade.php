@@ -147,6 +147,22 @@
                     </div>
                     @endcan
                     
+                    <!-- Driver Applications Center -->
+                    <div class="menu-item {{ request()->is('admin/driver-applications*') ? 'here show' : '' }}">
+                        <a class="menu-link" href="{{ route('admin.driver-applications.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-outline ki-id-card fs-2"></i>
+                            </span>
+                            <span class="menu-title">مركز مراجعة طلبات الانضمام والمستندات</span>
+                            @php
+                                $pendingAppsCount = \App\Models\DriverProfile::where('status', 'pending')->count();
+                            @endphp
+                            @if($pendingAppsCount > 0)
+                                <span class="badge badge-warning ms-auto">{{ $pendingAppsCount }}</span>
+                            @endif
+                        </a>
+                    </div>
+
                     <!-- Drivers Section -->
                     @can('driver_user_access')
                     <div data-kt-menu-trigger="click" class="menu-item menu-accordion {{ request()->is('admin/drivers*') ? 'here show' : '' }}">

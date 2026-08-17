@@ -169,7 +169,7 @@
                                 <span class="path2"></span>
                             </i>
                         </span>
-                        <span class="menu-title">طلبات انضمام السائقين</span>
+                        <span class="menu-title">مركز مراجعة طلبات الانضمام والمستندات</span>
                         @php
                             $pendingAppsCount = \App\Models\DriverProfile::where('status', 'pending')->count();
                         @endphp
