@@ -160,6 +160,25 @@
                     <!--end:Menu sub-->
                 </div>
 
+                <!-- Driver Applications Center (Separate Page) -->
+                <div class="menu-item">
+                    <a class="menu-link {{ request()->is('admin/driver-applications*') ? 'active' : '' }}" href="{{ route('admin.driver-applications.index') }}">
+                        <span class="menu-icon">
+                            <i class="ki-duotone ki-id-card fs-2">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                        </span>
+                        <span class="menu-title">طلبات انضمام السائقين</span>
+                        @php
+                            $pendingAppsCount = \App\Models\DriverProfile::where('status', 'pending')->count();
+                        @endphp
+                        @if($pendingAppsCount > 0)
+                            <span class="badge badge-warning ms-auto">{{ $pendingAppsCount }}</span>
+                        @endif
+                    </a>
+                </div>
+
                 <!-- Driver Management -->
                 <div data-kt-menu-trigger="click" class="menu-item menu-accordion {{ request()->is('admin/drivers*') ? 'here show' : '' }}">
                     <!--begin:Menu link-->

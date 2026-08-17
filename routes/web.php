@@ -107,6 +107,12 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth:admi
     Route::post('users/{id}/add-wallet', [UserController::class, 'addWalletBalance'])->name('users.add-wallet');
     Route::resource('users', UserController::class);
 
+    // Driver Registration Applications Center
+    Route::get('driver-applications', [App\Http\Controllers\Admin\DriverApplicationController::class, 'index'])->name('driver-applications.index');
+    Route::get('driver-applications/{id}', [App\Http\Controllers\Admin\DriverApplicationController::class, 'show'])->name('driver-applications.show');
+    Route::put('driver-applications/{id}/approve', [App\Http\Controllers\Admin\DriverApplicationController::class, 'approve'])->name('driver-applications.approve');
+    Route::put('driver-applications/{id}/reject', [App\Http\Controllers\Admin\DriverApplicationController::class, 'reject'])->name('driver-applications.reject');
+
     // Drivers Actions
     Route::get('drivers/{id}/export-pdf', [App\Http\Controllers\Admin\OfficialReportController::class, 'exportDriverPdf'])->name('drivers.export-pdf');
     Route::resource('drivers', DriverController::class);
