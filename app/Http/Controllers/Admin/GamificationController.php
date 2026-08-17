@@ -13,7 +13,7 @@ class GamificationController extends BaseController
         parent::__construct($model);
     }
 
-    public function index()
+    public function index(Request $request = null)
     {
         $row = $this->model->first();
         $pageTitle = trans('cruds.gamification.title');

@@ -13,9 +13,9 @@ class DriverController extends BaseController
         parent::__construct($model);
     }
 
-    public function index()  
+    public function index(Request $request = null)  
     {
-        $request = request();
+        $request = $request ?? request();
         $allDriversCount = $this->model->count(); 
         $pendingDriversCount = $this->model->where('status', '=', 'pending')->count(); 
         $activeDriversCount = $this->model->where('status', '=', 'active')->count(); 

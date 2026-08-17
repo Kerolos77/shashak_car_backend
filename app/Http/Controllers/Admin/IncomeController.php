@@ -12,7 +12,7 @@ class IncomeController extends BaseController
     {
         parent::__construct($model);
     }
-    public function index()
+    public function index(Request $request = null)
     {
         $rows = $this->model->with('order', 'order.user', 'order.driver')->orderBy('created_at', 'DESC')->get();
 

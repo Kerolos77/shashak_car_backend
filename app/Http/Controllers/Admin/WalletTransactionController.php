@@ -16,7 +16,7 @@ class WalletTransactionController extends BaseController
         parent::__construct($model);
     }
 
-    public function index()
+    public function index(Request $request = null)
     {
         $rows = $this->model;
         $users = User::get();

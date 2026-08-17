@@ -47,7 +47,7 @@ class ServiceController extends BaseController
         ];
     }
 
-    public function index()
+    public function index(Request $request = null)
     {
         $rows = $this->model->with('models');
         $rows = $this->filter($rows);
