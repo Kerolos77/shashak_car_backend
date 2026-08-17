@@ -1,9 +1,9 @@
 @extends('layouts.admin')
 
 @section('breadcrumbs')
-    <li class="breadcrumb-item text-muted">{{ __('admin.drivers') ?? 'Ø§Ù„Ø³Ø§Ø¦Ù‚ÙˆÙ†' }}</li>
+    <li class="breadcrumb-item text-muted">{{ __('admin.drivers') ?? 'السائقون' }}</li>
     <span class="bullet bg-gray-300 w-5px h-2px"></span>
-    <li class="breadcrumb-item text-dark">{{ __('admin.show_all') ?? 'Ø¹Ø±Ø¶ Ø§Ù„ÙƒÙ„' }}</li>
+    <li class="breadcrumb-item text-dark">{{ __('admin.show_all') ?? 'عرض الكل' }}</li>
 @endsection
 
 @section('content')
@@ -133,8 +133,8 @@
                 {{ __('admin.show_all') }}
             </a>
             <a href="{{ route('admin.drivers.index', ['is_vip' => '1']) }}" 
-               class="btn btn-sm {{ request('is_vip') == '1' ? 'btn-warning text-dark fw-bold' : 'btn-light-warning' }} px-4 py-2" title="ÙƒØ¨Ø§ØªÙ† VIP ÙÙ‚Ø·">
-                â­ ÙƒØ¨Ø§ØªÙ† VIP ({{ $vipDriversCount ?? 0 }})
+               class="btn btn-sm {{ request('is_vip') == '1' ? 'btn-warning text-dark fw-bold' : 'btn-light-warning' }} px-4 py-2" title="كباتن VIP فقط">
+                ⭐ كباتن VIP ({{ $vipDriversCount ?? 0 }})
             </a>
             <a href="{{ route('admin.drivers.index', ['status' => 'active']) }}" 
                class="btn btn-sm {{ request('status') == 'active' ? 'btn-success text-white' : 'btn-light-success' }} px-4 py-2">
@@ -176,11 +176,11 @@
                     </select>
                 </div>
                 <div class="col-md-2 col-12">
-                    <label class="form-label fs-7 fw-bold text-gray-700">ÙØ¦Ø© VIP</label>
+                    <label class="form-label fs-7 fw-bold text-gray-700">فئة VIP</label>
                     <select name="is_vip" class="form-select form-select-solid fs-7">
-                        <option value="">Ø¬Ù…ÙŠØ¹ Ø§Ù„ÙØ¦Ø§Øª</option>
-                        <option value="1" {{ request('is_vip') == '1' ? 'selected' : '' }}>ÙƒØ¨Ø§ØªÙ† VIP â­</option>
-                        <option value="0" {{ request('is_vip') == '0' ? 'selected' : '' }}>ÙƒØ¨Ø§ØªÙ† Ø¹Ø§Ø¯ÙŠÙˆÙ†</option>
+                        <option value="">جميع الفئات</option>
+                        <option value="1" {{ request('is_vip') == '1' ? 'selected' : '' }}>كباتن VIP ⭐</option>
+                        <option value="0" {{ request('is_vip') == '0' ? 'selected' : '' }}>كباتن عاديون</option>
                     </select>
                 </div>
                 <div class="col-md-3 col-12 d-flex gap-2">
