@@ -1,4 +1,4 @@
-﻿@extends('layouts.admin')
+@extends('layouts.admin')
 
 @section('breadcrumbs')
     <li class="breadcrumb-item text-muted">{{ __('admin.drivers') ?? 'Ø§Ù„Ø³Ø§Ø¦Ù‚ÙˆÙ†' }}</li>
