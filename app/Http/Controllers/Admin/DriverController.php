@@ -143,7 +143,7 @@ class DriverController extends BaseController
 
     public function show($id)  
     {
-        $row = $this->model->with(['user', 'user.country', 'user.city'])->findOrFail($id);
+        $row = $this->model->with(['user', 'user.country', 'user.city', 'registration_logs', 'registration_logs.admin'])->findOrFail($id);
         $userId = $row->user_id;
 
         $moduleName = $this->getModelName();
@@ -217,10 +217,10 @@ class DriverController extends BaseController
             'admin_id' => \Illuminate\Support\Facades\Auth::guard('admin')->id() ?? \Illuminate\Support\Facades\Auth::id(),
             'user_id'  => $user->id,
             'action'   => 'toggle_vip',
-            'notes'    => "ØªÙ… {$statusText} Ù„Ù„Ø³Ø§Ø¦Ù‚.",
+            'notes'    => "تم {$statusText} للسائق.",
         ]);
 
-        return redirect()->back()->with('success', __("ØªÙ… {$statusText} Ø¨Ù†Ø¬Ø§Ø­."));
+        return redirect()->back()->with('success', __("تم {$statusText} بنجاح."));
     }
 
     public function addWalletBalance(Request $request, $id)
@@ -310,7 +310,7 @@ class DriverController extends BaseController
                     : url('files/DriverLicense/' . $userId . '/' . $img);
                 $documents[] = [
                     'type' => 'criminal_record',
-                    'name' => 'Ø³Ø¬Ù„ Ø¬Ù†Ø§Ø¦ÙŠ',
+                    'name' => 'سجل جنائي',
                     'image' => $imageUrl,
                     'status' => 'uploaded'
                 ];
@@ -322,7 +322,7 @@ class DriverController extends BaseController
                 if ($identity->front_identity_image) {
                     $documents[] = [
                         'type' => 'identity_front',
-                        'name' => 'Ø§Ù„Ù‡ÙˆÙŠØ© - Ø§Ù„ÙˆØ¬Ù‡ Ø§Ù„Ø£Ù…Ø§Ù…ÙŠ',
+                        'name' => 'الهوية - الوجه الأمامي',
                         'image' => url('files/DriverLicense/' . $userId . '/' . $identity->front_identity_image),
                         'status' => 'uploaded'
                     ];
@@ -338,7 +338,7 @@ class DriverController extends BaseController
                 if ($identity->driver_image_with_id) {
                     $documents[] = [
                         'type' => 'identity_with_driver',
-                        'name' => 'ØµÙˆØ±Ø© Ø§Ù„Ø³Ø§Ø¦Ù‚ Ù…Ø¹ Ø§Ù„Ù‡ÙˆÙŠØ©',
+                        'name' => 'صورة السائق مع الهوية',
                         'image' => url('files/DriverLicense/' . $userId . '/' . $identity->driver_image_with_id),
                         'status' => 'uploaded'
                     ];
@@ -351,7 +351,7 @@ class DriverController extends BaseController
                 if ($license->front_license_image) {
                     $documents[] = [
                         'type' => 'license_front',
-                        'name' => 'Ø±Ø®ØµØ© Ø§Ù„Ù‚ÙŠØ§Ø¯Ø© - Ø§Ù„ÙˆØ¬Ù‡ Ø§Ù„Ø£Ù…Ø§Ù…ÙŠ',
+                        'name' => 'رخصة القيادة - الوجه الأمامي',
                         'image' => url('files/DriverLicense/' . $userId . '/' . $license->front_license_image),
                         'status' => 'uploaded'
                     ];
@@ -367,7 +367,7 @@ class DriverController extends BaseController
                 if ($license->driver_with_license_image) {
                     $documents[] = [
                         'type' => 'license_with_driver',
-                        'name' => 'ØµÙˆØ±Ø© Ø§Ù„Ø³Ø§Ø¦Ù‚ Ù…Ø¹ Ø±Ø®ØµØ© Ø§Ù„Ù‚ÙŠØ§Ø¯Ø©',
+                        'name' => 'صورة السائق مع رخصة القيادة',
                         'image' => url('files/DriverLicense/' . $userId . '/' . $license->driver_with_license_image),
                         'status' => 'uploaded'
                     ];
@@ -380,7 +380,7 @@ class DriverController extends BaseController
                 if ($carLicense->front_license_image) {
                     $documents[] = [
                         'type' => 'car_license_front',
-                        'name' => 'Ø±Ø®ØµØ© Ø§Ù„Ø³ÙŠØ§Ø±Ø© - Ø§Ù„ÙˆØ¬Ù‡ Ø§Ù„Ø£Ù…Ø§Ù…ÙŠ',
+                        'name' => 'رخصة السيارة - الوجه الأمامي',
                         'image' => url('files/DriverLicense/' . $userId . '/' . $carLicense->front_license_image),
                         'status' => 'uploaded'
                     ];
@@ -396,7 +396,7 @@ class DriverController extends BaseController
                 if ($carLicense->driver_with_license_image) {
                     $documents[] = [
                         'type' => 'car_license_with_driver',
-                        'name' => 'ØµÙˆØ±Ø© Ø§Ù„Ø³Ø§Ø¦Ù‚ Ù…Ø¹ Ø±Ø®ØµØ© Ø§Ù„Ø³ÙŠØ§Ø±Ø©',
+                        'name' => 'صورة السائق مع رخصة السيارة',
                         'image' => url('files/DriverLicense/' . $userId . '/' . $carLicense->driver_with_license_image),
                         'status' => 'uploaded'
                     ];

@@ -23,7 +23,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-bold">سبب الرفض الموجه للسائق <span class="text-danger">*</span></label>
-                    <textarea name="reason" rows="4" class="form-control" placeholder="مثال: صورة رخصة القيادة غير واضحة، يرجى إعادة رفع صورة واضحة للوجهين." required></textarea>
+                    <textarea name="reason" rows="4" class="form-control" placeholder="مثال: صورة رخصة القيادة غير واضحة، يرجى إعادة رفع صورة واضحة للوجهين." required>{{ $row->latest_rejection_reason ?? "" }}</textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -77,6 +77,8 @@
                         <span class="capsule-badge badge-soft-success fs-7 py-1 px-3">{{ __('app.active') }}</span>
                     @elseif($row->status == 'pending')
                         <span class="capsule-badge badge-soft-warning fs-7 py-1 px-3">{{ __('app.pending') }}</span>
+                    @elseif($row->status == 'rejected')
+                        <span class="capsule-badge badge-soft-danger fs-7 py-1 px-3" title="{{ $row->latest_rejection_reason ?? '' }}">مرفوض</span>
                     @elseif($row->status == 'blocked')
                         <span class="capsule-badge badge-soft-danger fs-7 py-1 px-3">{{ __('app.blocked') }}</span>
                     @else
@@ -102,8 +104,21 @@
                     <span class="text-muted fw-bold fs-8 uppercase tracking-wider mb-1">إجراءات لوحة التحكم السريعة</span>
                     
                     <div class="d-flex gap-2">
-                        <!-- Block / Unblock General -->
-                        @if($row->status == 'blocked')
+                        <!-- Registration Approval & Rejection Actions -->
+                        @if($row->status == 'pending' || $row->status == 'rejected')
+                            <div class="d-flex gap-2 w-100">
+                                <form action="{{ route('admin.drivers.active', $row->id) }}" method="POST" class="w-100">
+                                    @csrf
+                                    @method('PUT')
+                                    <button type="submit" class="btn btn-sm btn-success w-100 py-2" onclick="return confirm('هل أنت متأكد من قبول وتفعيل حساب السائق؟')">
+                                        <i class="ki-outline ki-check-circle fs-5 me-1"></i> قبول
+                                    </button>
+                                </form>
+                                <button type="button" class="btn btn-sm btn-danger w-100 py-2" data-bs-toggle="modal" data-bs-target="#rejectDriverModal">
+                                    <i class="ki-outline ki-cross-circle fs-5 me-1"></i> {{ $row->status == 'rejected' ? 'تعديل الرفض' : 'رفض الطلب' }}
+                                </button>
+                            </div>
+                        @elseif($row->status == 'blocked')
                             <form action="{{ route('admin.drivers.active', $row->id) }}" method="POST" class="w-100">
                                 @csrf
                                 @method('PUT')
@@ -204,6 +219,96 @@
 
     <!-- Right Column - Information, Stats, Reviews & Audit -->
     <div class="col-xl-8">
+        <!-- Registration Decision Status Banner Card -->
+        <div class="card mb-7 shadow-sm border-0">
+            <div class="card-body p-6">
+                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
+                    <div class="d-flex align-items-center">
+                        @if($row->status == 'pending')
+                            <div class="symbol symbol-50px me-4">
+                                <span class="symbol-label bg-light-warning">
+                                    <i class="ki-outline ki-hourglass fs-2x text-warning"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <h4 class="fw-bold text-gray-900 mb-1">حالة طلب التسجيل: <span class="badge badge-light-warning fs-6 px-3 py-2">قيد المراجعة والتدقيق</span></h4>
+                                <p class="text-muted fs-7 mb-0">يرجى مراجعة بيانات ورخص ومستندات السائق بالأسفل لاتخاذ قرار القبول أو الرفض.</p>
+                            </div>
+                        @elseif($row->status == 'rejected')
+                            <div class="symbol symbol-50px me-4">
+                                <span class="symbol-label bg-light-danger">
+                                    <i class="ki-outline ki-cross-circle fs-2x text-danger"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <h4 class="fw-bold text-gray-900 mb-1">حالة طلب التسجيل: <span class="badge badge-light-danger fs-6 px-3 py-2">طلب مرفوض</span></h4>
+                                <div class="mt-2 p-3 bg-light-danger rounded border border-danger border-dashed">
+                                    <strong class="text-danger fs-7 d-block mb-1"><i class="ki-outline ki-information-5 text-danger me-1"></i> سبب الرفض الموجه للسائق:</strong>
+                                    <span class="text-gray-800 fs-7 fw-semibold">{{ $row->latest_rejection_reason ?? 'لم يتم تحديد سبب الرفض' }}</span>
+                                </div>
+                            </div>
+                        @elseif($row->status == 'active')
+                            <div class="symbol symbol-50px me-4">
+                                <span class="symbol-label bg-light-success">
+                                    <i class="ki-outline ki-check-circle fs-2x text-success"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <h4 class="fw-bold text-gray-900 mb-1">حالة طلب التسجيل: <span class="badge badge-light-success fs-6 px-3 py-2">مقبول ومفعّل</span></h4>
+                                <p class="text-muted fs-7 mb-0">تمت مراجعة الاعتمادات والمستندات وحساب السائق مفعّل ونشط حالياً.</p>
+                            </div>
+                        @elseif($row->status == 'blocked')
+                            <div class="symbol symbol-50px me-4">
+                                <span class="symbol-label bg-light-danger">
+                                    <i class="ki-outline ki-ban fs-2x text-danger"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <h4 class="fw-bold text-gray-900 mb-1">حالة طلب التسجيل: <span class="badge bg-danger text-white fs-6 px-3 py-2">حساب محظور</span></h4>
+                                <p class="text-muted fs-7 mb-0">حساب السائق محظور من استخدام التطبيق.</p>
+                            </div>
+                        @else
+                            <div>
+                                <h4 class="fw-bold text-gray-900 mb-1">الحالة: <span class="badge badge-light-primary fs-6 px-3 py-2">{{ $row->status }}</span></h4>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Decision Action Buttons -->
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        @if($row->status == 'pending' || $row->status == 'rejected')
+                            <form action="{{ route('admin.drivers.active', $row->id) }}" method="POST" class="d-inline">
+                                @csrf
+                                @method('PUT')
+                                <button type="submit" onclick="return confirm('هل أنت متأكد من قبول المستندات وتفعيل حساب السائق؟')" class="btn btn-success fw-bold px-4 py-3">
+                                    <i class="ki-outline ki-check-circle fs-4 me-1"></i> قبول وتفعيل الحساب
+                                </button>
+                            </form>
+
+                            <button type="button" class="btn btn-danger fw-bold px-4 py-3" data-bs-toggle="modal" data-bs-target="#rejectDriverModal">
+                                <i class="ki-outline ki-cross-circle fs-4 me-1"></i> {{ $row->status == 'rejected' ? 'تعديل سبب الرفض' : 'رفض الطلب مع إدخال السبب' }}
+                            </button>
+                        @elseif($row->status == 'active')
+                            <form action="{{ route('admin.drivers.block', $row->id) }}" method="POST" class="d-inline">
+                                @csrf
+                                @method('PUT')
+                                <button type="submit" onclick="return confirm('هل أنت متأكد من حظر السائق؟')" class="btn btn-outline-danger fw-bold px-4 py-3">
+                                    <i class="ki-outline ki-ban fs-4 me-1"></i> حظر السائق
+                                </button>
+                            </form>
+                        @elseif($row->status == 'blocked')
+                            <form action="{{ route('admin.drivers.active', $row->id) }}" method="POST" class="d-inline">
+                                @csrf
+                                @method('PUT')
+                                <button type="submit" onclick="return confirm('هل أنت متأكد من فك الحظر عن السائق وتفعيل الحساب؟')" class="btn btn-success fw-bold px-4 py-3">
+                                    <i class="ki-outline ki-check-circle fs-4 me-1"></i> فك الحظر وتفعيل الحساب
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- Order Stats Row -->
         <div class="row g-4 mb-7">
             <div class="col-sm-6 col-md-3">
@@ -247,6 +352,11 @@
             <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="tab" href="#tab_driver_packages">
                     <i class="ki-outline ki-box fs-4 me-1"></i> الباقات والاشتراكات ({{ $activePackages->count() }})
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#tab_driver_reg_history">
+                    <i class="ki-outline ki-clipboard-check fs-4 me-1"></i> سجل الاعتماد والرفض ({{ $row->registration_logs->count() }})
                 </a>
             </li>
             <li class="nav-item">
@@ -394,6 +504,58 @@
                 </div>
             </div>
 
+            <!-- TAB 5: Registration Decision Logs -->
+            <div class="tab-pane fade" id="tab_driver_reg_history" role="tabpanel">
+                <div class="card shadow-sm p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-bold text-gray-900 mb-0">سجل قرارات تفعيل ورفض طلب التسجيل والمستندات</h4>
+                        <span class="badge bg-light-primary text-primary fw-bold">عدد القرارات: {{ $row->registration_logs->count() }}</span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle border rounded-3">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>القرار المأخوذ</th>
+                                    <th>سبب الرفض / ملاحظة التفعيل</th>
+                                    <th>المشرف المسئول</th>
+                                    <th>التاريخ والوقت</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($row->registration_logs as $regLog)
+                                    <tr>
+                                        <td>
+                                            @if($regLog->action == 'approved')
+                                                <span class="badge bg-light-success text-success fw-bold fs-7"><i class="ki-outline ki-check-circle text-success me-1"></i> مقبول ومفعّل</span>
+                                            @elseif($regLog->action == 'rejected')
+                                                <span class="badge bg-light-danger text-danger fw-bold fs-7"><i class="ki-outline ki-cross-circle text-danger me-1"></i> مرفوض</span>
+                                            @else
+                                                <span class="badge bg-light-primary text-primary fw-bold fs-7">{{ $regLog->action }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="fw-bold text-dark fs-7">
+                                            {{ $regLog->reason ?? 'لا يوجد سبب مكتوب' }}
+                                        </td>
+                                        <td class="text-muted small">
+                                            <i class="ki-outline ki-user me-1 text-primary"></i>
+                                            {{ $regLog->admin->name ?? $regLog->admin->full_name ?? 'مشرف النظام' }}
+                                        </td>
+                                        <td class="text-muted small">
+                                            {{ $regLog->created_at ? $regLog->created_at->format('Y-m-d H:i A') : '-' }}
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">لا توجد سجلات قرارات سابقة لهذا السائق.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- TAB 4: Admin Audit Logs -->
             <div class="tab-pane fade" id="tab_driver_audit" role="tabpanel">
                 <div class="card shadow-sm p-4">
@@ -515,7 +677,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-bold">سبب الرفض الموجه للسائق <span class="text-danger">*</span></label>
-                    <textarea name="reason" rows="4" class="form-control" placeholder="مثال: صورة رخصة القيادة غير واضحة، يرجى إعادة رفع صورة واضحة للوجهين." required></textarea>
+                    <textarea name="reason" rows="4" class="form-control" placeholder="مثال: صورة رخصة القيادة غير واضحة، يرجى إعادة رفع صورة واضحة للوجهين." required>{{ $row->latest_rejection_reason ?? "" }}</textarea>
                 </div>
             </div>
             <div class="modal-footer">
