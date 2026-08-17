@@ -22,6 +22,7 @@ class DriverController extends BaseController
         $pendingDriversCount = $this->model->where('status', '=', 'pending')->count(); 
         $activeDriversCount = $this->model->where('status', '=', 'active')->count(); 
         $blockedDriversCount = $this->model->where('status', '=', 'blocked')->count(); 
+        $rejectedDriversCount = $this->model->where('status', '=', 'rejected')->count(); 
         $vipDriversCount = $this->model->whereHas('user', function($q) { $q->where('is_vip', 1); })->count();
 
         $rows = DriverProfile::with(['user', 'driver_cars', 'service']); 
