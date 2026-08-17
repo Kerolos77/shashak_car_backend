@@ -44,7 +44,7 @@
                         <h4 class="fw-bold text-gray-900 mb-1">حالة طلب التقديم: <span class="badge badge-light-danger fs-6 px-3 py-2">طلب مرفوض</span></h4>
                         <div class="mt-2 p-3 bg-light-danger rounded border border-danger border-dashed">
                             <strong class="text-danger fs-7 d-block mb-1"><i class="ki-outline ki-information-5 text-danger me-1"></i> سبب الرفض الموجه للسائق حالياً:</strong>
-                            <span class="text-gray-800 fs-7 fw-semibold">{{ $driver->latest_rejection_reason ?? 'لم يتم تحديد سبب الرفض' }}</span>
+                            <span class="text-gray-800 fs-7 fw-semibold">{{ $rejectionReason ?? $driver->latest_rejection_reason ?? 'لم يتم تحديد سبب الرفض' }}</span>
                         </div>
                     </div>
                 @elseif($driver->status == 'active')
@@ -346,7 +346,7 @@
 
                 <div class="mb-3">
                     <label class="form-label fw-bold">سبب الرفض الموجه للسائق <span class="text-danger">*</span></label>
-                    <textarea name="reason" id="rejection_reason_input" rows="4" class="form-control" placeholder="اكتب سبب الرفض بالتفصيل ليظهر في تطبيق السائق..." required>{{ $driver->latest_rejection_reason ?? '' }}</textarea>
+                    <textarea name="reason" id="rejection_reason_input" rows="4" class="form-control" placeholder="اكتب سبب الرفض بالتفصيل ليظهر في تطبيق السائق..." required>{{ $rejectionReason ?? $driver->latest_rejection_reason ?? '' }}</textarea>
                 </div>
             </div>
             <div class="modal-footer">

@@ -8,6 +8,7 @@ use App\Models\DriverRegistrationLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class DriverApplicationController extends Controller
@@ -46,7 +47,7 @@ class DriverApplicationController extends Controller
         $activeCount = DriverProfile::where('status', 'active')->count();
         $totalCount = DriverProfile::count();
 
-        $pageTitle = 'طلبات انضمام السائقين والمستندات';
+        $pageTitle = 'مركز مراجعة طلبات الانضمام والمستندات';
 
         return view('admin.driver_applications.index', compact(
             'rows',
@@ -72,23 +73,45 @@ class DriverApplicationController extends Controller
         $driver = DriverProfile::with($withRelations)->findOrFail($id);
         $user = $driver->user;
 
-        // Get driver documents array/paths
+        // Auto-heal database table columns if missing
+        $this->ensureSchemaColumns();
+
+        // Get User profile picture (checks profile_pic, photo, avatar, image)
+        $userPhotoFile = $user->profile_pic ?? $user->photo ?? $user->avatar ?? $user->image ?? null;
+
+        $identity = $driver->identity;
+        $license = $driver->driver_licenses;
+        $carLicense = $driver->car_licenses;
+        $car = $driver->driver_cars;
+
+        // Document paths resolving with fallback
         $documents = [
-            'personal_photo' => asset($user->photo ?? 'assets/media/avatars/blank.png'),
-            'id_front' => asset($driver->identity->id_photo_front ?? 'assets/media/avatars/blank.png'),
-            'id_back' => asset($driver->identity->id_photo_back ?? 'assets/media/avatars/blank.png'),
-            'license_front' => asset($driver->driver_licenses->license_photo_front ?? 'assets/media/avatars/blank.png'),
-            'license_back' => asset($driver->driver_licenses->license_photo_back ?? 'assets/media/avatars/blank.png'),
-            'car_license_front' => asset($driver->car_licenses->car_license_photo_front ?? 'assets/media/avatars/blank.png'),
-            'car_license_back' => asset($driver->car_licenses->car_license_photo_back ?? 'assets/media/avatars/blank.png'),
-            'car_front' => asset($driver->driver_cars->car_photo_front ?? 'assets/media/avatars/blank.png'),
-            'car_back' => asset($driver->driver_cars->car_photo_back ?? 'assets/media/avatars/blank.png'),
-            'criminal_record' => asset($driver->criminal_record_photo ?? 'assets/media/avatars/blank.png'),
+            'personal_photo' => $this->resolveFileUrl($userPhotoFile, $user->id),
+            'id_front' => $this->resolveFileUrl($identity->front_identity_image ?? $identity->id_photo_front ?? $identity->front_image ?? null, $user->id),
+            'id_back' => $this->resolveFileUrl($identity->back_identity_image ?? $identity->id_photo_back ?? $identity->back_image ?? null, $user->id),
+            'license_front' => $this->resolveFileUrl($license->front_license_image ?? $license->license_photo_front ?? null, $user->id),
+            'license_back' => $this->resolveFileUrl($license->back_license_image ?? $license->license_photo_back ?? null, $user->id),
+            'car_license_front' => $this->resolveFileUrl($carLicense->front_license_image ?? $carLicense->car_license_photo_front ?? null, $user->id),
+            'car_license_back' => $this->resolveFileUrl($carLicense->back_license_image ?? $carLicense->car_license_photo_back ?? null, $user->id),
+            'car_front' => $this->resolveFileUrl($car->car_photo_front ?? $car->car_image ?? $car->front_image ?? null, $user->id),
+            'car_back' => $this->resolveFileUrl($car->car_photo_back ?? $car->back_image ?? null, $user->id),
+            'criminal_record' => $this->resolveFileUrl($driver->criminal_record_image ?? $driver->criminal_record_photo ?? null, $user->id),
         ];
+
+        // Fetch latest rejection reason with log fallback
+        $latestRejectionLog = null;
+        if (Schema::hasTable('driver_registration_logs')) {
+            $latestRejectionLog = DriverRegistrationLog::where('driver_profile_id', $driver->id)
+                ->where('action', 'rejected')
+                ->orderBy('id', 'desc')
+                ->first();
+        }
+
+        $rejectionReason = $driver->latest_rejection_reason ?? ($latestRejectionLog ? $latestRejectionLog->reason : null);
 
         $pageTitle = 'مراجعة طلب انضمام السائق: ' . ($user->full_name ?? '#' . $driver->id);
 
-        return view('admin.driver_applications.show', compact('driver', 'user', 'documents', 'pageTitle'));
+        return view('admin.driver_applications.show', compact('driver', 'user', 'documents', 'rejectionReason', 'pageTitle'));
     }
 
     /**
@@ -96,6 +119,8 @@ class DriverApplicationController extends Controller
      */
     public function approve($id)
     {
+        $this->ensureSchemaColumns();
+
         $driverProfile = DriverProfile::findOrFail($id);
         $driverProfile->update([
             'status' => 'active',
@@ -125,27 +150,14 @@ class DriverApplicationController extends Controller
             'reason' => 'required|string|max:1000',
         ]);
 
+        $this->ensureSchemaColumns();
+
         $driverProfile = DriverProfile::findOrFail($id);
 
-        try {
-            $driverProfile->update([
-                'status' => 'rejected',
-                'latest_rejection_reason' => $request->reason,
-            ]);
-        } catch (\Illuminate\Database\QueryException $e) {
-            // Auto-heal MySQL ENUM column truncation error by modifying status column to VARCHAR(50)
-            try {
-                \Illuminate\Support\Facades\DB::statement("ALTER TABLE `driver_profiles` MODIFY COLUMN `status` VARCHAR(50) NOT NULL DEFAULT 'pending'");
-                $driverProfile->update([
-                    'status' => 'rejected',
-                    'latest_rejection_reason' => $request->reason,
-                ]);
-            } catch (\Exception $ex) {
-                $driverProfile->update([
-                    'latest_rejection_reason' => $request->reason,
-                ]);
-            }
-        }
+        // Update driver profile status and reason
+        $driverProfile->status = 'rejected';
+        $driverProfile->latest_rejection_reason = $request->reason;
+        $driverProfile->save();
 
         if (Schema::hasTable('driver_registration_logs')) {
             try {
@@ -159,5 +171,58 @@ class DriverApplicationController extends Controller
         }
 
         return redirect()->back()->with('success', 'تم تسجيل رفض طلب الانضمام وإرسال السبب بنجاح.');
+    }
+
+    /**
+     * Auto-heal database schema columns if missing in MySQL.
+     */
+    private function ensureSchemaColumns()
+    {
+        if (Schema::hasTable('driver_profiles')) {
+            if (!Schema::hasColumn('driver_profiles', 'latest_rejection_reason')) {
+                try {
+                    DB::statement("ALTER TABLE `driver_profiles` ADD COLUMN `latest_rejection_reason` TEXT NULL AFTER `status`");
+                } catch (\Exception $e) {}
+            }
+
+            try {
+                DB::statement("ALTER TABLE `driver_profiles` MODIFY COLUMN `status` VARCHAR(50) NOT NULL DEFAULT 'pending'");
+            } catch (\Exception $e) {}
+        }
+    }
+
+    /**
+     * Resolve document or image URL safely.
+     */
+    private function resolveFileUrl($filename, $userId = null)
+    {
+        if (empty($filename)) {
+            return asset('assets/media/avatars/blank.png');
+        }
+
+        if (str_starts_with($filename, 'http://') || str_starts_with($filename, 'https://')) {
+            return $filename;
+        }
+
+        if (str_starts_with($filename, 'uploads/') || str_starts_with($filename, 'files/')) {
+            return url($filename);
+        }
+
+        if ($userId) {
+            $driverPath = public_path('files/DriverLicense/' . $userId . '/' . $filename);
+            if (file_exists($driverPath)) {
+                return url('files/DriverLicense/' . $userId . '/' . $filename);
+            }
+        }
+
+        if (file_exists(public_path('uploads/' . $filename))) {
+            return url('uploads/' . $filename);
+        }
+
+        if (file_exists(public_path($filename))) {
+            return url($filename);
+        }
+
+        return $userId ? url('files/DriverLicense/' . $userId . '/' . $filename) : url('uploads/' . $filename);
     }
 }
