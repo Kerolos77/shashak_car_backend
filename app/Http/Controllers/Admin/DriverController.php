@@ -90,12 +90,16 @@ class DriverController extends BaseController
             'latest_rejection_reason' => null,
         ]);
 
-        \App\Models\DriverRegistrationLog::create([
-            'driver_profile_id' => $driverProfile->id,
-            'admin_id' => \Illuminate\Support\Facades\Auth::guard('admin')->id() ?? \Illuminate\Support\Facades\Auth::id(),
-            'action' => 'approved',
-            'reason' => 'تم قبول المستندات وتفعيل حساب السائق',
-        ]);
+        if (\Illuminate\Support\Facades\Schema::hasTable('driver_registration_logs')) {
+            try {
+                \App\Models\DriverRegistrationLog::create([
+                    'driver_profile_id' => $driverProfile->id,
+                    'admin_id' => \Illuminate\Support\Facades\Auth::guard('admin')->id() ?? \Illuminate\Support\Facades\Auth::id(),
+                    'action' => 'approved',
+                    'reason' => 'تم قبول المستندات وتفعيل حساب السائق',
+                ]);
+            } catch (\Exception $e) {}
+        }
 
         return redirect()->back()->with('success', __('app.activated_successfully'));
     }
@@ -112,12 +116,16 @@ class DriverController extends BaseController
             'latest_rejection_reason' => $request->reason,
         ]);
 
-        \App\Models\DriverRegistrationLog::create([
-            'driver_profile_id' => $driverProfile->id,
-            'admin_id' => \Illuminate\Support\Facades\Auth::guard('admin')->id() ?? \Illuminate\Support\Facades\Auth::id(),
-            'action' => 'rejected',
-            'reason' => $request->reason,
-        ]);
+        if (\Illuminate\Support\Facades\Schema::hasTable('driver_registration_logs')) {
+            try {
+                \App\Models\DriverRegistrationLog::create([
+                    'driver_profile_id' => $driverProfile->id,
+                    'admin_id' => \Illuminate\Support\Facades\Auth::guard('admin')->id() ?? \Illuminate\Support\Facades\Auth::id(),
+                    'action' => 'rejected',
+                    'reason' => $request->reason,
+                ]);
+            } catch (\Exception $e) {}
+        }
 
         return redirect()->back()->with('success', __('تم رفض المستندات وحفظ سبب الرفض بنجاح'));
     }
@@ -143,7 +151,13 @@ class DriverController extends BaseController
 
     public function show($id)  
     {
-        $row = $this->model->with(['user', 'user.country', 'user.city', 'registration_logs', 'registration_logs.admin'])->findOrFail($id);
+        $withRelations = ['user', 'user.country', 'user.city'];
+        if (\Illuminate\Support\Facades\Schema::hasTable('driver_registration_logs')) {
+            $withRelations[] = 'registration_logs';
+            $withRelations[] = 'registration_logs.admin';
+        }
+
+        $row = $this->model->with($withRelations)->findOrFail($id);
         $userId = $row->user_id;
 
         $moduleName = $this->getModelName();

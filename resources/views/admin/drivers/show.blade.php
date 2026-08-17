@@ -356,7 +356,7 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="tab" href="#tab_driver_reg_history">
-                    <i class="ki-outline ki-clipboard-check fs-4 me-1"></i> سجل الاعتماد والرفض ({{ $row->registration_logs->count() }})
+                    <i class="ki-outline ki-clipboard-check fs-4 me-1"></i> سجل الاعتماد والرفض ({{ $row->relationLoaded('registration_logs') ? $row->registration_logs->count() : 0 }})
                 </a>
             </li>
             <li class="nav-item">
@@ -509,7 +509,7 @@
                 <div class="card shadow-sm p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="fw-bold text-gray-900 mb-0">سجل قرارات تفعيل ورفض طلب التسجيل والمستندات</h4>
-                        <span class="badge bg-light-primary text-primary fw-bold">عدد القرارات: {{ $row->registration_logs->count() }}</span>
+                        <span class="badge bg-light-primary text-primary fw-bold">عدد القرارات: {{ $row->relationLoaded('registration_logs') ? $row->registration_logs->count() : 0 }}</span>
                     </div>
 
                     <div class="table-responsive">
@@ -523,7 +523,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($row->registration_logs as $regLog)
+                                @forelse(($row->relationLoaded('registration_logs') ? $row->registration_logs : []) as $regLog)
                                     <tr>
                                         <td>
                                             @if($regLog->action == 'approved')
