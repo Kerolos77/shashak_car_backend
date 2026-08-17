@@ -1,9 +1,11 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\DriverProfile;
+use App\Models\DriverRegistrationLog;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class DriverController extends BaseController
@@ -64,6 +66,7 @@ class DriverController extends BaseController
             'allDriversCount',
             'activeDriversCount',
             'blockedDriversCount',
+            'rejectedDriversCount',
             'vipDriversCount',
             'moduleName',
             'pageTitle',
@@ -80,10 +83,42 @@ class DriverController extends BaseController
     }
     public function active($id)  
     {
-        $this->model->findOrFail($id)->update([
-            'status'    => 'active'
+        $driverProfile = $this->model->findOrFail($id);
+        $driverProfile->update([
+            'status' => 'active',
+            'latest_rejection_reason' => null,
         ]);
-        return redirect()->route('admin.drivers.index')->with('success', __('app.activated_successfully'));
+
+        \App\Models\DriverRegistrationLog::create([
+            'driver_profile_id' => $driverProfile->id,
+            'admin_id' => \Illuminate\Support\Facades\Auth::guard('admin')->id() ?? \Illuminate\Support\Facades\Auth::id(),
+            'action' => 'approved',
+            'reason' => 'تم قبول المستندات وتفعيل حساب السائق',
+        ]);
+
+        return redirect()->back()->with('success', __('app.activated_successfully'));
+    }
+
+    public function reject(\Illuminate\Http\Request $request, $id)  
+    {
+        $request->validate([
+            'reason' => 'required|string|max:1000',
+        ]);
+
+        $driverProfile = $this->model->findOrFail($id);
+        $driverProfile->update([
+            'status' => 'rejected',
+            'latest_rejection_reason' => $request->reason,
+        ]);
+
+        \App\Models\DriverRegistrationLog::create([
+            'driver_profile_id' => $driverProfile->id,
+            'admin_id' => \Illuminate\Support\Facades\Auth::guard('admin')->id() ?? \Illuminate\Support\Facades\Auth::id(),
+            'action' => 'rejected',
+            'reason' => $request->reason,
+        ]);
+
+        return redirect()->back()->with('success', __('تم رفض المستندات وحفظ سبب الرفض بنجاح'));
     }
     public function edit($id)
     {
@@ -161,10 +196,10 @@ class DriverController extends BaseController
             'admin_id' => \Illuminate\Support\Facades\Auth::guard('admin')->id() ?? \Illuminate\Support\Facades\Auth::id(),
             'user_id'  => $user->id,
             'action'   => 'reset_cash_ban',
-            'notes'    => 'تم تصفير وإلغاء حظر الكاش فوراً عن السائق بواسطة الإدارة.',
+            'notes'    => 'ØªÙ… ØªØµÙÙŠØ± ÙˆØ¥Ù„ØºØ§Ø¡ Ø­Ø¸Ø± Ø§Ù„ÙƒØ§Ø´ ÙÙˆØ±Ø§Ù‹ Ø¹Ù† Ø§Ù„Ø³Ø§Ø¦Ù‚ Ø¨ÙˆØ§Ø³Ø·Ø© Ø§Ù„Ø¥Ø¯Ø§Ø±Ø©.',
         ]);
 
-        return redirect()->back()->with('success', __('تم فك وتصفير حظر الكاش عن السائق بنجاح.'));
+        return redirect()->back()->with('success', __('ØªÙ… ÙÙƒ ÙˆØªØµÙÙŠØ± Ø­Ø¸Ø± Ø§Ù„ÙƒØ§Ø´ Ø¹Ù† Ø§Ù„Ø³Ø§Ø¦Ù‚ Ø¨Ù†Ø¬Ø§Ø­.'));
     }
 
     public function toggleVip($id)
@@ -175,16 +210,16 @@ class DriverController extends BaseController
         $user->is_vip = !$user->is_vip;
         $user->save();
 
-        $statusText = $user->is_vip ? 'تفعيل شارة السائق المميز (VIP)' : 'إلغاء شارة VIP';
+        $statusText = $user->is_vip ? 'ØªÙØ¹ÙŠÙ„ Ø´Ø§Ø±Ø© Ø§Ù„Ø³Ø§Ø¦Ù‚ Ø§Ù„Ù…Ù…ÙŠØ² (VIP)' : 'Ø¥Ù„ØºØ§Ø¡ Ø´Ø§Ø±Ø© VIP';
 
         \App\Models\AdminUserAuditLog::create([
             'admin_id' => \Illuminate\Support\Facades\Auth::guard('admin')->id() ?? \Illuminate\Support\Facades\Auth::id(),
             'user_id'  => $user->id,
             'action'   => 'toggle_vip',
-            'notes'    => "تم {$statusText} للسائق.",
+            'notes'    => "ØªÙ… {$statusText} Ù„Ù„Ø³Ø§Ø¦Ù‚.",
         ]);
 
-        return redirect()->back()->with('success', __("تم {$statusText} بنجاح."));
+        return redirect()->back()->with('success', __("ØªÙ… {$statusText} Ø¨Ù†Ø¬Ø§Ø­."));
     }
 
     public function addWalletBalance(Request $request, $id)
@@ -206,17 +241,17 @@ class DriverController extends BaseController
             'amount' => abs($amount),
             'type' => $amount >= 0 ? 'deposit' : 'withdraw',
             'status' => 'completed',
-            'notes' => $request->notes ?? 'إضافة/خصم رصيد يدوي من الإدارة',
+            'notes' => $request->notes ?? 'Ø¥Ø¶Ø§ÙØ©/Ø®ØµÙ… Ø±ØµÙŠØ¯ ÙŠØ¯ÙˆÙŠ Ù…Ù† Ø§Ù„Ø¥Ø¯Ø§Ø±Ø©',
         ]);
 
         \App\Models\AdminUserAuditLog::create([
             'admin_id' => \Illuminate\Support\Facades\Auth::guard('admin')->id() ?? \Illuminate\Support\Facades\Auth::id(),
             'user_id'  => $user->id,
             'action'   => 'add_wallet',
-            'notes'    => "تم تغيير رصيد المحفظة بمبلغ ({$amount} ج.م) - السبب: " . ($request->notes ?? 'إضافة يدوية'),
+            'notes'    => "ØªÙ… ØªØºÙŠÙŠØ± Ø±ØµÙŠØ¯ Ø§Ù„Ù…Ø­ÙØ¸Ø© Ø¨Ù…Ø¨Ù„Øº ({$amount} Ø¬.Ù…) - Ø§Ù„Ø³Ø¨Ø¨: " . ($request->notes ?? 'Ø¥Ø¶Ø§ÙØ© ÙŠØ¯ÙˆÙŠØ©'),
         ]);
 
-        return redirect()->back()->with('success', __('تم تعديل رصيد محفظة السائق وتسجيل المعاملة بنجاح.'));
+        return redirect()->back()->with('success', __('ØªÙ… ØªØ¹Ø¯ÙŠÙ„ Ø±ØµÙŠØ¯ Ù…Ø­ÙØ¸Ø© Ø§Ù„Ø³Ø§Ø¦Ù‚ ÙˆØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ù…Ø¹Ø§Ù…Ù„Ø© Ø¨Ù†Ø¬Ø§Ø­.'));
     }
 
     public function giftPackage(Request $request, $id)
@@ -242,10 +277,10 @@ class DriverController extends BaseController
             'admin_id' => \Illuminate\Support\Facades\Auth::guard('admin')->id() ?? \Illuminate\Support\Facades\Auth::id(),
             'user_id'  => $user->id,
             'action'   => 'gift_package',
-            'notes'    => "تم إهداء وتفعيل باقة ({$package->name}) مجاناً للسائق لغايـة " . $expiresAt->format('Y-m-d'),
+            'notes'    => "ØªÙ… Ø¥Ù‡Ø¯Ø§Ø¡ ÙˆØªÙØ¹ÙŠÙ„ Ø¨Ø§Ù‚Ø© ({$package->name}) Ù…Ø¬Ø§Ù†Ø§Ù‹ Ù„Ù„Ø³Ø§Ø¦Ù‚ Ù„ØºØ§ÙŠÙ€Ø© " . $expiresAt->format('Y-m-d'),
         ]);
 
-        return redirect()->back()->with('success', __('تم إهداء وتفعيل الباقة للسائق بنجاح.'));
+        return redirect()->back()->with('success', __('ØªÙ… Ø¥Ù‡Ø¯Ø§Ø¡ ÙˆØªÙØ¹ÙŠÙ„ Ø§Ù„Ø¨Ø§Ù‚Ø© Ù„Ù„Ø³Ø§Ø¦Ù‚ Ø¨Ù†Ø¬Ø§Ø­.'));
     }
     
     private function getDriverDocuments($userId)
@@ -274,7 +309,7 @@ class DriverController extends BaseController
                     : url('files/DriverLicense/' . $userId . '/' . $img);
                 $documents[] = [
                     'type' => 'criminal_record',
-                    'name' => 'سجل جنائي',
+                    'name' => 'Ø³Ø¬Ù„ Ø¬Ù†Ø§Ø¦ÙŠ',
                     'image' => $imageUrl,
                     'status' => 'uploaded'
                 ];
@@ -286,7 +321,7 @@ class DriverController extends BaseController
                 if ($identity->front_identity_image) {
                     $documents[] = [
                         'type' => 'identity_front',
-                        'name' => 'الهوية - الوجه الأمامي',
+                        'name' => 'Ø§Ù„Ù‡ÙˆÙŠØ© - Ø§Ù„ÙˆØ¬Ù‡ Ø§Ù„Ø£Ù…Ø§Ù…ÙŠ',
                         'image' => url('files/DriverLicense/' . $userId . '/' . $identity->front_identity_image),
                         'status' => 'uploaded'
                     ];
@@ -294,7 +329,7 @@ class DriverController extends BaseController
                 if ($identity->back_identity_image) {
                     $documents[] = [
                         'type' => 'identity_back',
-                        'name' => 'الهوية - الوجه الخلفي',
+                        'name' => 'Ø§Ù„Ù‡ÙˆÙŠØ© - Ø§Ù„ÙˆØ¬Ù‡ Ø§Ù„Ø®Ù„ÙÙŠ',
                         'image' => url('files/DriverLicense/' . $userId . '/' . $identity->back_identity_image),
                         'status' => 'uploaded'
                     ];
@@ -302,7 +337,7 @@ class DriverController extends BaseController
                 if ($identity->driver_image_with_id) {
                     $documents[] = [
                         'type' => 'identity_with_driver',
-                        'name' => 'صورة السائق مع الهوية',
+                        'name' => 'ØµÙˆØ±Ø© Ø§Ù„Ø³Ø§Ø¦Ù‚ Ù…Ø¹ Ø§Ù„Ù‡ÙˆÙŠØ©',
                         'image' => url('files/DriverLicense/' . $userId . '/' . $identity->driver_image_with_id),
                         'status' => 'uploaded'
                     ];
@@ -315,7 +350,7 @@ class DriverController extends BaseController
                 if ($license->front_license_image) {
                     $documents[] = [
                         'type' => 'license_front',
-                        'name' => 'رخصة القيادة - الوجه الأمامي',
+                        'name' => 'Ø±Ø®ØµØ© Ø§Ù„Ù‚ÙŠØ§Ø¯Ø© - Ø§Ù„ÙˆØ¬Ù‡ Ø§Ù„Ø£Ù…Ø§Ù…ÙŠ',
                         'image' => url('files/DriverLicense/' . $userId . '/' . $license->front_license_image),
                         'status' => 'uploaded'
                     ];
@@ -323,7 +358,7 @@ class DriverController extends BaseController
                 if ($license->back_license_image) {
                     $documents[] = [
                         'type' => 'license_back',
-                        'name' => 'رخصة القيادة - الوجه الخلفي',
+                        'name' => 'Ø±Ø®ØµØ© Ø§Ù„Ù‚ÙŠØ§Ø¯Ø© - Ø§Ù„ÙˆØ¬Ù‡ Ø§Ù„Ø®Ù„ÙÙŠ',
                         'image' => url('files/DriverLicense/' . $userId . '/' . $license->back_license_image),
                         'status' => 'uploaded'
                     ];
@@ -331,7 +366,7 @@ class DriverController extends BaseController
                 if ($license->driver_with_license_image) {
                     $documents[] = [
                         'type' => 'license_with_driver',
-                        'name' => 'صورة السائق مع رخصة القيادة',
+                        'name' => 'ØµÙˆØ±Ø© Ø§Ù„Ø³Ø§Ø¦Ù‚ Ù…Ø¹ Ø±Ø®ØµØ© Ø§Ù„Ù‚ÙŠØ§Ø¯Ø©',
                         'image' => url('files/DriverLicense/' . $userId . '/' . $license->driver_with_license_image),
                         'status' => 'uploaded'
                     ];
@@ -344,7 +379,7 @@ class DriverController extends BaseController
                 if ($carLicense->front_license_image) {
                     $documents[] = [
                         'type' => 'car_license_front',
-                        'name' => 'رخصة السيارة - الوجه الأمامي',
+                        'name' => 'Ø±Ø®ØµØ© Ø§Ù„Ø³ÙŠØ§Ø±Ø© - Ø§Ù„ÙˆØ¬Ù‡ Ø§Ù„Ø£Ù…Ø§Ù…ÙŠ',
                         'image' => url('files/DriverLicense/' . $userId . '/' . $carLicense->front_license_image),
                         'status' => 'uploaded'
                     ];
@@ -352,7 +387,7 @@ class DriverController extends BaseController
                 if ($carLicense->back_license_image) {
                     $documents[] = [
                         'type' => 'car_license_back',
-                        'name' => 'رخصة السيارة - الوجه الخلفي',
+                        'name' => 'Ø±Ø®ØµØ© Ø§Ù„Ø³ÙŠØ§Ø±Ø© - Ø§Ù„ÙˆØ¬Ù‡ Ø§Ù„Ø®Ù„ÙÙŠ',
                         'image' => url('files/DriverLicense/' . $userId . '/' . $carLicense->back_license_image),
                         'status' => 'uploaded'
                     ];
@@ -360,7 +395,7 @@ class DriverController extends BaseController
                 if ($carLicense->driver_with_license_image) {
                     $documents[] = [
                         'type' => 'car_license_with_driver',
-                        'name' => 'صورة السائق مع رخصة السيارة',
+                        'name' => 'ØµÙˆØ±Ø© Ø§Ù„Ø³Ø§Ø¦Ù‚ Ù…Ø¹ Ø±Ø®ØµØ© Ø§Ù„Ø³ÙŠØ§Ø±Ø©',
                         'image' => url('files/DriverLicense/' . $userId . '/' . $carLicense->driver_with_license_image),
                         'status' => 'uploaded'
                     ];
@@ -418,3 +453,5 @@ class DriverController extends BaseController
             ->with('success', __('global.updated_successfully'));
     }
 }
+
+

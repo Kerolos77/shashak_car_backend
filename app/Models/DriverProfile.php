@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Models;
 
@@ -12,6 +12,7 @@ class DriverProfile extends Model
     use HasFactory;
 
     protected $guarded = ['id'];
+
     // Make relationship with user model
     public function user()
     {
@@ -38,5 +39,9 @@ class DriverProfile extends Model
     {
         return $this->belongsTo(Service::class);
     }
-    
+
+    public function registration_logs()
+    {
+        return $this->hasMany(DriverRegistrationLog::class, 'driver_profile_id')->orderBy('id', 'desc');
+    }
 }

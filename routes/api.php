@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 
 use Illuminate\Support\Facades\Route;
@@ -95,6 +95,7 @@ Route::group(['prefix' => 'v1', 'as' => 'api.', 'middleware' => ['auth:sanctum']
     Route::get('coupons', [\App\Http\Controllers\Api\V1\CouponApiController::class, 'index']);
     Route::post('coupons/validate', [\App\Http\Controllers\Api\V1\CouponApiController::class, 'validateCoupon']);
 
+    Route::get('driver/registration-status', [DriverApiController::class, 'check_registration_status']);
     Route::post('driver/registration', [DriverApiController::class, 'driver_registration']);
     Route::post('driver/update-service', [DriverApiController::class, 'change_service']);
 

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 
 use App\Events\MessageSent;
@@ -112,6 +112,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth:admi
     Route::resource('drivers', DriverController::class);
     Route::put('drivers/activate/{id}', [DriverController::class, 'active'])->name('drivers.active');
     Route::put('drivers/block/{id}', [DriverController::class, 'block'])->name('drivers.block');
+    Route::put('drivers/reject/{id}', [DriverController::class, 'reject'])->name('drivers.reject');
     Route::post('drivers/{id}/reset-cash-ban', [DriverController::class, 'resetCashBan'])->name('drivers.reset-cash-ban');
     Route::post('drivers/{id}/toggle-vip', [DriverController::class, 'toggleVip'])->name('drivers.toggle-vip');
     Route::post('drivers/{id}/add-wallet', [DriverController::class, 'addWalletBalance'])->name('drivers.add-wallet');
