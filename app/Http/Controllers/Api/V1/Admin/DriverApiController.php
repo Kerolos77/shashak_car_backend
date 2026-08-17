@@ -42,6 +42,21 @@ class DriverApiController extends Controller
             $status = $profile->status ?? 'pending';
             $rejectionReason = $profile->latest_rejection_reason;
 
+            // Fallback from DriverRegistrationLog if latest_rejection_reason is empty or status was stuck
+            if (\Illuminate\Support\Facades\Schema::hasTable('driver_registration_logs')) {
+                $latestLog = DriverRegistrationLog::where('driver_profile_id', $profile->id)
+                    ->orderBy('id', 'desc')
+                    ->first();
+                if ($latestLog) {
+                    if ($latestLog->action === 'rejected') {
+                        $status = 'rejected';
+                        $rejectionReason = $rejectionReason ?? $latestLog->reason;
+                    } elseif ($latestLog->action === 'approved') {
+                        $status = 'active';
+                    }
+                }
+            }
+
             $message = 'طلبك قيد المراجعة حالياً من قبل الإدارة';
             if ($status === 'active' || $status === 'approved') {
                 $message = 'تم تفعيل حسابك كـ سائق بنجاح';
