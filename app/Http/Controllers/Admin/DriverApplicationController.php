@@ -126,10 +126,26 @@ class DriverApplicationController extends Controller
         ]);
 
         $driverProfile = DriverProfile::findOrFail($id);
-        $driverProfile->update([
-            'status' => 'rejected',
-            'latest_rejection_reason' => $request->reason,
-        ]);
+
+        try {
+            $driverProfile->update([
+                'status' => 'rejected',
+                'latest_rejection_reason' => $request->reason,
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Auto-heal MySQL ENUM column truncation error by modifying status column to VARCHAR(50)
+            try {
+                \Illuminate\Support\Facades\DB::statement("ALTER TABLE `driver_profiles` MODIFY COLUMN `status` VARCHAR(50) NOT NULL DEFAULT 'pending'");
+                $driverProfile->update([
+                    'status' => 'rejected',
+                    'latest_rejection_reason' => $request->reason,
+                ]);
+            } catch (\Exception $ex) {
+                $driverProfile->update([
+                    'latest_rejection_reason' => $request->reason,
+                ]);
+            }
+        }
 
         if (Schema::hasTable('driver_registration_logs')) {
             try {

@@ -28,7 +28,7 @@ return new class extends Migration
             });
 
             try {
-                DB::statement("ALTER TABLE `driver_profiles` MODIFY COLUMN `status` ENUM('active', 'blocked', 'pending', 'rejected') NOT NULL DEFAULT 'pending'");
+                DB::statement("ALTER TABLE `driver_profiles` MODIFY COLUMN `status` VARCHAR(50) NOT NULL DEFAULT 'pending'");
             } catch (\Exception $e) {
                 // Fallback for DB engines where DB statement might differ
             }
